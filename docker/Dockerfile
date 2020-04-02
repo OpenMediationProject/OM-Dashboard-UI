@@ -15,7 +15,8 @@ ENV SYSTEMNAME "omsystem"
 ADD docker-entrypoint.sh /
 ADD nginx/ /usr/local/nginx/
 COPY --from=builder /data/${DSUI_DIR}/dist/ /usr/local/nginx/html/om-ds-ui/
-RUN cp /usr/share/zoneinfo/Etc/GMT0 /etc/localtime
+RUN cp /usr/share/zoneinfo/Etc/GMT0 /etc/localtime && \
+    chmod +x /docker-entrypoint.sh /usr/local/nginx/sbin/nginx
 HEALTHCHECK --interval=30s --timeout=3s \
   CMD curl -f http://localhost/ || exit 1
 EXPOSE 80 443
