@@ -56,7 +56,7 @@ do
         item_name=$(echo "$env_var" | cut -d_ -f2- | tr '[:upper:]' '[:lower:]' | tr _ -)
         if [[ ${item_name} = "proxyip" ]];then
             loginfo_note "[Configuring] ${item_name} in /usr/local/nginx/conf/nginx.conf"
-            proxy_ip=$(echo ${!env_var}|sed "s/,/ /g")
+            proxy_ip=$(echo ${!env_var}|sed "s@,@\n@g")
             sed -i "/log_format/i\    real_ip_header    X-Real-IP;" /usr/local/nginx/conf/nginx.conf
             sed -i "/real_ip_header/a\    real_ip_recursive on;" /usr/local/nginx/conf/nginx.conf
             for ip in ${proxy_ip}
