@@ -67,9 +67,15 @@ do
         fi
         if [[ ${item_name} = "mountpath" ]];then
             loginfo_note "[Cloud Storage] Link ${!env_var}/conf.d to /usr/local/nginx/conf.d"
-            rm -fr /usr/local/nginx/conf.d && ln -sf ${!env_var}/conf.d  /usr/local/nginx/
+            if [[ -d /usr/local/nginx/conf.d ]];then
+               rm -fr /usr/local/nginx/conf.d
+            fi
+            ln -sf ${!env_var}/conf.d  /usr/local/nginx/
             loginfo_note "[Cloud Storage] Link ${!env_var}/https to /usr/local/nginx/https"
-            rm -fr /usr/local/nginx/https && ln -sf ${!env_var}/https  /usr/local/nginx/
+            if [[ -d /usr/local/nginx/https ]];then
+               rm -fr /usr/local/nginx/https
+            fi
+            ln -sf ${!env_var}/https  /usr/local/nginx/
             continue
         fi
     fi
