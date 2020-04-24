@@ -2,10 +2,10 @@
   <a-form-item>
     <a-select
       placeholder="App"
-      :showArrow="true"
       size="default"
       style="width:240px;"
       allowClear
+      :showArrow="false"
       :dropdownMatchSelectWidth="false"
       v-decorator="[name]">
       <a-select-option v-for="appInfo in appList" :key="appInfo.id">

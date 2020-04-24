@@ -19,7 +19,7 @@
         showSearch
         style="width:220px;margin-bottom: 16px;"
         placeholder="Breakdown"
-        :showArrow="true"
+        :showArrow="false"
         optionLabelProp="title"
         :defaultValue="chartGroupBy"
         @change="handleDim4ChartChange">
@@ -81,8 +81,7 @@
         placeholder="Breakdown"
         mode="multiple"
         :maxTagCount="1"
-        :showArrow="true"
-        :allowClear="true"
+        :allowClear="false"
         optionLabelProp="title"
         @change="handleDim4TableChange"
         :value="table.dimension">
@@ -95,8 +94,8 @@
         placeholder="Metrics"
         mode="multiple"
         :maxTagCount="2"
-        :showArrow="true"
         :allowClear="true"
+        :showArrow="false"
         optionLabelProp="title"
         @change="handleMetricsChange"
         :value="table.metric">

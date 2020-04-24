@@ -8,9 +8,10 @@
       size="default"
       :disabled="disabled"
       :mode="mode"
+      :showArrow="false"
+      allowClear
       optionLabelProp="title"
       v-decorator="[modelName, {initialValue: initValue}]"
-      :showArrow="true"
       :filterOption="instanceFilterOption"
       @change="handleChange">
       <a-select-option v-for="instance in data" :key="instance.id" :title="instance.name">
@@ -103,6 +104,18 @@ export default {
           }
         })
       }
+    },
+    upload () {
+      const { searchApp: pubAppId } = this.$store.state.publisher
+      const params = { pubAppId, placementId: this.placementId }
+      if (this.adnAppId !== null) {
+        params.adNetworkAppId = this.adnAppId
+      }
+      instancesSelectList(params).then(res => {
+        if (res.code === 0) {
+          this.data = res.data
+        }
+      })
     }
   },
   created () {

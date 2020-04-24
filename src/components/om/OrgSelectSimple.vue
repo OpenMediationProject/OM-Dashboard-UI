@@ -5,6 +5,7 @@
       v-if="this.value"
       placeholder="Organization"
       size="default"
+      :showArrow="false"
       @change="change"
       v-decorator="[name, {initialValue: value, rules: [{ required: true, message: 'Organization can not be empty.'}]}]">
       <a-select-option v-for="org in this.pubList" :key="org.id" :title="org.name">
@@ -15,6 +16,7 @@
       v-else
       placeholder="Organization"
       size="default"
+      :showArrow="false"
       @change="change"
       v-decorator="[name, {rules: [{ required: true, message: 'Organization can not be empty.'}]}]">
       <a-select-option v-for="org in this.pubList" :key="org.id" :title="org.name">

@@ -55,7 +55,7 @@ const adTypeMap = {
   },
   2: {
     adType: 0,
-    text: 'RewardedVideo'
+    text: 'Rewarded Video'
   },
   3: {
     adType: 0,

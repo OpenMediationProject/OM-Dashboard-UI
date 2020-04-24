@@ -17,9 +17,8 @@
         showSearch
         style="width:220px;margin-bottom: 16px;"
         placeholder="Breakdown"
-        :showArrow="true"
-        :allowClear="true"
         optionLabelProp="title"
+        :showArrow="false"
         :defaultValue="chartGroupBy"
         @change="handleDim4ChartChange">
         <a-select-option v-for="o in dimList4Chart" :key="o.id" :title="o.title">{{ o.title }}</a-select-option>
@@ -98,8 +97,8 @@
         placeholder="Breakdown"
         mode="multiple"
         :maxTagCount="1"
-        :showArrow="true"
         :allowClear="true"
+        :showArrow="false"
         optionLabelProp="title"
         @change="handleDim4TableChange"
         :value="table.dimension">
@@ -112,8 +111,8 @@
         placeholder="Metrics"
         mode="multiple"
         :maxTagCount="2"
-        :showArrow="true"
         :allowClear="true"
+        :showArrow="false"
         optionLabelProp="title"
         @change="handleMetricsChange"
         :value="table.metric">
@@ -308,7 +307,14 @@ export default {
       }
     },
     mapMetrics (row) {
-      row.id = generateUUID()
+      row = {
+        id: generateUUID(),
+        apiImpr: 0,
+        cost: 0,
+        deu: 0,
+        dau: 0,
+        ...row
+      }
       row.impr = row.apiImpr
       row.arpDau = row.arpDeu = row.imprDau = row.imprDeu = row.engagementRate = 0
 

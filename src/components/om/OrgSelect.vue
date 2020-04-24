@@ -5,6 +5,7 @@
       v-if="this.value"
       placeholder="Organization"
       size="default"
+      :showArrow="false"
       v-decorator="[name, {initialValue: value, rules: [{ required: true, message: 'Organization can not be empty.'}] }]">
       <a-select-option v-for="org in pubList" :key="org.id" :title="org.name">
         <ellipsis :length="25" tooltip>{{ org.name }}</ellipsis>
@@ -14,6 +15,7 @@
       v-else
       placeholder="Organization"
       size="default"
+      :showArrow="false"
       v-decorator="[name, {rules: [{ required: true, message: 'Organization can not be empty.'}] }]">
       <a-select-option v-for="org in pubList" :key="org.id" :title="org.name">
         <ellipsis :length="25" tooltip>{{ org.name }}</ellipsis>

@@ -15,7 +15,7 @@
         ref="iap-min"
         style="width:100%"
         type="number"
-        :min="1"
+        :min="0"
         :max="500"
         v-decorator="['frequency']"/>
     </om-form>

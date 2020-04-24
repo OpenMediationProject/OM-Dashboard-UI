@@ -1,9 +1,8 @@
 <!-- MediationEdit page router '/mediation/mediation/add' -->
 <template>
   <div class="water-fall">
-    <div class="button-div" v-if="canEdit">
-      <a-button type="primary" style="bottom: -40px;width: 168px;left: -9.5%;" @click="segmentSave">Save</a-button>
-    </div>
+    <a v-if="canEdit" @click="segmentSave" style="position: absolute;right: 50px;top: 80px;"><img width="24px" src="/icon/save.svg" /></a>
+    <page-header-placement />
     <a-form :form="form" :hideRequiredMark="true" >
       <MediationEditForm
         :regions="this.countries"
@@ -29,7 +28,7 @@
             @sortEnd="sortInstance"
           />
         </a-spin>
-        <div style="height:70px;"></div>
+        <div style="height:20px;"></div>
       </a-card>
     </a-form>
   </div>
@@ -46,6 +45,8 @@ import EditableCell from '@/components/EditableCell'
 import WaterfallTable from './WaterfallTable'
 import OmText from '@/components/om/Text'
 import pick from 'lodash.pick'
+import Save from '../../../../public/icon/save.svg'
+import PageHeaderPlacement from '@/components/om/PageHeaderPlacement'
 
 export default {
   name: 'MediationEdit',
@@ -56,7 +57,9 @@ export default {
     AdNetwork,
     OmInstanceSelect,
     EditableCell,
-    OmText
+    OmText,
+    Save,
+    PageHeaderPlacement
   },
   data () {
     return {
@@ -201,12 +204,6 @@ export default {
         }
       })
     },
-    modelChange (value) {
-      this.modelDevice = value
-    },
-    brandChange (value) {
-      this.brandDevice = value
-    },
     modelTypeChange (value) {
       this.modelType = value
     },
@@ -342,22 +339,7 @@ export default {
 </script>
 
 <style type="less" scoped>
-.save-button {
-  bottom: 30px;
-  z-index: 100;
-  left: 57%;
-  position: inherit;
-}
-.button-div {
-  text-align: center;
-  bottom: 0;
-  z-index: 100;
-  position: fixed;
-  width: 100%;
-  height: 100px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.6) 32.36%, #ffffff 100%);
-}
-.water-fall >>> .ant-card-head-wrapper {
-  margin-left: -8px;
-}
+  .water-fall >>> .ant-card-head-wrapper {
+    margin-left: -8px;
+  }
 </style>

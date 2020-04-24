@@ -104,7 +104,10 @@ export default {
   },
   watch: {
     data (val) {
-      this.list = val
+      this.list = []
+      this.$nextTick(() => {
+        this.list = val
+      })
     },
     autoOpt (val) {
       this.disable = val

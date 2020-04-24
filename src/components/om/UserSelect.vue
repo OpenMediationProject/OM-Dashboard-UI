@@ -4,6 +4,7 @@
       v-if="this.value"
       style="width:260px;"
       placeholder="User"
+      :showArrow="false"
       size="default"
       v-decorator="[name, {initialValue: value}]">
       <a-select-option v-for="user in data" :key="user.id" :title="user.email">

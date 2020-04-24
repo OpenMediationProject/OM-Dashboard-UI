@@ -8,9 +8,9 @@
       mode="multiple"
       :disabled="disabled"
       :maxTagCount="1"
+      :showArrow="false"
       :maxTagTextLength="10"
       :maxTagPlaceholder="(h,vm) => '+' + (vm.value.length - 1)"
-      :showArrow="true"
       allowClear
       optionLabelProp="title"
       :filterOption="filterOption"

@@ -6,6 +6,7 @@
       placeholder="Role"
       size="default"
       allowClear
+      :showArrow="false"
       @change="change"
       v-decorator="[name, {initialValue: value}]">
       <a-select-option v-for="role in data" :key="role.id" :title="role.name">
@@ -19,6 +20,7 @@
       size="default"
       @change="change"
       allowClear
+      :showArrow="false"
       v-decorator="[name]">
       <a-select-option v-for="role in data" :key="role.id" :title="role.name">
         <ellipsis :length="25" tooltip>{{ role.name }}</ellipsis>

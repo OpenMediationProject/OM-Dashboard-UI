@@ -8,7 +8,7 @@
       <div style="color:#999999;font-size: 12px;">
         <span v-if="type===0">Banner</span>
         <span v-if="type===1">Native</span>
-        <span v-if="type===2">RewardedVideo</span>
+        <span v-if="type===2">Rewarded Video</span>
         <span v-if="type===3">Interstitial</span>
         <a-divider type="vertical" />
         <span style="margin-left:-2px;">{{ id }}</span>

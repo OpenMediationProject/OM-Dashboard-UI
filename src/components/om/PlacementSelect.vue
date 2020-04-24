@@ -5,6 +5,7 @@
     style="width: 256px;position: absolute;right: 0;z-index: 100;top: 12px;"
     :dropdownMatchSelectWidth="false"
     @change="handleChange"
+    :showArrow="false"
     optionLabelProp="title"
     v-model="selectePlc"
   >

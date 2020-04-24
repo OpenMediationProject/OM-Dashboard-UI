@@ -677,7 +677,4 @@ export default {
   line-height: 1.5;
   margin-bottom: -20px;
 }
-.row-edit >>> .ant-form-item-control {
-  line-height: 0;
-}
 </style>

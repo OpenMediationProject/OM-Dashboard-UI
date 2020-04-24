@@ -6,14 +6,14 @@
       <a-tabs class="mytabs" :tabBarStyle="{ backgroundColor: '#F7F7F7', marginLeft: '16px', marginTop: '-12px'}" defaultActiveKey="1" @change="callback">
         <span slot="tabBarExtraContent">
         </span>
-        <a-tab-pane tab="Waterfall" key="1" style="margin-top: 16px;">
-          <a-row type="flex" justify="start" style="height: 50px;margin-top: 7px;margin-bottom: 5px;">
+        <a-tab-pane tab="Waterfall" key="1" style="margin-top: 8px;">
+          <a-row type="flex" justify="start" style="height: 44px;">
             <a-form-item>
               <RegionsSelect @change="regoinsSelectedId" size="default" style="margin-top:2px;width:260px;" />
             </a-form-item>
             <a-form-item>
               <span class="table-page-search-submitButtons">
-                <a-button type="primary" style="margin-right:12px;margin-left:12px;" ghost @click="listSearch">Apply</a-button>
+                <a-button type="primary" style="margin-right:8px;margin-left:8px;" ghost @click="listSearch">Apply</a-button>
                 <a-button type="primary" ghost @click="resetSearch">Clear</a-button>
               </span>
             </a-form-item>
@@ -117,7 +117,7 @@
           </a-spin>
         </a-tab-pane>
         <a-tab-pane tab="Settings" class="water-fall" key="2" forceRender style="height:600px;">
-          <a-card class="card-noline" style="height:270px;background:#FFFFFF; margin-top:16px;" title="Waterfall Settings" :bordered="false">
+          <a-card class="card-noline" style="height:270px;background:#FFFFFF; margin-top:8px;" title="Waterfall Settings" :bordered="false">
             <om-form label="Batch Size" field="batchSize" tip="Batch Size">
               <a-input-number
                 style="width:100%"
@@ -146,7 +146,7 @@
                 v-decorator="['inventoryCount', { rules: [{ required: true, message: 'Pool Size can not be empty.'}] }]"/>
             </om-form>
           </a-card>
-          <a-card style="margin-top:16px;background:#FFFFFF" :bordered="false">
+          <a-card style="margin-top:8px;background:#FFFFFF" :bordered="false">
             <span
               slot="title"
               style="color: rgba(0, 0, 0, 0.85);font-weight: 500;font-size: 16px;">Audience Segment Automation <a-switch style="margin-left:100px;" disabled checkedChildren="√" unCheckedChildren="X" :defaultChecked="false" /> <span style="font-weight:300">Disable</span></span>
@@ -506,35 +506,35 @@ export default {
 </script>
 
 <style type="less" scoped>
-.ant-table-wrapper {
-  padding: 16px;
-}
-.ant-card {
-  background-color: #F7F7F7
-}
-.mytabs >>> .ant-tabs-nav-container {
-  font-size: 18px;
-  color: #333333;
-}
-.mytabs >>> .ant-tabs-top-bar{
-  width: 250px;
-}
-.ant-table-wrapper {
-  padding: 0px;
-}
-.water-fall >>> .ant-card-head-wrapper {
-  margin-left: -8px;
-}
-.mytabs >>> .ant-tabs-nav-wrap {
-  margin-left: -8px;
-}
-.button-div {
-  text-align: center;
-  bottom: 0;
-  z-index: 100;
-  position: fixed;
-  width: 100%;
-  height: 100px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.6) 32.36%, #ffffff 100%);
-}
+  .ant-table-wrapper {
+    padding: 16px;
+  }
+  .ant-card {
+    background-color: #F7F7F7
+  }
+  .mytabs >>> .ant-tabs-nav-container {
+    font-size: 18px;
+    color: #333333;
+  }
+  .mytabs >>> .ant-tabs-top-bar{
+    width: 250px;
+  }
+  .ant-table-wrapper {
+    padding: 0px;
+  }
+  .water-fall >>> .ant-card-head-wrapper {
+    margin-left: -8px;
+  }
+  .mytabs >>> .ant-tabs-nav-wrap {
+    margin-left: -8px;
+  }
+  .button-div {
+    text-align: center;
+    bottom: 0;
+    z-index: 100;
+    position: fixed;
+    width: 100%;
+    height: 100px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.6) 32.36%, #ffffff 100%);
+  }
 </style>

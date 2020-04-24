@@ -7,7 +7,7 @@
         :style="{ padding: '0' }">
         <div v-if="mode === 'sidemenu'" class="header">
           <span style="position:absolute;width:256px;background: #B02D13;height: 64px;margin-top:-1px;">
-            <img src="/logo-red.svg" style="margin-top:-1px;" />
+            <img src="/om-logo.svg" style="margin-top:-1px;" />
           </span>
           <span id="global_title" class="title" style="margin-left: 296px;">{{ $route.meta.headTitle || $route.meta.title }}</span>
           <user-menu></user-menu>

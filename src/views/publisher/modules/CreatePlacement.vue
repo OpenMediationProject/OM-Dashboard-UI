@@ -1,11 +1,7 @@
 <!-- Placement edit router '/publisher/placement/add' -->
 <template>
-  <div>
-    <div class="button-div">
-      <a-button v-if="this.$route.query.type === 'Edit'" type="primary" class="save-button" v-action:edit @click="createPlacement">Save</a-button>
-      <a-button v-else-if="this.$route.query.type === 'Add'" type="primary" class="save-button" v-action:add @click="createPlacement">Add</a-button>
-      <a-button v-else type="primary" class="save-button" @click="close">OK</a-button>
-    </div>
+  <div class="plcedit">
+    <a v-action:edit @click="createPlacement" style="position: absolute;right: 50px;top: 80px;"><img width="24px" src="/icon/save.svg" /></a>
     <a-form :form="form">
       <a-card :bordered="false" >
         <a-tabs :activeKey="activeKey" class="createplacement" style="margin-left:14px;" @change="tabClickHandler">
@@ -80,103 +76,21 @@
               </om-form>
             </div>
           </a-tab-pane>
+          <a-tab-pane tab="Instances" key="4" :style="{height: height}">
+            <instance-edit v-if="placementId" />
+            <a-card v-else :bordered="false" style="margin: 16px 16px 0;">
+              <a-alert
+                style="margin-right:16px;"
+                message="Notice"
+                description="An instance can only be added/edited AFTER the placement had been created, Please finish the process of add placement first."
+                type="info"
+                showIcon
+              />
+            </a-card>
+          </a-tab-pane>
           <a-tab-pane tab="Scenes" key="2" forceRender :style="{height: height}">
-            <a-card v-if="mdl.adType === 2 || mdl.adType ===3" :bordered="false" style="margin: 16px 16px 0;margin-left: 0px;">
-              <div class="table-page-search-wrapper" v-if="canEdit">
-                <a-row :gutter="48">
-                  <a-col>
-                    <span class="table-page-search-submitButtons" :style="{ float: 'right', overflow: 'hidden' } || {} ">
-                      <a-button type="primary" ghost @click="handleAddSence()">Add Scene</a-button>
-                    </span>
-                  </a-col>
-                </a-row>
-              </div>
-              <a-table
-                class="ant-card-table-default-noshadow"
-                style="margin-bottom:64px;"
-                ref="table"
-                rowKey="id"
-                fixed="true"
-                :dataSource="data"
-                :scroll="{ y: 420 }"
-                :expandedRowKeys="curExpandedRowKeys"
-                :columns="columns"
-                :expandIconAsCell="false"
-                :expandIconColumnIndex="-1"
-                :pagination="false"
-              >
-                <p slot="expandedRowRender" slot-scope="record" style="margin: 0">
-                  <a-form-item
-                    label="Frequency Cap"
-                    :colon="false"
-                    style="margin-bottom: 0px;"
-                    :labelCol="{lg: { span: 10 }, sm: { span: 10 }}"
-                    :wrapperCol="{lg: { span: 10 }, sm: { span: 10 } }">
-                    Limit to <a-input-number
-                      type="number"
-                      size="small"
-                      :min="0"
-                      :max="9999"
-                      style="width:66px;"
-                      v-decorator="[record.id+'frequencyCap',{initialValue: record.frequencyCap}]"/> impressions per
-                    <a-input-number
-                      type="number"
-                      size="small"
-                      :min="1"
-                      :max="24"
-                      style="width:50px;"
-                      v-decorator="[record.id+'frequencyUnit',{initialValue: record.frequencyUnit}]"/> hour(s)
-                  </a-form-item>
-                  <a-form-item
-                    style="margin-bottom: 0px;"
-                    label="Pacing"
-                    :colon="false"
-                    :labelCol="{lg: { span: 10 }, sm: { span: 10 }}"
-                    :wrapperCol="{lg: { span: 10 }, sm: { span: 10 } }">
-                    Show a maximun ad 1ad per <a-input-number
-                      type="number"
-                      size="small"
-                      :min="0"
-                      :max="1440"
-                      style="width:66px;"
-                      v-decorator="[record.id+'frequencyInterval',{initialValue: record.frequencyInterval}]"/> minute(s)
-                  </a-form-item>
-                </p>
-                <span slot="frequencyCap" slot-scope="text, record">
-                  <span :style="record.status===0 ? 'opacity: 0.3;' : null" v-if="record.frequencyCap===0 &&record.frequencyInterval===0">
-                    <a-icon class="expand-icon" @click="handleExpand(record)" :type="record.expandStatus ? 'minus':'plus'" /> All
-                  </span>
-                  <span v-else>
-                    <div :style="record.status===0 ? 'opacity: 0.3;' : null">
-                      <div style="margin-top:-5px;"><a-icon class="expand-icon" @click="handleExpand(record)" :type="record.expandStatus ? 'minus':'plus'" />Frequency Cap: <span style="color:#1890ff;">{{ record.frequencyCap }} impr / {{ record.frequencyUnit }} h</span><br></div>
-                      <div style="margin-top:5px;"><span style="margin-left:24px;">Pacing: <span style="color:#1890ff;">1 ads / {{ record.frequencyInterval }} min</span></span></div>
-                    </div>
-                  </span>
-                </span>
-                <span slot="status" slot-scope="text, record">
-                  <template>
-                    <div v-if="record.expandStatus">
-                      <a herf="#" @click="handleSceneSave(record)">Save</a>
-                      <a-divider type="vertical" />
-                      <a herf="#" @click="handleCancel(record)">Cancel</a>
-                    </div>
-                    <div v-else>
-                      <a herf="#" @click="handleExpand(record)">Edit</a>
-                      <a-divider type="vertical" />
-                      <a herf="#" @click="handelSceneStatusUpdate(record)">{{ text===0?'Enable' : 'Disable' }}</a>
-                    </div>
-                  </template>
-                </span>
-                <span slot="name" slot-scope="text, record">
-                  <a-form-item v-if="record.expandStatus" :style="record.status===0 ? 'opacity: 0.3;' : null">
-                    <a-input
-                      placeholder="scene name"
-                      v-decorator="[record.id+'name',{initialValue: record.name,rules: [{ required: true, message: '.' }]}]"
-                    />
-                  </a-form-item>
-                  <span :style="record.status===0 ? 'opacity: 0.3;' : null" v-else >{{ text }}</span>
-                </span>
-              </a-table>
+            <a-card v-if="mdl.adType === 2 || mdl.adType ===3" :bordered="false" style="margin: 16px 16px 0;margin-left: 8px;margin-right: 24px;">
+              <ScenesEdit :list="this.data" />
             </a-card>
             <a-card v-else :bordered="false" style="margin: 16px 16px 0;">
               <a-alert
@@ -284,76 +198,54 @@
 </template>
 
 <script>
-import { modelSearch, brandSearch, placementGet, placementUpdate,
-  placementCreate, placementScenesUpdate, placementScenesCreate } from '@/api/publisher'
+import { modelSearch, brandSearch, placementGet, placementUpdate, placementCreate } from '@/api/publisher'
 import OmForm from '@/components/OmForm'
+import InstanceEdit from './InstanceEdit'
+import ScenesEdit from './ScenesEdit'
 
 export default {
   name: 'CreatePlacement',
   components: {
-    OmForm
+    OmForm,
+    InstanceEdit,
+    ScenesEdit
   },
   data () {
-    const columns = [
-      {
-        title: 'Name',
-        dataIndex: 'name',
-        width: '400px',
-        sorter: (a, b) => {
-          return a.name.localeCompare(b.name)
-        },
-        scopedSlots: { customRender: 'name' }
-      },
-      {
-        title: 'Traffic Control',
-        dataIndex: 'frequencyCap',
-        scopedSlots: { customRender: 'frequencyCap' }
-      },
-      {
-        title: 'Operations',
-        dataIndex: 'status',
-        width: '150px',
-        scopedSlots: { customRender: 'status' }
-      }
-    ]
-    if (!this.$auth('placement.edit') && !this.$auth('placement.add')) {
-      columns.pop()
-    }
     return {
       labelCol: { lg: { span: 4 }, sm: { span: 4 } },
       wrapperCol: { lg: { span: 19 }, sm: { span: 19 } },
       form: this.$form.createForm(this),
-      params: {},
       name: '',
       height: '500px',
       count: -100,
       activeKey: '1',
-      canEdit: this.$auth('placement.edit') || this.$auth('placement.add'),
       mdl: { pubAppId: this.$store.state.publisher.searchApp, name: '', frequencyCap: 0, frequencyUnit: 1, frequencyInterval: 0, adType: this.$route.params.type === 'Edit' ? null : 1, modelType: 'include', brandType: 'include' },
       placementId: this.$route.query.placementId,
-      curExpandedRowKeys: [],
-      currentExpandedStatOpen: false,
       data: [],
       deviceData: [],
       editType: this.$route.query.type,
       lastFetchId: 0,
       value: [],
-      fetching: false,
-      columns: columns
+      fetching: false
     }
   },
   mounted () {
-    this.height = (window.innerHeight - 240) + 'px'
+    this.height = (window.innerHeight - 209) + 'px'
     if (this.placementId > 0) {
       placementGet({ placementId: this.$route.query.placementId })
         .then(res => {
-          this.mdl = Object.assign(this.mdl, res.data)
-          this.form.setFieldsValue({ mdl: this.mdl })
-          this.arraySort(res.data.scenes)
-          res.data.scenes.forEach(item => {
-            item.expandStatus = false
-          })
-          this.data = res.data.scenes
+          if (res.data) {
+            this.mdl = Object.assign(this.mdl, res.data)
+            this.form.setFieldsValue({ mdl: this.mdl })
+            if (res.data.scenes) {
+              this.arraySort(res.data.scenes)
+              res.data.scenes.forEach(item => {
+                item.expandStatus = false
+                item.editStatus = false
+              })
+              this.data = res.data.scenes
+            }
+          }
         })
     } else {
       this.form.setFieldsValue({ mdl: this.mdl })
@@ -372,101 +264,6 @@ export default {
       if (!this.placementId) {
         this.mdl.adType = type
       }
-    },
-    handleSceneSave (record) {
-      const { form: { validateFields } } = this
-      const that = this
-      validateFields((err, values) => {
-        if (!err) {
-          const item = { ...record }
-          item.name = values[record.id + 'name']
-          item.frequencyCap = values[record.id + 'frequencyCap']
-          item.frequencyInterval = values[record.id + 'frequencyInterval']
-          item.frequencyUnit = values[record.id + 'frequencyUnit']
-          if (record.createNew) {
-            item.placementId = that.placementId
-            placementScenesCreate(item).then(res => {
-              if (res.code === 0) {
-                Object.assign(record, res.data)
-                record.expandStatus = false
-                record.createNew = false
-                // remove temp data from table
-                this.handleExpand(item)
-                this.$message.success(`create scene success`)
-              } else {
-                this.$message.error(`create scene error`)
-              }
-            })
-          } else {
-            placementScenesUpdate(item).then(res => {
-              if (res.code === 0) {
-                this.$message.success(`update scene success`)
-                Object.assign(record, item)
-                this.handleExpand(record)
-              } else {
-                this.$message.error(`update scene error`)
-              }
-            })
-          }
-        }
-      })
-    },
-    handleExpand (record) {
-      record['expandStatus'] = !record['expandStatus']
-      this.currentExpandedStatOpen = !this.currentExpandedStatOpen
-      if (this.curExpandedRowKeys.length > 0) {
-        const index = this.curExpandedRowKeys.indexOf(record.id)
-        if (index > -1) {
-          this.curExpandedRowKeys.splice(index, 1)
-        } else {
-          this.curExpandedRowKeys.push(record.id)
-        }
-      } else {
-        this.curExpandedRowKeys.push(record.id)
-      }
-    },
-    handleCancel (record) {
-      if (record.createNew) {
-        this.data.splice(this.data.findIndex(item => item.id === record.id), 1)
-      }
-      this.handleExpand(record)
-    },
-    handelSceneStatusUpdate (record) {
-      placementScenesUpdate(Object.assign(record, { status: record.status === 0 ? 1 : 0 }))
-        .then(res => {
-          if (res.code === 0) {
-            this.$message.success(`update success`)
-          } else {
-            this.$message.error(res.msg)
-          }
-        })
-    },
-    handleAddSence () {
-      const newItem = {
-        id: this.count,
-        name: '',
-        expandStatus: true,
-        frequencyCap: 0,
-        frequencyUnit: 1,
-        frequencyInterval: 0,
-        createNew: true
-      }
-      this.count = this.count - 1
-      this.data.unshift(newItem)
-      this.currentExpandedStatOpen = true
-      if (this.curExpandedRowKeys.length > 0) {
-        const index = this.curExpandedRowKeys.indexOf(newItem.id)
-        if (index > -1) {
-          this.curExpandedRowKeys.splice(index, 1)
-        } else {
-          this.curExpandedRowKeys.push(newItem.id)
-        }
-      } else {
-        this.curExpandedRowKeys.push(newItem.id)
-      }
-      this.$vnode.elm.querySelectorAll('.ant-table-body').forEach(node => {
-        node.scrollTop = 0
-      })
     },
     close () {
       this.$router.push('/publisher/placement/list')
@@ -558,13 +355,15 @@ export default {
       this.activeKey = val
     },
     arraySort (list) {
-      list = list.sort((a, b) => {
-        if (a.status === b.status) {
-          return b.createTime - a.createTime
-        } else {
-          return b.status - a.status
-        }
-      })
+      if (list && list.length) {
+        list = list.sort((a, b) => {
+          if (a.status === b.status) {
+            return b.createTime - a.createTime
+          } else {
+            return b.status - a.status
+          }
+        })
+      }
     }
   }
 }
@@ -676,22 +475,21 @@ form .has-feedback .ant-input {
 .ant-form-item {
   margin-bottom: 0px;
 }
-.button-div {
-  bottom: 0px;
-  z-index: 100;
-  position: fixed;
-  width: 100%;
-  height: 100px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.6) 32.36%, #ffffff 100%);
-}
-.save-button {
-  bottom: 36px;
-  z-index: 100;
-  width: 168px;
-  left: 51%;
-  position: inherit;
-}
 .ant-form-item {
   margin-bottom: 0px;
+}
+.plcedit >>> .ant-card-head-title {
+  margin-left: -8px;
+  margin-top: -6px;
+}
+.plcedit >>> .ant-card-head {
+  height: 48px;
+}
+.plcedit >>> .ant-form-item {
+  margin-bottom: 0;
+}
+.plcedit >>> .ant-form-explain, .ant-form-extra {
+  line-height: 1.5;
+  margin-bottom: -20px;
 }
 </style>

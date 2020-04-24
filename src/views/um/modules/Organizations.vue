@@ -135,6 +135,7 @@ export default {
       form: this.$form.createForm(this),
       canAdd: this.$auth('um_orgs.add'),
       canEdit: this.$auth('um_orgs.edit'),
+      count: -1,
       params: {},
       name: '',
       curExpandedRowKeys: [],
@@ -238,9 +239,8 @@ export default {
       }
     },
     addOrganizations () {
-      const count = Object.keys(this.data).length + 1
       const newItem = {
-        id: count,
+        id: this.count,
         name: '',
         expandStatus: true,
         email: '',
@@ -249,6 +249,7 @@ export default {
         phone: '',
         createNew: true
       }
+      this.count--
       this.data.unshift(newItem)
       this.currentExpandedStatOpen = true
       if (this.curExpandedRowKeys.length > 0) {

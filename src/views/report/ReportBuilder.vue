@@ -26,7 +26,7 @@
         </span>
         <span slot="dataSource" slot-scope="v,row">
           <a-form-item v-if="row.editing">
-            <a-select :showArrow="true" v-model="row.dataSource">
+            <a-select :showArrow="false" v-model="row.dataSource">
               <a-select-option v-for="(name, i) in dataSourceArray" :key="i" v-if="i">{{ name }}</a-select-option>
             </a-select>
           </a-form-item>
@@ -44,6 +44,7 @@
               :options="scheduleOptions"
               v-model="row.schedule"
               :allowClear="false"
+              :showArrow="false"
               expandTrigger="hover"
               :changeOnSelect="true"
               @change="val => handleScheduleChange(val,row)"/>
@@ -91,8 +92,8 @@
               <a-col :span="24 / dimensions[row.dataSource].length" v-for="(item,i) in dimensions[row.dataSource]" :key="i">
                 <a-select
                   :placeholder="'Column'+(i+1)"
-                  :showArrow="true"
                   :allowClear="true"
+                  :showArrow="false"
                   :disabled="!row.editing"
                   :value="row.dimensions[i]"
                   @change="val => handleDimensionChange(val, i, row)">
@@ -108,6 +109,7 @@
                 <a-select
                   v-if="row.dimensions[i] === 'day'"
                   placeholder="Date"
+                  :showArrow="false"
                   v-model="row.condDayPeriod"
                   :disabled="!row.editing || row.schedule[0] === 3">
                   <a-select-option v-for="(days, name) in dateOptions" :key="days">{{ name }}</a-select-option>

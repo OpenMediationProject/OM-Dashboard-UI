@@ -36,8 +36,8 @@
               <div v-if="record.expandStatus">
                 <a herf="#" @click="handleUserSave(record)">Save</a>
                 <a-divider type="vertical" />
-                <a herf="#" v-if="record.roleId!==1 && record.roleId!==20" @click="handleAddUserApp(record)">Add App</a>
-                <a-divider v-if="record.roleId!==1 && record.roleId!==20" type="vertical" />
+                <a herf="#" v-if="record.roleId!==1 && record.roleId!==20 && currentUserRole===20" @click="handleAddUserApp(record)">Add App</a>
+                <a-divider v-if="record.roleId!==1 && record.roleId!==20 && currentUserRole===20" type="vertical" />
                 <a herf="#" @click="handleUserCancel(record)">Cancel</a>
                 <span style="float:right" v-if="!record.expandStatus" @click="handleOpen(record)" ><img src="/assets/down.svg"/></span>
                 <span style="float:right" v-else @click="handleOpen(record)"><img src="/assets/up.svg"/></span>
@@ -158,7 +158,7 @@
           </span>
           <span slot="operation" slot-scope="text, item" v-if="record.expandStatus">
             <template>
-              <div v-if="canEdit">
+              <div v-if="canEdit && currentUserRole===20">
                 <a-popconfirm title="Are you really sure？" okText="Yes" cancelText="No" @confirm="handelAppDelete(item,record)">
                   <a herf="#">Remove</a>
                 </a-popconfirm>

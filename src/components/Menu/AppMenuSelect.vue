@@ -134,7 +134,11 @@ export default {
     },
     dropdownVisibleChange (e) {
       if (this.lock) return false
-      this.$emit('appChange', 'visible')
+      let empty = false
+      if (!this.tempOption || !this.tempOption.length) {
+        empty = true
+      }
+      this.$emit('appChange', 'visible', empty)
     },
     inputSearch (e) {
       const v = e.target.value

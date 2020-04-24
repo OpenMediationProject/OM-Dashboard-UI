@@ -43,7 +43,7 @@
       </div>
     </a-form>
     <div class="button-div">
-      <a-button type="primary" style="bottom: -40px;width: 168px;" @click="nextStep()">Start</a-button>
+      <a-button type="primary" style="bottom: -40px;width: 168px;" v-action:add @click="nextStep()">Start</a-button>
     </div>
     <a-spin :spinning="loading" style="width:100%; height: 80%">
     </a-spin>

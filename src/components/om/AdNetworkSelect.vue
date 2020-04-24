@@ -8,11 +8,11 @@
       :size="size"
       :disabled="disabled"
       :allowClear="true"
+      :showArrow="false"
       mode="multiple"
       optionLabelProp="title"
       :maxTagCount="1"
       :maxTagPlaceholder="(h,vm) => '+' + (vm.value.length - 1)"
-      :showArrow="true"
       v-decorator="[name, {initialValue: initValue}]"
       @change="handleChange">
       <a-select-option v-for="adn in optionList" :key="adn.id" :title="adn.className">

@@ -5,7 +5,7 @@
       <a-form layout="inline">
         <a-row :gutter="48">
           <a-col v-action:add>
-            <span class="table-page-search-submitButtons" :style="{ float: 'right', overflow: 'hidden', marginTop: '12px', marginBottom: '12px' } || {} ">
+            <span class="table-page-search-submitButtons" :style="{ float: 'right', overflow: 'hidden', marginTop: '12px', marginBottom: '8px' } || {} ">
               <a-button type="primary" size="default" @click="addApp()">Add App</a-button>
             </span>
           </a-col>
@@ -53,7 +53,7 @@
           </div>
         </span>
         <span :style="record.status===0 ? 'opacity: 0.3;' : null" slot="placementSummary" slot-scope="text, record">
-          <a-tag v-if="text && text.RewardedVideo">RewardedVideo x {{ text.RewardedVideo }}</a-tag>
+          <a-tag v-if="text && text.RewardedVideo">Rewarded Video x {{ text.RewardedVideo }}</a-tag>
           <a-tag v-if="text && text.Interstitial">Interstitial x {{ text.Interstitial }}</a-tag>
           <a-tag v-if="text && text.Native">Native x {{ text.Native }}</a-tag>
           <a-tag v-if="text && text.Banner">Banner x {{ text.Banner }}</a-tag>
@@ -184,7 +184,7 @@ export default {
     },
     handleEdit (record) {
       const status = record.status === 0 ? 1 : 0
-      updateApp(Object.assign(record, { status: status }))
+      updateApp({ id: record.id, status })
         .then(res => {
           if (res.code === 0) {
             record.status = status

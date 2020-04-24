@@ -3,7 +3,7 @@
   <div>
     <div class="table-page-search-wrapper">
       <a-form>
-        <a-row type="flex" justify="start" style="height: 50px;margin-top: 7px;margin-bottom: 5px;">
+        <a-row type="flex" justify="start" style="height: 44px;margin-top: 7px;">
           <a-form-item style="margin-right:8px;">
             <a-select
               style="width:220px;"
@@ -99,7 +99,7 @@ const adTypeMap = {
   },
   2: {
     adType: 0,
-    text: 'RewardedVideo'
+    text: 'Rewarded Video'
   },
   3: {
     adType: 0,

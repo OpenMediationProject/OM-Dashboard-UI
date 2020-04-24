@@ -1,6 +1,6 @@
 <template>
   <span :style="status===0 ? 'opacity: 0.3;' : null" >
-    <a-tag v-if="adTypes && adTypes.indexOf('RewardedVideo')>-1">RewardedVideo</a-tag>
+    <a-tag v-if="adTypes && adTypes.indexOf('RewardedVideo')>-1">Rewarded Video</a-tag>
     <a-tag v-if="adTypes && adTypes.indexOf('Interstitial')>-1">Interstitial</a-tag>
     <a-tag v-if="adTypes && adTypes.indexOf('Native')>-1">Native</a-tag>
     <a-tag v-if="adTypes && adTypes.indexOf('Banner')>-1">Banner</a-tag>

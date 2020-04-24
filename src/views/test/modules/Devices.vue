@@ -1,7 +1,7 @@
 <template>
   <div>
     <a-form :form="form">
-      <a-row type="flex" justify="start" style="height: 50px;margin-top: 7px;margin-bottom: 5px;">
+      <a-row v-action:edit type="flex" justify="start" style="height: 50px;margin-top: 7px;margin-bottom: 5px;">
         <a-form-item style="position:absolute; right:16px;" >
           <span class="table-page-search-submitButtons">
             <a-button type="primary" size="default" @click="addDevice()">Add Device</a-button>
@@ -19,7 +19,7 @@
           :columns="columns"
           :pagination="false"
         >
-          <span slot="status" slot-scope="text, record">
+          <span v-action:edit slot="status" slot-scope="text, record">
             <template>
               <div v-if="record.createNew">
                 <a herf="#" @click="handleSaveEdit(record)">add</a>

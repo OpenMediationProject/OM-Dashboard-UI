@@ -35,7 +35,6 @@
     <div class="ds-bottom">
       <a-select
         style="margin-bottom: 16px"
-        :showArrow="true"
         :value="bottom.dateRange"
         @change="handleRangeChange">
         <a-select-option :key="14">Last 7 days vs Previous 7 days</a-select-option>
@@ -373,6 +372,7 @@ export default {
 
   .ds-bottom {
     margin-top: 2px;
+    margin-bottom: 16px;
     background-color: white;
     padding: 16px;
     box-shadow: 0 0 0 rgba(221, 224, 228, 0.3), 0 0 4px rgba(221, 224, 228, 0.3);

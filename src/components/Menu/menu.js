@@ -75,7 +75,14 @@ export default {
       }
       this.openKeys = openKeys
     },
-    appChange (action) {
+    appChange (action, empty) {
+      if (empty) {
+        this.subMenuVisible = false
+        if (this.open) {
+          this.open = false
+        }
+        return false
+      }
       if (action === 'change' || action === 'visible') {
         this.subMenuVisible = true
         this.selectedKeys = ['/appdashboard']
