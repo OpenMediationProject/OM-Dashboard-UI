@@ -275,13 +275,13 @@ export default {
         if (!err) {
           that.mdl = Object.assign(that.mdl, that.form.getFieldsValue().mdl)
           if (that.mdl.brandList) {
-            const brandWhitelist = that.mdl.brandType === 'include' ? that.mdl.brandList.join(',') : null
-            const brandBlacklist = that.mdl.brandType === 'exclude' ? that.mdl.brandList.join(',') : null
+            const brandWhitelist = that.mdl.brandType === 'include' ? that.mdl.brandList.join('\n') : null
+            const brandBlacklist = that.mdl.brandType === 'exclude' ? that.mdl.brandList.join('\n') : null
             that.mdl = Object.assign(that.mdl, { 'brandWhitelist': brandWhitelist, 'brandBlacklist': brandBlacklist })
           }
           if (that.mdl.modelList) {
-            const modelWhitelist = that.mdl.modelType === 'include' ? that.mdl.modelList.join(',') : null
-            const modelBlacklist = that.mdl.modelType === 'exclude' ? that.mdl.modelList.join(',') : null
+            const modelWhitelist = that.mdl.modelType === 'include' ? that.mdl.modelList.join('\n') : null
+            const modelBlacklist = that.mdl.modelType === 'exclude' ? that.mdl.modelList.join('\n') : null
             that.mdl = Object.assign(that.mdl, { 'modelWhitelist': modelWhitelist, 'modelBlacklist': modelBlacklist })
           }
           if (this.placementId) {

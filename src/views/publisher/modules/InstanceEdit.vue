@@ -403,10 +403,10 @@ export default {
           item.frequencyCap = values[record.id + 'frequencyCap']
           item.frequencyInterval = values[record.id + 'frequencyInterval']
           item.frequencyUnit = values[record.id + 'frequencyUnit']
-          item.brandWhitelist = values[record.id + 'brandType'] === 'include' && values[record.id + 'brandList'] ? values[record.id + 'brandList'].join(',') : ''
-          item.brandBlacklist = values[record.id + 'brandType'] === 'exclude' && values[record.id + 'brandList'] ? values[record.id + 'brandList'].join(',') : ''
-          item.modelWhitelist = values[record.id + 'modelType'] === 'include' && values[record.id + 'modelList'] ? values[record.id + 'modelList'].join(',') : ''
-          item.modelBlacklist = values[record.id + 'modelType'] === 'exclude' && values[record.id + 'modelList'] ? values[record.id + 'modelList'].join(',') : ''
+          item.brandWhitelist = values[record.id + 'brandType'] === 'include' && values[record.id + 'brandList'] ? values[record.id + 'brandList'].join('\n') : ''
+          item.brandBlacklist = values[record.id + 'brandType'] === 'exclude' && values[record.id + 'brandList'] ? values[record.id + 'brandList'].join('\n') : ''
+          item.modelWhitelist = values[record.id + 'modelType'] === 'include' && values[record.id + 'modelList'] ? values[record.id + 'modelList'].join('\n') : ''
+          item.modelBlacklist = values[record.id + 'modelType'] === 'exclude' && values[record.id + 'modelList'] ? values[record.id + 'modelList'].join('\n') : ''
           item.hbStatus = values[record.id + 'hbStatus'] ? 1 : 0
           values.adnId = item.adnId
           values.pubAppId = that.$store.state.publisher.searchApp

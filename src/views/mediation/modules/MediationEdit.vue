@@ -220,10 +220,10 @@ export default {
           let ct = 0
           for (const i in that.conType) { ct |= (1 << that.conType[i]) }
           values.conType = ct
-          values.brandWhitelist = values.brandType === 'include' && values.brandList ? values.brandList.join(',') : ''
-          values.brandBlacklist = values.brandType === 'exclude' && values.brandList ? values.brandList.join(',') : ''
-          values.modelWhitelist = values.modelType === 'include' && values.modelList ? values.modelList.join(',') : ''
-          values.modelBlacklist = values.modelType === 'exclude' && values.modelList ? values.modelList.join(',') : ''
+          values.brandWhitelist = values.brandType === 'include' && values.brandList ? values.brandList.join('\n') : ''
+          values.brandBlacklist = values.brandType === 'exclude' && values.brandList ? values.brandList.join('\n') : ''
+          values.modelWhitelist = values.modelType === 'include' && values.modelList ? values.modelList.join('\n') : ''
+          values.modelBlacklist = values.modelType === 'exclude' && values.modelList ? values.modelList.join('\n') : ''
           if (!that.regions || that.regions.length === 0) {
             that.form.setFields({ 'regions': { value: null, errors: 'Regions can not be empty.' } })
             that.$message.error('Regions can not be empty.')
@@ -285,10 +285,10 @@ export default {
             let ct = 0
             for (const i in that.conType) { ct |= (1 << that.conType[i]) }
             values.conType = ct
-            values.brandWhitelist = values.brandType === 'include' && values.brandList ? values.brandList.join(',') : ''
-            values.brandBlacklist = values.brandType === 'exclude' && values.brandList ? values.brandList.join(',') : ''
-            values.modelWhitelist = values.modelType === 'include' && values.modelList ? values.modelList.join(',') : ''
-            values.modelBlacklist = values.modelType === 'exclude' && values.modelList ? values.modelList.join(',') : ''
+            values.brandWhitelist = values.brandType === 'include' && values.brandList ? values.brandList.join('\n') : ''
+            values.brandBlacklist = values.brandType === 'exclude' && values.brandList ? values.brandList.join('\n') : ''
+            values.modelWhitelist = values.modelType === 'include' && values.modelList ? values.modelList.join('\n') : ''
+            values.modelBlacklist = values.modelType === 'exclude' && values.modelList ? values.modelList.join('\n') : ''
             if (!that.regions || that.regions.length === 0) {
               that.form.setFields({ 'regions': { value: null, errors: 'Regions can not be empty.' } })
               that.$message.error('Regions can not be empty.')
