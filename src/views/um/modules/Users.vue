@@ -1,10 +1,10 @@
 <!-- User Management Users tab -->
 <template>
-  <a-form :form="form" :hideRequiredMark="true" autocomplete="off">
+  <a-form :form="form" class="ummange" :hideRequiredMark="true" autocomplete="off">
     <a-row type="flex" justify="start">
       <AppSelectSimple />
       <a-form-item>
-        <a-input size="default" placeholder="Email" autocomplete="off" style="width:224px;margin-left:8px;" v-decorator="['email']"/>
+        <a-input size="default" placeholder="Email" autocomplete="off" style="width:200px;margin-left:8px;" v-decorator="['email']"/>
       </a-form-item>
       <RoleSelect style="margin-left: 8px" />
       <a-form-item>
@@ -93,7 +93,7 @@
           <template>
             <a-form-item v-if="record.expandStatus && canEdit">
               <a-input
-                style="width:220px"
+                style="width:200px"
                 placeholder="email"
                 @input="selectEmail(record)"
                 v-decorator="[record.id + 'email',{initialValue: record.email,rules: [{ required: true, message: 'Email can not be empty.' }, {
@@ -545,5 +545,8 @@ export default {
 }
 </script>
 
-<style type="less">
+<style type="less" scoped>
+  .ummange >>> .ant-form-item {
+    margin-bottom: 4px;
+  }
 </style>

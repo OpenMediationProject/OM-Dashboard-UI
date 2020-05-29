@@ -45,7 +45,7 @@ export default {
     yAlias: String,
     yFormat: {
       type: String,
-      default: '0,0.0a'
+      default: '0,0.0'
     },
     groupBy: {
       type: [String, Function],
@@ -59,6 +59,9 @@ export default {
   },
   watch: {
     data (val, old) {
+      this.buildChart()
+    },
+    yColumn () {
       this.buildChart()
     }
   },
@@ -75,8 +78,10 @@ export default {
     }, children)
   },
   destroyed () {
-    this.chart.destroy()
-    this.chart = null
+    if (this.chart) {
+      this.chart.destroy()
+      this.chart = null
+    }
   },
   methods: {
     getColumnValue (d, x) {
@@ -100,7 +105,11 @@ export default {
         const xv = this.getColumnValue(d, x)
         const gv = this.getColumnValue(d, g)
         const yv = this.getColumnValue(d, y)
-        return { 'x': xv, 'g': String(gv), 'y': yv }
+        if (this.groupBy) {
+          return { 'x': xv, 'g': String(gv), 'y': yv }
+        } else {
+          return { 'x': xv, 'y': yv }
+        }
       })
     },
     buildChart () {
@@ -132,7 +141,10 @@ export default {
             y: { alias: this.yAlias || this.title || 'Value' }
           },
           legend: { marker: 'circle', offsetX: 0 },
-          padding: [40, 24, 30, 70]
+          padding: [40, 46, 30, 70]
+        }
+        if (this.groupBy) {
+          opts['seriesField'] = 'g'
         }
         for (const prop of ['height', 'legend', 'padding']) {
           if (this[prop]) {

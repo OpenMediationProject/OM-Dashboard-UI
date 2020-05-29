@@ -10,6 +10,7 @@
         <span v-if="type===1">Native</span>
         <span v-if="type===2">Rewarded Video</span>
         <span v-if="type===3">Interstitial</span>
+        <span v-if="type===4">Splash</span>
         <a-divider type="vertical" />
         <span style="margin-left:-2px;">{{ id }}</span>
       </div>

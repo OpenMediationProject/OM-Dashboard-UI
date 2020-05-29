@@ -14,18 +14,20 @@
       <om-report-date-picker/>
     </a-form>
 
-    <div style="background-color: white; margin-top: 16px; padding: 16px">
-      <a-select
-        showSearch
-        style="width:220px;margin-bottom: 16px;"
-        placeholder="Breakdown"
-        :showArrow="false"
-        optionLabelProp="title"
-        :defaultValue="chartGroupBy"
-        @change="handleDim4ChartChange">
-        <a-select-option v-for="o in dimList4Chart" :key="o.id" :title="o.title">{{ o.title }}</a-select-option>
-      </a-select>
-
+    <div style="background-color: white; margin-top: 8px; padding: 16px">
+      <div style="margin-bottom: 16px;">
+        <span style="font-size: 16px;color: #333333;font-weight:500;margin-right: 4px;">Breakdown by</span>
+        <a-dropdown :trigger="['click']">
+          <a class="ant-dropdown-link" style="font-size:16px;font-weight:bold;" @click="e => e.preventDefault()">
+            {{ chartGroupBreakdown }} <a-icon type="down" />
+          </a>
+          <a-menu slot="overlay">
+            <a-menu-item v-for="s in dimList4Chart" :key="s.id" :title="s.title">
+              <a href="javascript:;" @click="handleDim4ChartChange(s)">{{ s.title }}</a>
+            </a-menu-item>
+          </a-menu>
+        </a-dropdown>
+      </div>
       <a-row :gutter="16">
         <a-col :span="12">
           <om-report-chart
@@ -34,6 +36,7 @@
             :data="chartData"
             :height="248"
             x-column="day"
+            y-format="0,0.[00]a"
             y-column="impr"
             :group-by="chartGroupViewDim" />
         </a-col>
@@ -58,7 +61,7 @@
             :height="248"
             x-column="day"
             y-column="cost"
-            y-format="$0,0"
+            y-format="$0,0.00"
             :group-by="chartGroupViewDim" />
         </a-col>
         <a-col :span="12">
@@ -67,6 +70,7 @@
             :loading="loading"
             :data="chartData"
             :height="248"
+            y-format="0,0.[00]a"
             x-column="day"
             y-column="request"
             :group-by="chartGroupViewDim" />
@@ -77,32 +81,31 @@
     <div style="background-color: white; margin-top: 16px; padding: 16px">
       <a-select
         showSearch
-        style="width:240px;margin-bottom:16px;"
+        style="width:320px;margin-bottom:16px;"
         placeholder="Breakdown"
         mode="multiple"
-        :maxTagCount="1"
-        :allowClear="false"
+        :maxTagCount="2"
+        :allowClear="true"
         optionLabelProp="title"
         @change="handleDim4TableChange"
-        :value="table.dimension">
-        <a-select-option v-for="o in dimList4Table" :key="o.id" :title="o.title">{{ o.title }}</a-select-option>
+        :value="dimension">
+        <a-select-option v-for="o in dimList4Table" :key="o.id" :disabled="disabledField(o.id)" :title="o.title">{{ o.title }}</a-select-option>
       </a-select>
 
       <a-select
         showSearch
-        style="width:304px;margin:0 0 16px 16px;"
+        style="width:320px;margin:0 0 16px 16px;"
         placeholder="Metrics"
         mode="multiple"
         :maxTagCount="2"
         :allowClear="true"
-        :showArrow="false"
         optionLabelProp="title"
         @change="handleMetricsChange"
         :value="table.metric">
         <a-select-option v-for="(o, key) in supportedMetrics" :key="key" :title="o.title">{{ o.title }}</a-select-option>
       </a-select>
 
-      <a @click="handleDownload" style="float: right; margin-right: 16px" :disabled="table.data.length===0">CSV</a>
+      <a @click="handleDownload" style="float: right; margin-right: 16px;margin-top: 4px;" :disabled="table.data.length===0">CSV</a>
       <a-table
         v-if="table.data.length"
         class="ant-card-table-default"
@@ -110,12 +113,12 @@
         :loading="table.loading"
         :dataSource="table.data"
         :columns="table.columns"
+        @change="tableChange"
         row-key="id"
         :pagination="false"/>
       <div v-else class="performance_no_data">
         <div class="no_data">
-          <div>No data available</div>
-          <div>Try changing your filters</div>
+          <img src="/icon/empty.svg" />
         </div>
       </div>
     </div>
@@ -140,14 +143,16 @@ const supportedDimensions = {
   placementId: 'Placements',
   adnId: 'AdNetworks',
   pubAppId: 'Apps',
-  instanceId: 'Instance'
+  instanceId: 'Instance',
+  sceneId: 'Scenes'
 }
 
 const dimColumnMapper = {
   pubAppId: 'pubAppName',
   placementId: 'placementName',
   adnId: 'adnName',
-  instanceId: 'instanceName'
+  instanceId: 'instanceName',
+  sceneId: 'sceneName'
 }
 
 export default {
@@ -185,13 +190,15 @@ export default {
         readyRate: { title: 'Ad-Availability Rate', format: '0.00 %' }
       },
       dimList4Chart: this.filterDim('pubAppId', 'country', 'adnId'),
+      // dimList4Table: this.filterDim('day', 'country', 'pubAppId', 'placementId', 'adnId', 'instanceId', 'sceneId'),
       dimList4Table: this.filterDim('day', 'country', 'pubAppId', 'placementId', 'adnId', 'instanceId'),
       loading: false,
       chartGroupBy: 'pubAppId',
       chartData: [],
+      disableds: [],
+      dimension: ['day'],
       table: {
         loading: false,
-        dimension: ['day'],
         metric: ['impr', 'cost'],
         data: [],
         columns: []
@@ -205,9 +212,34 @@ export default {
   computed: {
     chartGroupViewDim () {
       return dimColumnMapper[this.chartGroupBy] || this.chartGroupBy
+    },
+    chartGroupBreakdown () {
+      return supportedDimensions[this.chartGroupBy] || this.chartGroupBy
+    }
+  },
+  watch: {
+    dimension (val) {
+      if (!val) {
+        this.disableds = []
+      }
+      if (this.dimension.includes('sceneId')) {
+        this.disableds = ['adnId', 'instanceId']
+      }
+      if (this.dimension.includes('adnId') || this.dimension.includes('instanceId')) {
+        this.disableds = ['sceneId']
+      }
+      if (!this.dimension.includes('sceneId') && !this.dimension.includes('instanceId') && !this.dimension.includes('adnId')) {
+        this.disableds = []
+      }
     }
   },
   methods: {
+    disabledField (key) {
+      return this.disableds.includes(key)
+    },
+    tableChange (pagination, filters, sorter) {
+      this.sorter = sorter
+    },
     filterDim (...ids) {
       return ids.map(id => {
         return { id, title: supportedDimensions[id] }
@@ -221,11 +253,11 @@ export default {
       this.reloadTable('dimension')
     },
     handleDim4ChartChange (dim) {
-      this.chartGroupBy = dim
+      this.chartGroupBy = dim.id
       this.reloadChart()
     },
     handleDim4TableChange (dim) {
-      this.table.dimension = dim
+      this.dimension = dim
       this.reloadTable('dimension')
     },
     handleMetricsChange (val) {
@@ -259,7 +291,7 @@ export default {
               this.metricFields.request = 'instanceRequest'
               this.metricFields.filled = 'instanceFilled'
             }
-            this.chartData = res.data.map(this.mapMetrics)
+            this.chartData = res.data.map(this.mapMetrics).sort((a, b) => (b.cost || 0) - a.cost || 0)
           }
         })
         .finally(_ => {
@@ -267,7 +299,8 @@ export default {
         })
     },
     reloadTable (triggerType) {
-      const { dimension, metric } = this.table
+      const { metric } = this.table
+      const dimension = this.dimension
       if (metric.length === 0) {
         this.table.columns = []
         this.table.data = []
@@ -311,7 +344,12 @@ export default {
                 this.metricFields.request = 'instanceRequest'
                 this.metricFields.filled = 'instanceFilled'
               }
-              this.table.data = res.data.map(this.mapMetrics)
+              this.table.data = res.data.map(this.mapMetrics).sort((a, b) => {
+                if (b.day) {
+                  return b.day.localeCompare(a.day)
+                }
+                return 0
+              })
             }
           })
           .finally(_ => {
@@ -322,10 +360,12 @@ export default {
     mapMetrics (row) {
       row.id = generateUUID()
 
-      row.request = row[this.metricFields.request]
-      row.filled = row[this.metricFields.filled]
-      row.click = row[this.metricFields.click]
-      row.impr = row[this.metricFields.impr]
+      row.request = row[this.metricFields.request] || 0
+      row.filled = row[this.metricFields.filled] || 0
+      row.click = row[this.metricFields.click] || 0
+      row.impr = row[this.metricFields.impr] || 0
+      row.ecpm = 0
+      row.ctr = 0
       row.fillRate = row.ctr = 0
       if (row.filled > 0) {
         row.fillRate = row.filled / row.request
@@ -340,16 +380,45 @@ export default {
       if (row.isReadyTrue > 0) {
         row.readyRate = row.isReadyTrue / row.isReady
       }
+      if (!row.country) {
+        row.country = '(Empty)'
+      }
+      if (!row.placementName) {
+        row.placementName = '(Empty)'
+      }
+      if (!row.pubAppName) {
+        row.pubAppName = '(Empty)'
+      }
+      if (!row.adnName) {
+        row.adnName = '(Empty)'
+      }
+      if (!row.instanceName) {
+        row.instanceName = '(Empty)'
+      }
+      if (!row.sceneName) {
+        row.sceneName = '(Empty)'
+      }
       return row
     },
     handleDownload () {
       const header = this.table.columns.map(col => col.title).join(',')
-      const data = this.table.data.map(row => {
+      let data = [...this.table.data]
+      const that = this
+      if (this.sorter) {
+        data = data.sort((a, b) => {
+          if (that.sorter.order === 'ascend') {
+            return (a[that.sorter.field] + '').localeCompare(b[that.sorter.field] + '')
+          } else {
+            return (b[that.sorter.field] + '').localeCompare(a[that.sorter.field] + '')
+          }
+        })
+      }
+      data = data.map(row => {
         return this.table.columns.map(col => {
           return row[col.dataIndex]
         }).join(',')
       }).join('\n')
-      const blob = new Blob([header + '\n' + data], { type: 'text/csv,charset=UTF-8' })
+      const blob = new Blob([new Uint8Array([0xef, 0xbb, 0xbf]), header + '\n' + data], { type: 'text/csv,charset=UTF-8' })
       const link = document.createElement('a')
       link.href = URL.createObjectURL(blob)
       link.download = 'download.csv'
@@ -367,7 +436,7 @@ export default {
     }
   }
   .performance_no_data {
-    background: #E5E7EA;
+    background: #FBFBFB;
     height: 176px;
     display: flex;
     justify-content: center;

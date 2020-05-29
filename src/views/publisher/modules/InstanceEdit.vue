@@ -9,16 +9,15 @@
             <a-button type="primary" style="margin-right:8px;margin-left:8px;" ghost @click="listSearch">Apply</a-button>
           </span>
         </a-form-item>
-        <a-form-item v-action:edit style="position:absolute; right:24px;">
+        <a-form-item v-action:edit v-if="canEdit" style="position:absolute; right:24px;">
           <span class="table-page-search-submitButtons" >
-            <a-button type="primary" ghost @click="instanceAdd">Add Instance</a-button>
+            <a-button type="primary" :disabled="this.curExpandedRowKeys.length > 0" ghost @click="instanceAdd">Add Instance</a-button>
           </span>
         </a-form-item>
       </a-row>
       <a-card :bordered="false" style="padding-left:8px;padding-right:24px;">
         <a-table
           class="ant-card-table-default-noshadow"
-          style="margin-top:8px;"
           ref="table"
           rowKey="id"
           :scroll="{ y: scroll }"
@@ -31,7 +30,13 @@
           :pagination="false"
         >
           <p slot="expandedRowRender" class="expand-row" slot-scope="record" :rowKey="record.id" style="margin: 0">
-            <CreateNetWorkApp v-if="currentAdn && record.editStatus" style="margin-top:24px;" :id="currentAdn.id" />
+            <CreateNetWorkApp
+              @authSuccess="authSuccess"
+              v-if="currentAdn && record.editStatus"
+              style="margin-top:24px;"
+              :form="form"
+              :edit="record.editStatus"
+              :id="currentAdn.id" />
             <a-divider v-if="currentAdn && record.editStatus"></a-divider>
             <a-form-item
               label="Header Bidding"
@@ -167,8 +172,8 @@
           </span>
           <span class="row-edit" slot="placementKey" slot-scope="text, record">
             <span :style="record.status===0 ? 'opacity: 0.3;' : null">
-              <a-form-item size="small" v-if="record.editStatus">
-                <a-input :placeholder="placementColumnName" style="line-height:0;margin-top:0px;" v-decorator="[record.id+'placementKey',{initialValue: record.placementKey, rules: [{ required: true, message: placementColumnName + ' can not be empty.' }, {validator: checkPlacementKey}]}]"/>
+              <a-form-item size="small" v-if="record.editStatus && record.adnId!==0">
+                <a-input :disabled="tempAdn < 0" :placeholder="placementColumnName" style="margin-top:0px;" v-decorator="[record.id+'placementKey',{initialValue: record.placementKey, rules: [{ required: true, message: placementColumnName + ' can not be empty.' }, {validator: checkPlacementKey}]}]"/>
               </a-form-item>
               <span v-else :title="record.id"><ellipsis :length="30" tooltip>{{ text }}</ellipsis></span>
             </span>
@@ -176,7 +181,7 @@
           <span class="row-edit" slot="name" slot-scope="text, record">
             <span :style="record.status===0 ? 'opacity: 0.3;' : null">
               <a-form-item size="small" v-if="record.editStatus">
-                <a-input placeholder="Instance name" maxlength="40" style="line-height:0;margin-top:0px;" v-decorator="[record.id+'name',{initialValue: record.name, rules: [{ required: true, message: 'Instance Name can not be empty.' }]}]"/>
+                <a-input placeholder="Instance name" maxlength="40" style="margin-top:0px;" v-decorator="[record.id+'name',{initialValue: record.name, rules: [{ required: true, message: 'Instance Name can not be empty.' }]}]"/>
               </a-form-item>
               <span v-else class="hb-bottom">
                 <om-text :text="text" />
@@ -209,7 +214,8 @@ import { Ellipsis } from '@/components'
 import OmText from '@/components/om/Text'
 import AdNetwork from '@/components/Mediation/AdNetwork'
 import ADNSelect from './ADNSelect'
-import CreateNetWorkApp from '../../mediation/modules/CreateNetworkApp'
+import CreateNetWorkApp from '@/views/appsetting/CreateNetworkApp'
+import { accountCreate } from '@/api/account'
 
 export default {
   name: 'InstanceEdit',
@@ -220,27 +226,28 @@ export default {
     OmText,
     AdNetwork,
     ADNSelect,
-    CreateNetWorkApp
+    CreateNetWorkApp,
+    accountCreate
   },
   data () {
-    const canEdit = this.$auth('adn.edit')
+    const canEdit = this.$auth('adn.edit') && this.$route.query.type !== 'Details'
     const columns = [
       {
         title: 'Ad Network',
         dataIndex: 'className',
-        width: '20%',
+        width: '25%',
         scopedSlots: { customRender: 'className' }
       },
       {
         title: 'Instance Name',
         dataIndex: 'name',
-        width: '30%',
+        width: '28%',
         scopedSlots: { customRender: 'name' }
       },
       {
         title: 'Unit ID',
         dataIndex: 'placementKey',
-        width: '30%',
+        width: '28%',
         scopedSlots: { customRender: 'placementKey' }
       },
       {
@@ -258,7 +265,8 @@ export default {
       form: this.$form.createForm(this),
       searchOption: {},
       currentAdn: null,
-      tempAdn: null,
+      tempAdn: -1,
+      canEdit,
       currentAdnAppId: null,
       curExpandedRowKeys: [],
       currentExpandedStatOpen: false,
@@ -268,6 +276,7 @@ export default {
       data: [],
       value: [],
       scroll: 200,
+      currentRecord: null,
       loading: false,
       deviceData: [],
       lastFetchId: 0,
@@ -311,6 +320,9 @@ export default {
         case 11:
           v = 'Placement Name'
           break
+        case 30:
+          v = 'Spot ID'
+          break
         default:
           v = 'Placement ID'
           break
@@ -338,7 +350,6 @@ export default {
     },
     handleOpen (record) {
       this.currentAdnAppId = null
-      record['expandStatus'] = !record['expandStatus']
       this.currentExpandedStatOpen = !this.currentExpandedStatOpen
       if (this.curExpandedRowKeys.length > 0) {
         const index = this.curExpandedRowKeys.indexOf(record.id)
@@ -370,7 +381,10 @@ export default {
       }
     },
     checkPlacementKey (rule, value, callback) {
-      if (!value) return
+      if (!value) {
+        callback(new Error(this.placementColumnName + ' can not empty.'))
+        return false
+      }
       const id = parseInt(rule.field.replace('placementKey', ''))
       let flag = true
       this.data.forEach(ins => {
@@ -382,7 +396,7 @@ export default {
       if (!flag) {
         return
       }
-      getInstance({ placementKey: value }).then(res => {
+      getInstance({ placementKey: value, pubAppId: this.pubAppId, adnId: this.tempAdn }).then(res => {
         if (res.data && res.data.length) {
           callback(new Error('This ' + this.placementColumnName + ' already exits.'))
         } else {
@@ -390,15 +404,16 @@ export default {
         }
       })
     },
-    handleInstanceSave (record) {
+    authSuccess (accountId) {
+      let record = this.data.find(item => item.id === this.curExpandedRowKeys[0])
       const { form: { validateFields } } = this
       const that = this
-      validateFields((err, values) => {
+      validateFields(async (err, values) => {
         if (!err) {
           const item = { ...record }
           item.name = values[record.id + 'name']
           item.adnId = values[record.id + 'adnId']
-          item.placementKey = values[record.id + 'placementKey']
+          item.placementKey = values[record.id + 'placementKey'] && values[record.id + 'placementKey'].trim()
           item.hbStatus = values[record.id + 'hbStatus'] || 0
           item.frequencyCap = values[record.id + 'frequencyCap']
           item.frequencyInterval = values[record.id + 'frequencyInterval']
@@ -410,10 +425,30 @@ export default {
           item.hbStatus = values[record.id + 'hbStatus'] ? 1 : 0
           values.adnId = item.adnId
           values.pubAppId = that.$store.state.publisher.searchApp
+          if (values.adnId === 11 && values['cb_left']) {
+            values.adnAppKey = values['cb_left'].trim() + '#' + values['cb_right'].trim()
+          }
+          if (values.adnId === 14 && values['mt_left']) {
+            values.adnAppKey = values['mt_left'].trim() + '#' + values['mt_right'].trim()
+          }
+          if (values.adnId === 1 && !values.adnAppId) {
+            values.authType = 1
+          } else {
+            values.authType = 2
+          }
+          if (values.adnAppKey) {
+            values.adnAppKey = values.adnAppKey.trim()
+          }
+          if (values.refreshToken) {
+            values.refreshToken = values.refreshToken.trim()
+          }
+          values.adnAccountId = 0
+          values.reportAccountId = accountId
           if (record.createNew) {
             item.adnAppId = record.adnAppId
             item.pubAppId = values.pubAppId
             if (!record.adnAppId && this.currentAdn) {
+              values.status = 1
               adNetworkAppCreate(values).then(res => {
                 if (res.code === 0) {
                   record.adnAppId = res.data.id
@@ -453,6 +488,7 @@ export default {
             }
           } else {
             if (this.currentAdn) {
+              values.status = 1
               adNetworkAppCreate(values).then(res => {
                 if (res.code === 0) {
                   record.adnAppId = res.data.id
@@ -485,6 +521,134 @@ export default {
               })
             }
           }
+        } else {
+          console.log(err)
+        }
+      })
+    },
+    handleInstanceSave (record) {
+      const { form: { validateFields } } = this
+      const that = this
+      validateFields(async (err, values) => {
+        if (!err) {
+          const item = { ...record }
+          item.name = values[record.id + 'name']
+          item.adnId = values[record.id + 'adnId']
+          item.placementKey = values[record.id + 'placementKey'] && values[record.id + 'placementKey'].trim()
+          item.hbStatus = values[record.id + 'hbStatus'] || 0
+          item.frequencyCap = values[record.id + 'frequencyCap']
+          item.frequencyInterval = values[record.id + 'frequencyInterval']
+          item.frequencyUnit = values[record.id + 'frequencyUnit']
+          item.brandWhitelist = values[record.id + 'brandType'] === 'include' && values[record.id + 'brandList'] ? values[record.id + 'brandList'].join('\n') : ''
+          item.brandBlacklist = values[record.id + 'brandType'] === 'exclude' && values[record.id + 'brandList'] ? values[record.id + 'brandList'].join('\n') : ''
+          item.modelWhitelist = values[record.id + 'modelType'] === 'include' && values[record.id + 'modelList'] ? values[record.id + 'modelList'].join('\n') : ''
+          item.modelBlacklist = values[record.id + 'modelType'] === 'exclude' && values[record.id + 'modelList'] ? values[record.id + 'modelList'].join('\n') : ''
+          item.hbStatus = values[record.id + 'hbStatus'] ? 1 : 0
+          values.adnId = item.adnId
+          values.pubAppId = that.$store.state.publisher.searchApp
+          if (values.adnId === 12 && values['cb_left']) {
+            values.adnAppKey = values['cb_left'].trim() + '#' + values['cb_right'].trim()
+          }
+          if (values.adnId === 14 && values['mt_left']) {
+            values.adnAppKey = values['mt_left'].trim() + '#' + values['mt_right'].trim()
+          }
+          if (values.adnAppKey) {
+            values.adnAppKey = values.adnAppKey.trim()
+          }
+          if (values.refreshToken) {
+            values.refreshToken = values.refreshToken.trim()
+          }
+          if (!record.adnAppId && this.currentAdn && !values.reportAccountId && ![3, 6].includes(values.adnId)) {
+            if (values.adnId === 2 && !values.adnAppId) {
+              values.authType = 1
+            } else {
+              values.authType = 2
+            }
+            values.adnAccountId = 0
+            const accountRes = await accountCreate(values)
+            if (accountRes.data) {
+              values.reportAccountId = accountRes.data.id
+            }
+          }
+          if (record.createNew) {
+            item.adnAppId = record.adnAppId
+            item.pubAppId = values.pubAppId
+            if (!record.adnAppId && this.currentAdn) {
+              values.status = 1
+              adNetworkAppCreate(values).then(res => {
+                if (res.code === 0) {
+                  record.adnAppId = res.data.id
+                  item.adnAppId = record.adnAppId
+                  instancesCreate(item).then(res => {
+                    if (res.code === 0) {
+                      record = Object.assign(record, res.data)
+                      record.expandStatus = false
+                      this.currentAdn = null
+                      this.handleOpen(item)
+                      this.listSearch()
+                      this.$refs.insselect.upload()
+                      this.$message.success(`create instance success`)
+                    } else {
+                      this.$message.error(`create instance error`)
+                    }
+                  })
+                } else {
+                  this.$message.error(`create adnetwork app error`)
+                }
+              })
+            } else {
+              item.adnAppId = this.currentAdnAppId
+              instancesCreate(item).then(res => {
+                if (res.code === 0) {
+                  record = Object.assign(record, res.data)
+                  record.expandStatus = false
+                  record.createNew = false
+                  this.handleOpen(item)
+                  this.listSearch()
+                  this.$refs.insselect.upload()
+                  this.$message.success(`create instance success`)
+                } else {
+                  this.$message.error(`create instance error`)
+                }
+              })
+            }
+          } else {
+            if (this.currentAdn) {
+              values.status = 1
+              adNetworkAppCreate(values).then(res => {
+                if (res.code === 0) {
+                  record.adnAppId = res.data.id
+                  item.adnAppId = record.adnAppId
+                  instancesUpdate(item).then(res => {
+                    if (res.code === 0) {
+                      record = Object.assign(record, item)
+                      this.currentAdn = null
+                      this.handleOpen(record)
+                      this.listSearch()
+                      this.$message.success(`update instance success`)
+                    } else {
+                      this.$message.error(`update instance error`)
+                    }
+                  })
+                } else {
+                  this.$message.error(`create adnetwork app error`)
+                }
+              })
+            } else {
+              instancesUpdate(item).then(res => {
+                if (res.code === 0) {
+                  record = Object.assign(record, item)
+                  this.handleOpen(record)
+                  this.listSearch()
+                  this.$message.success(`update instance success`)
+                } else {
+                  this.$message.error(`update instance error`)
+                }
+              })
+            }
+          }
+        } else {
+          console.log(err)
         }
       })
     },
@@ -513,9 +677,9 @@ export default {
         id: this.count,
         name: '',
         hbStatus: 0,
-        adnId: null,
+        adnId: -1,
         frequencyCap: 0,
-        status: 0,
+        status: 1,
         frequencyUnit: 1,
         frequencyInterval: 0,
         brandType: 'include',
@@ -601,22 +765,23 @@ export default {
                 })
               }
             })
-            this.data = res.data[0].instances
+            if (res.data) {
+              this.arraySort(res.data[0].instances)
+              this.data = res.data[0].instances
+            }
           }
         }).finally(() => {
           this.loading = false
         })
     },
     arraySort (list) {
-      for (const p of list) {
-        p.instances = p.instances.sort((a, b) => {
-          if (a.status === b.status) {
-            return b.createTime - a.createTime
-          } else {
-            return b.status - a.status
-          }
-        })
-      }
+      list = list.sort((a, b) => {
+        if (a.status === b.status) {
+          return b.createTime - a.createTime
+        } else {
+          return b.status - a.status
+        }
+      })
     },
     placementFilterOption (input, option) {
       return (

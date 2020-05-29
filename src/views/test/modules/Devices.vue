@@ -15,9 +15,10 @@
           rowKey="id"
           fixed="true"
           :dataSource="data"
-          :scroll="{ y: 500 }"
+          :scroll="{ y: scroll }"
           :columns="columns"
-          :pagination="false"
+          @change="tableChange"
+          :pagination="{current:current, hideOnSinglePage:true, showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} items`, change: (val) => this.current = current}"
         >
           <span v-action:edit slot="status" slot-scope="text, record">
             <template>
@@ -57,6 +58,40 @@
               </a-form-item>
             </template>
           </span>
+          <div
+            slot="filterDropdown"
+            slot-scope="{ setSelectedKeys, selectedKeys, confirm, clearFilters, column }"
+            style="padding: 8px"
+          >
+            <a-input
+              v-ant-ref="c => searchInput = c"
+              :placeholder="`Search ${column.dataIndex}`"
+              :value="selectedKeys[0]"
+              @change="e => setSelectedKeys(e.target.value ? [e.target.value] : [])"
+              @pressEnter="() => handleSearch(selectedKeys, confirm, column.dataIndex)"
+              style="width: 188px; margin-bottom: 8px; display: block;"
+            />
+            <a-button
+              type="primary"
+              @click="() => handleSearch(selectedKeys, confirm, column.dataIndex)"
+              icon="search"
+              size="small"
+              style="width: 90px; margin-right: 8px"
+            >Search</a-button
+            >
+            <a-button
+              @click="() => handleReset(clearFilters)"
+              size="small"
+              style="width: 90px"
+            >Reset</a-button
+            >
+          </div>
+          <a-icon
+            slot="filterIcon"
+            slot-scope="filtered"
+            type="search"
+            :style="{ color: filtered ? '#108ee9' : undefined }"
+          />
         </a-table>
       </div>
     </a-form>
@@ -78,18 +113,59 @@ export default {
       form: this.$form.createForm(this),
       data: [],
       count: -100,
+      scroll: 500,
       columns: [
         {
           title: 'Device Name',
           dataIndex: 'deviceName',
           width: '33%',
-          scopedSlots: { customRender: 'deviceName' }
+          scopedSlots: {
+            filterDropdown: 'filterDropdown',
+            filterIcon: 'filterIcon',
+            customRender: 'deviceName'
+          },
+          onFilter: (value, record) => {
+            if (record.id < 0) {
+              return true
+            }
+            if (!record.deviceName) {
+              return false
+            }
+            return record.deviceName.toString().toLowerCase().includes(value.toLowerCase())
+          },
+          onFilterDropdownVisibleChange: visible => {
+            if (visible) {
+              setTimeout(() => {
+                this.searchInput.focus()
+              }, 0)
+            }
+          }
         },
         {
           title: 'ID(IDFA/GAID)',
           dataIndex: 'deviceId',
           width: '33%',
-          scopedSlots: { customRender: 'deviceId' }
+          scopedSlots: {
+            filterDropdown: 'filterDropdown',
+            filterIcon: 'filterIcon',
+            customRender: 'deviceId'
+          },
+          onFilter: (value, record) => {
+            if (record.id < 0) {
+              return true
+            }
+            if (!record.deviceId) {
+              return false
+            }
+            return record.deviceId.toString().toLowerCase().includes(value.toLowerCase())
+          },
+          onFilterDropdownVisibleChange: visible => {
+            if (visible) {
+              setTimeout(() => {
+                this.searchInput.focus()
+              }, 0)
+            }
+          }
         },
         {
           title: 'Operations',
@@ -97,15 +173,33 @@ export default {
           width: '33%',
           scopedSlots: { customRender: 'status' }
         }
-      ]
+      ],
+      current: 1,
+      searchText: '',
+      searchInput: null,
+      searchedColumn: ''
     }
   },
   mounted () {
+    this.scroll = window.innerHeight - 270
     deviceList().then(res => {
       this.data = res.data
     })
   },
   methods: {
+    tableChange (pagination, filters, sorter) {
+      this.current = pagination.current
+    },
+    handleSearch (selectedKeys, confirm, dataIndex) {
+      confirm()
+      this.searchText = selectedKeys[0]
+      this.searchedColumn = dataIndex
+    },
+
+    handleReset (clearFilters) {
+      clearFilters()
+      this.searchText = ''
+    },
     addDevice () {
       const newItem = {
         id: this.count,
@@ -113,6 +207,7 @@ export default {
         deviceId: '',
         createNew: true
       }
+      this.tableChange({ current: 1 })
       this.count--
       this.data.unshift(newItem)
     },

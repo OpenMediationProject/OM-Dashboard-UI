@@ -1,19 +1,22 @@
 <template>
-  <a-card :bordered="false" :style="style">
-    <a-steps class="steps" :current="currentTab" style="max-width: 600px;margin-top:40px;margin-left: 250px;text-align:center;" >
-      <a-step title="Select Ad Network"/>
-      <a-step title="Submit your Ad records"/>
-    </a-steps>
-    <div class="content">
-      <step1 v-if="currentTab === 0" @nextStep="nextStep" @prevStep="prevStep"/>
-      <step2 v-if="currentTab === 1" @nextStep="nextStep" @prevStep="prevStep"/>
-    </div>
-  </a-card>
+  <div class="ts-border">
+    <a-card :bordered="false" :style="style">
+      <a-steps class="steps" :current="currentTab" style="max-width: 600px;margin-top:40px;margin-left: 23%;text-align:center;" >
+        <a-step title="Select Ad Network"/>
+        <a-step title="Submit your Ad records"/>
+      </a-steps>
+      <div class="content">
+        <step1 v-if="currentTab === 0" @nextStep="nextStep" @prevStep="prevStep"/>
+        <step2 v-if="currentTab === 1" @nextStep="nextStep" @prevStep="prevStep"/>
+      </div>
+    </a-card>
+  </div>
 </template>
 
 <script>
 import step1 from './Step1'
 import step2 from './Step2'
+import { devAppGet } from '@/api/sdk'
 
 export default {
   name: 'Step1',
@@ -23,6 +26,14 @@ export default {
   },
   created () {
     this.style = 'height:' + (window.innerHeight - 140) + 'px'
+    devAppGet({ pubAppId: this.$store.state.publisher.searchApp }).then(res => {
+      if (res.data) {
+        this.adnId = res.data.mediationId
+        this.adName = res.data.className
+        this.devAppId = res.data.id
+        this.currentTab = 1
+      }
+    })
   },
   data () {
     return {
@@ -36,10 +47,12 @@ export default {
       },
       form: this.$form.createForm(this),
       plat: 0,
+      adnId: null,
+      adName: '',
       params: {},
       visible: false,
       currentTab: 0,
-      style: 'height:1200px'
+      style: 'height:500px'
     }
   },
   methods: {
@@ -92,13 +105,14 @@ export default {
     width: 500px;
   }
 }
-.button-div {
-  text-align: center;
-  bottom: 0;
-  z-index: 100;
-  position: fixed;
-  width: 80%;
-  height: 100px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.6) 32.36%, #ffffff 100%);
+.ts-border{
+  margin-top: 4px;
+  margin-left: 4px;
+  margin-right: 4px;
+  margin-bottom: 16px;
+  -webkit-box-shadow: 0px 4px 10px rgba(221, 224, 228, 0.3), 0px 0px 4px rgba(221, 224, 228, 0.3);
+  box-shadow: 0px 4px 10px rgba(221, 224, 228, 0.3), 0px 0px 4px rgba(221, 224, 228, 0.3);
+  border-radius: 2px;
 }
+
 </style>

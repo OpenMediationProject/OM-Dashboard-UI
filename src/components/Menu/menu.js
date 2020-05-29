@@ -85,7 +85,9 @@ export default {
       }
       if (action === 'change' || action === 'visible') {
         this.subMenuVisible = true
-        this.selectedKeys = ['/appdashboard']
+        if (this.$route.path === '/app/dashboard') {
+          this.selectedKeys = ['/appdashboard']
+        }
       }
       if (this.open) {
         this.open = false
@@ -132,8 +134,18 @@ export default {
           <Item disabled {...{ key: menu.path }}>
             <tag {...{ props, attrs }}>
               {this.renderIcon(menu.meta.icon)}
-              <span><AppMenuSelect style="width: 256px;margin-left: -40px;margin-top:8px;" { ...{ on: { appChange: this.appChange } } } collapsed={this.collapsed} openSelect={this.open}></AppMenuSelect></span>
+              <span><AppMenuSelect style="width: 256px;margin-left: -40px;" { ...{ on: { appChange: this.appChange } } } collapsed={this.collapsed} openSelect={this.open}></AppMenuSelect></span>
             </tag>
+          </Item>
+        )
+      } else if (menu.meta.title === 'Ad Network Accounts') {
+        return (
+          <Item style="padding-top: 8px;" {...{ key: menu.path }}>
+            <tag {...{ props, attrs }}>
+              {this.renderIcon(menu.meta.icon)}
+              <span>{menu.meta.title}</span>
+            </tag>
+            <img style="margin-top:-138px;margin-left:-4px;" src='/menu/menu-line.svg' />
           </Item>
         )
       } else {
@@ -152,15 +164,28 @@ export default {
       if (!menu.hideChildrenInMenu) {
         menu.children.forEach(item => itemArr.push(this.renderItem(item)))
       }
-      return (
-        <SubMenu class={this.subMenuVisible ? 'show-sub' : 'hide-sub'} {...{ key: menu.path }}>
-          <span slot="title">
-            {this.renderIcon(menu.meta.icon)}
-            <span>{menu.meta.title}</span>
-          </span>
-          {itemArr}
-        </SubMenu>
-      )
+      if (menu.meta.title === 'Apps') {
+        return (
+          <SubMenu class={this.subMenuVisible ? 'show-sub' : 'hide-sub'} {...{ key: menu.path }}>
+            <span slot="title">
+              {this.renderIcon(menu.meta.icon)}
+              <span>{menu.meta.title}</span>
+              <img style="right: 16px;top: 14px;position: absolute;" src='/menu/right.svg' />
+            </span>
+            {itemArr}
+          </SubMenu>
+        )
+      } else {
+        return (
+          <SubMenu class={this.subMenuVisible ? 'show-sub' : 'hide-sub'} {...{ key: menu.path }}>
+            <span slot="title">
+              {this.renderIcon(menu.meta.icon)}
+              <span>{menu.meta.title}</span>
+            </span>
+            {itemArr}
+          </SubMenu>
+        )
+      }
     },
     renderIcon (icon) {
       if (icon === 'none' || icon === undefined) {

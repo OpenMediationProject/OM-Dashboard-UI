@@ -5,13 +5,16 @@
     <page-header-placement />
     <a-form :form="form" :hideRequiredMark="true" >
       <MediationEditForm
+        :form="form"
         :regions="this.countries"
         @change="regoinsSelectedId"
         :conType="conType"
+        :modelType="deviceModelType"
         :autoOpt="this.autoOpt || 1"
         @optChange="optChange"
+        @selectedModelType="selectedModelType"
         @selectedContype="selectedContype" />
-      <a-card class="card-noline" :bordered="false" title="Waterfall" style="margin-top:8px;" >
+      <a-card class="card-noline om-card-style" :bordered="false" title="Waterfall" style="margin-top:8px;" >
         <a-row type="flex" justify="start" style="margin-bottom: 16px;">
           <om-ad-network-select size="default" style="margin-left:24px; display:inline-block; margin-right:16px;"/>
           <OmInstanceSelect modelName="instanceId" :placementId="this.placementId" />
@@ -22,14 +25,14 @@
           <WaterfallTable
             :autoOpt="autoOpt"
             :data="instances"
-            style="margin-left:24px;margin-right:24px;"
+            style="margin-left:24px;margin-right:24px;margin-bottom:16px;"
             @updateStatus="instanceStatusUpdate"
-            @priorityUpdate="onCellChange"
             @sortEnd="sortInstance"
+            @priorityUpdate="onCellChange"
           />
         </a-spin>
-        <div style="height:20px;"></div>
       </a-card>
+      <div style="height:16px;"></div>
     </a-form>
   </div>
 
@@ -62,12 +65,13 @@ export default {
     PageHeaderPlacement
   },
   data () {
+    const type = this.$route.query.type
     return {
       labelCol: { lg: { span: 4 }, sm: { span: 4 } },
       wrapperCol: { lg: { span: 19 }, sm: { span: 19 } },
       form: this.$form.createForm(this),
       params: {},
-      canEdit: this.$auth('mediation.edit'),
+      canEdit: this.$auth('mediation.edit') && type !== 'Details',
       name: '',
       countries: [],
       placementId: this.$route.params.placementId,
@@ -82,6 +86,7 @@ export default {
       value: [],
       segmentId: null,
       conType: [],
+      deviceModelType: [],
       instances: [],
       fetching: false,
       currentId: null,
@@ -104,6 +109,11 @@ export default {
               this.regions = res.data.countries
             }
           }
+          if (res.data.channel) {
+            res.data.channel = res.data.channel.split(',')
+          } else {
+            res.data.channel = []
+          }
           this.countries = res.data.countries || null
           if (!res.data.interest || res.data.interest.length === 0) {
             res.data.interest = []
@@ -116,8 +126,16 @@ export default {
             }
             this.conType = carr
           }
+          if (res.data.deviceModelType) {
+            const modelType = []
+            const mt = res.data.deviceModelType
+            for (var x = 0; x < 3; ++x) {
+              if ((mt & (1 << x)) === (1 << x)) modelType.push(x)
+            }
+            this.deviceModelType = modelType
+          }
           this.$nextTick(() => {
-            this.form.setFieldsValue(pick(res.data, ['name', 'autoOpt', 'frequency', 'iapMin', 'iapMax', 'interest', 'brandType', 'brandList', 'modelType', 'modelList']))
+            this.form.setFieldsValue(pick(res.data, ['name', 'autoOpt', 'frequency', 'iapMin', 'iapMax', 'interest', 'brandType', 'brandList', 'modelType', 'modelList', 'channel', 'channelBow']))
           })
         }
       })
@@ -143,12 +161,8 @@ export default {
     optChange (value) {
       this.autoOpt = value
     },
-    sortInstance (list) {
-      const params = []
-      for (const item of list) {
-        params.push(item.placementRuleInstanceId)
-      }
-      segmentResortPriority({ placementRuleInstanceIds: params.join(',') }).then(res => {
+    sortInstance (placementRuleInstanceId, value) {
+      segmentResortPriority({ placementRuleInstanceId: placementRuleInstanceId, priority: value }).then(res => {
         if (res.code === 0) {
           this.search('instance')
         }
@@ -158,22 +172,7 @@ export default {
       if (record.priority === value) {
         return
       }
-      const params = []
-      let hasAdded = false
-      for (const item of this.instances) {
-        if (!item.placementRuleInstanceId || item.id === record.id) {
-          continue
-        }
-        if (item.priority === value) {
-          hasAdded = true
-          params.push(record.placementRuleInstanceId)
-        }
-        params.push(item.placementRuleInstanceId)
-      }
-      if (!hasAdded) {
-        params.push(record.placementRuleInstanceId)
-      }
-      segmentResortPriority({ placementRuleInstanceIds: params.join(',') }).then(res => {
+      segmentResortPriority({ placementRuleInstanceId: record.placementRuleInstanceId, priority: value }).then(res => {
         if (res.code === 0) {
           this.search(record.id)
         }
@@ -205,7 +204,7 @@ export default {
       })
     },
     modelTypeChange (value) {
-      this.modelType = value
+      this.deviceModelType = value
     },
     brandTypeChange (value) {
       this.brandType = value
@@ -216,10 +215,22 @@ export default {
       const that = this
       validateFields((err, values) => {
         if (!err) {
+          if (values.channel && values.channel.length) {
+            values.channel = values.channel.join(',')
+            if (values.channel.length > 1000) {
+              this.$message.error('Data too long for Channel, Please control at 1000 characters')
+              return false
+            }
+          } else {
+            values.channel = ''
+          }
           values.id = that.placementId
           let ct = 0
           for (const i in that.conType) { ct |= (1 << that.conType[i]) }
           values.conType = ct
+          let mt = 0
+          for (const i in that.deviceModelType) { mt |= (1 << that.deviceModelType[i]) }
+          values.deviceModelType = mt
           values.brandWhitelist = values.brandType === 'include' && values.brandList ? values.brandList.join('\n') : ''
           values.brandBlacklist = values.brandType === 'exclude' && values.brandList ? values.brandList.join('\n') : ''
           values.modelWhitelist = values.modelType === 'include' && values.modelList ? values.modelList.join('\n') : ''
@@ -274,6 +285,9 @@ export default {
     selectedContype (value) {
       this.conType = value
     },
+    selectedModelType (value) {
+      this.deviceModelType = value
+    },
     instanceStatusUpdate (record, ref) {
       if (!this.ruleId) {
         const { form: { validateFields } } = this
@@ -281,10 +295,22 @@ export default {
         const that = this
         validateFields((err, values) => {
           if (!err) {
+            if (values.channel && values.channel.length) {
+              values.channel = values.channel.join(',')
+              if (values.channel.length > 1000) {
+                this.$message.error('Data too long for Channel, Please control at 1000 characters')
+                return false
+              }
+            } else {
+              values.channel = ''
+            }
             values.id = that.placementId
             let ct = 0
             for (const i in that.conType) { ct |= (1 << that.conType[i]) }
             values.conType = ct
+            let mt = 0
+            for (const i in that.deviceModelType) { mt |= (1 << that.deviceModelType[i]) }
+            values.deviceModelType = mt
             values.brandWhitelist = values.brandType === 'include' && values.brandList ? values.brandList.join('\n') : ''
             values.brandBlacklist = values.brandType === 'exclude' && values.brandList ? values.brandList.join('\n') : ''
             values.modelWhitelist = values.modelType === 'include' && values.modelList ? values.modelList.join('\n') : ''
@@ -339,7 +365,7 @@ export default {
 </script>
 
 <style type="less" scoped>
-  .water-fall >>> .ant-card-head-wrapper {
-    margin-left: -8px;
-  }
+.water-fall >>> .ant-card-head-wrapper {
+  margin-left: -8px;
+}
 </style>

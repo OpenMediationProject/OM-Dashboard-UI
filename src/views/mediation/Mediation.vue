@@ -3,7 +3,7 @@
   <a-form :form="form" :hideRequiredMark="true">
     <a-card :bordered="false" style="padding-top:12px;">
       <PlacementSelect />
-      <a-tabs class="mytabs" :tabBarStyle="{ backgroundColor: '#F7F7F7', marginLeft: '16px', marginTop: '-12px'}" defaultActiveKey="1" @change="callback">
+      <a-tabs class="mytabs" :tabBarStyle="{ backgroundColor: '#F7F7F7', marginLeft: '8px', marginTop: '-12px'}" defaultActiveKey="1" @change="callback">
         <span slot="tabBarExtraContent">
         </span>
         <a-tab-pane tab="Waterfall" key="1" style="margin-top: 8px;">
@@ -14,7 +14,6 @@
             <a-form-item>
               <span class="table-page-search-submitButtons">
                 <a-button type="primary" style="margin-right:8px;margin-left:8px;" ghost @click="listSearch">Apply</a-button>
-                <a-button type="primary" ghost @click="resetSearch">Clear</a-button>
               </span>
             </a-form-item>
             <a-form-item style="position:absolute; right:0px;">
@@ -75,6 +74,8 @@
                     </div>
                     <div v-else>
                       <a herf="#" @click="viewMediation(record)">Details</a>
+                      <span style="float:right" v-if="!record.expandStatus" @click="handleOpen(record)" ><img src="/assets/down.svg"/></span>
+                      <span style="float:right" v-else @click="handleOpen(record)"><img src="/assets/up.svg"/></span>
                     </div>
                   </template>
                 </span>
@@ -107,7 +108,7 @@
                   <span slot="operation" slot-scope="text, srecord">
                     <template>
                       <div>
-                        <a herf="#" @click="instanceStatusUpdate(srecord)">{{ srecord.priority >= 0 ?'Disable' : 'Enable' }}</a>
+                        <a herf="#" v-if="canEdit" @click="instanceStatusUpdate(srecord)">{{ srecord.priority >= 0 ?'Disable' : 'Enable' }}</a>
                       </div>
                     </template>
                   </span>
@@ -117,8 +118,24 @@
           </a-spin>
         </a-tab-pane>
         <a-tab-pane tab="Settings" class="water-fall" key="2" forceRender style="height:600px;">
-          <a-card class="card-noline" style="height:270px;background:#FFFFFF; margin-top:8px;" title="Waterfall Settings" :bordered="false">
-            <om-form label="Batch Size" field="batchSize" tip="Batch Size">
+          <a-card class="card-noline" style="height:300px;background:#FFFFFF; margin-top:8px;" title="Waterfall Settings" :bordered="false">
+            <om-form
+              v-if="[0,1].includes(this.placementType)"
+              :form="form"
+              label="Fan out"
+              :edit="canEdit"
+              field="fanOut"
+              :showTip="false" >
+              <a-radio-group :disabled="!canEdit" v-decorator="['fanOut']" :default-value="1">
+                <a-radio :value="1">
+                  ON
+                </a-radio>
+                <a-radio :value="0">
+                  OFF
+                </a-radio>
+              </a-radio-group>
+            </om-form>
+            <om-form :form="form" label="Batch Size" field="batchSize" tip="Batch Size">
               <a-input-number
                 style="width:100%"
                 ref="iap-min"
@@ -127,16 +144,16 @@
                 :max="5"
                 v-decorator="['batchSize', { rules: [{ required: true, message: 'Pool Size can not be empty.'}] }]"/>
             </om-form>
-            <om-form label="Preload Timeout(s)" field="preloadTimeout" tip="Preload Timeout(s)" >
+            <om-form :form="form" label="Preload Timeout(s)" field="preloadTimeout" tip="Preload Timeout(s)" >
               <a-input-number
                 style="width:100%"
                 ref="iap-min"
                 type="number"
                 :min="1"
-                :max="30"
+                :max="120"
                 v-decorator="['preloadTimeout', { rules: [{ required: true, message: 'Pool Size can not be empty.'}] }]"/>
             </om-form>
-            <om-form label="Pool Size" field="inventoryCount" tip="Pool Size">
+            <om-form :form="form" label="Pool Size" field="inventoryCount" tip="Pool Size">
               <a-input-number
                 style="width:100%"
                 ref="iap-min"
@@ -198,6 +215,7 @@ export default {
       id: this.$route.params.id,
       placementSelectOption: [],
       instanceSelectOption: [],
+      placementType: null,
       data: [],
       list: [],
       regions: [],
@@ -227,7 +245,7 @@ export default {
           title: 'Active Instances',
           dataIndex: 'ruleInstanceSize',
           align: 'center',
-          width: '20%',
+          width: '15%',
           scopedSlots: { customRender: 'ruleInstanceSize' }
         },
         {
@@ -293,22 +311,22 @@ export default {
       if (record.priority === value) {
         return
       }
-      const params = []
-      let hasAdded = false
-      for (const item of this.data) {
-        if (!item.id || item.id === record.id) {
-          continue
-        }
-        if (item.priority === value) {
-          hasAdded = true
-          params.push(record.id)
-        }
-        params.push(item.id)
-      }
-      if (!hasAdded) {
-        params.push(record.id)
-      }
-      rulePriorityUpdate({ placementRuleIds: params.join(','), placementId: {} }).then(res => {
+      // const params = []
+      // let hasAdded = false
+      // for (const item of this.data) {
+      //   if (!item.id || item.id === record.id) {
+      //     continue
+      //   }
+      //   if (item.priority === value) {
+      //     hasAdded = true
+      //     params.push(record.id)
+      //   }
+      //   params.push(item.id)
+      // }
+      // if (!hasAdded) {
+      //   params.push(record.id)
+      // }
+      rulePriorityUpdate({ ruleId: record.id, priority: value }).then(res => {
         if (res.code === 0) {
           this.listSearch()
         }
@@ -453,14 +471,12 @@ export default {
         })
       placementGet({ placementId: this.searchPlacement }).then(res => {
         if (res.code === 0) {
+          this.placementType = res.data.adType
           this.$nextTick(() => {
-            this.form.setFieldsValue(pick(res.data, ['batchSize', 'preloadTimeout', 'inventoryCount']))
+            this.form.setFieldsValue(pick(res.data, ['batchSize', 'preloadTimeout', 'inventoryCount', 'fanOut']))
           })
         }
       })
-    },
-    resetSearch () {
-      this.regions = []
     },
     segmentStatusUpdate (record) {
       const status = record.status === 1 ? 0 : 1
@@ -506,35 +522,35 @@ export default {
 </script>
 
 <style type="less" scoped>
-  .ant-table-wrapper {
-    padding: 16px;
-  }
-  .ant-card {
-    background-color: #F7F7F7
-  }
-  .mytabs >>> .ant-tabs-nav-container {
-    font-size: 18px;
-    color: #333333;
-  }
-  .mytabs >>> .ant-tabs-top-bar{
-    width: 250px;
-  }
-  .ant-table-wrapper {
-    padding: 0px;
-  }
-  .water-fall >>> .ant-card-head-wrapper {
-    margin-left: -8px;
-  }
-  .mytabs >>> .ant-tabs-nav-wrap {
-    margin-left: -8px;
-  }
-  .button-div {
-    text-align: center;
-    bottom: 0;
-    z-index: 100;
-    position: fixed;
-    width: 100%;
-    height: 100px;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.6) 32.36%, #ffffff 100%);
-  }
+.ant-table-wrapper {
+  padding: 16px;
+}
+.ant-card {
+  background-color: #F7F7F7
+}
+.mytabs >>> .ant-tabs-nav-container {
+  font-size: 18px;
+  color: #333333;
+}
+.ant-table-wrapper {
+  padding: 0px;
+}
+.ant-card-body {
+  padding: 0;
+}
+.water-fall >>> .ant-card-head-wrapper {
+  margin-left: -8px;
+}
+/* .mytabs >>> .ant-tabs-nav-wrap {
+  margin-left: -8px;
+} */
+.button-div {
+  text-align: center;
+  bottom: 0;
+  z-index: 100;
+  position: fixed;
+  width: 100%;
+  height: 100px;
+  /* background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.6) 32.36%, #ffffff 100%); */
+}
 </style>

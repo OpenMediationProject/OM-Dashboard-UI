@@ -10,6 +10,7 @@
         <span v-if="searchPlacementType===1">Native</span>
         <span v-if="searchPlacementType===2">Rewarded Video</span>
         <span v-if="searchPlacementType===3">Interstitial</span>
+        <span v-if="searchPlacementType===4">Splash</span>
         <a-divider type="vertical" />
         <span style="margin-left:-2px;">{{ searchPlacement }}</span>
       </div>

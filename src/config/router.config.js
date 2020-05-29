@@ -2,12 +2,13 @@
 import { BasicLayout, BlankLayout, PageView, RouteView, UserLayout } from '@/layouts'
 import Dashboard from '../../public/menu/dashboard.svg'
 import Apps from '../../public/menu/Apps.svg'
-import Adn from '../../public/menu/adn.svg'
 import Mediation from '../../public/menu/mediation.svg'
 import Overview from '../../public/menu/overview.svg'
 import Placements from '../../public/menu/placements.svg'
 import Report from '../../public/menu/report.svg'
 import SDK from '../../public/menu/sdk.svg'
+import AppSettings from '../../public/menu/AppSettings.svg'
+import Company from '../../public/menu/company.svg'
 
 export const asyncRouterMap = [
   {
@@ -33,6 +34,17 @@ export const asyncRouterMap = [
           {
             path: '/overview/dashboard',
             component: () => import('@/views/dashboard/AppDashboard'),
+            meta: {
+              title: 'Overview',
+              keepAlive: false,
+              hiddenHeaderContent: true,
+              permission: ['dashboard']
+            }
+          },
+          {
+            path: '/overview/back',
+            name: 'supplierAllBack',
+            component: () => import('@/views/dashboard/supplierAllBack'),
             meta: {
               title: 'Overview',
               keepAlive: false,
@@ -160,48 +172,6 @@ export const asyncRouterMap = [
             ]
           },
           {
-            name: 'AdnList',
-            path: '/mediation/adn',
-            redirect: '/mediation/adn/list',
-            component: RouteView,
-            hideChildrenInMenu: true,
-            meta: { title: 'Ad Network', icon: Adn, keepAlive: false, hiddenHeaderContent: true, permission: ['adn'] },
-            children: [
-              {
-                path: '/mediation/adn/list',
-                name: 'AdNetworkList',
-                component: () => import('@/views/mediation/AdNetwork'),
-                meta: { title: 'Ad Network', keepAlive: false, hiddenHeaderContent: true, permission: ['adn'], action: ['query'] }
-              },
-              {
-                path: '/mediation/adn/add',
-                name: 'EditAdNetwork',
-                component: () => import('@/views/mediation/modules/AdNetworkEdit'),
-                meta: { title: 'Ad Network', headTitle: 'Ad Network', keepAlive: false, hidden: true, parent: '/mediation/adn/list', permission: ['adn'], action: ['add', 'edit'] },
-                beforeEnter (to, from, next) {
-                  if (from.path === '/') {
-                    next('/mediation/adn/list')
-                  } else {
-                    next()
-                  }
-                }
-              },
-              {
-                path: '/mediation/adn/details',
-                name: 'AdNetworkDetail',
-                component: () => import('@/views/mediation/modules/AdNetworkEdit'),
-                meta: { title: 'Ad Network', headTitle: 'Ad Network', keepAlive: false, hidden: true, parent: '/mediation/adn/list', permission: ['adn'], action: ['query'] },
-                beforeEnter (to, from, next) {
-                  if (from.path === '/') {
-                    next('/mediation/adn/list')
-                  } else {
-                    next()
-                  }
-                }
-              }
-            ]
-          },
-          {
             name: 'Mediation',
             path: '/mediation/mediation',
             redirect: '/mediation/mediation/list',
@@ -243,35 +213,35 @@ export const asyncRouterMap = [
               }
             ]
           },
-          // {
-          //   name: 'A/B Test',
-          //   path: '/test',
-          //   redirect: '/test/ab',
-          //   component: RouteView,
-          //   hideChildrenInMenu: true,
-          //   meta: { title: 'A/B Test', keepAlive: true, hiddenHeaderContent: true },
-          //   children: [
-          //     {
-          //       name: 'ABTest',
-          //       path: '/test/ab',
-          //       component: () => import('@/views/test/ABTest'),
-          //       meta: { title: 'A/B Test', keepAlive: true, hiddenHeaderContent: true, permission: ['mediation'], action: ['query'] }
-          //     }
-          //   ]
-          // },
           {
             path: '/sdk',
             name: 'SDK',
-            redirect: '/sdk/intergration',
+            redirect: '/sdk/integration',
             component: RouteView,
             hideChildrenInMenu: true,
-            meta: { title: 'SDK Intergration', icon: SDK, keepAlive: false, hiddenHeaderContent: true },
+            meta: { title: 'SDK Integration', icon: SDK, keepAlive: false, hiddenHeaderContent: true },
             children: [
               {
-                name: 'SDKIntergration',
-                path: '/sdk/intergration',
+                name: 'SDKIntegration',
+                path: '/sdk/integration',
                 component: () => import('@/views/test/SDK'),
-                meta: { title: 'SDK Intergration', keepAlive: false, hiddenHeaderContent: true, permission: ['mediation'], action: ['query'] }
+                meta: { title: 'SDK Integration', keepAlive: false, hiddenHeaderContent: true, permission: ['mediation'], action: ['query'] }
+              }
+            ]
+          },
+          {
+            path: '/app',
+            name: 'appSettings',
+            redirect: '/app/settings',
+            component: RouteView,
+            hideChildrenInMenu: true,
+            meta: { title: 'App Settings', icon: AppSettings, keepAlive: false, hiddenHeaderContent: true },
+            children: [
+              {
+                name: 'AppSettings',
+                path: '/app/settings',
+                component: () => import('@/views/appsetting/AdNetwork'),
+                meta: { title: 'App Settings', keepAlive: false, hiddenHeaderContent: true, permission: ['app_settings'], action: ['query'] }
               }
             ]
           }
@@ -296,6 +266,28 @@ export const asyncRouterMap = [
             name: 'Report',
             component: () => import('@/views/report/Report'),
             meta: { title: 'Reporting', keepAlive: false, hiddenHeaderContent: true, permission: ['dashboard'] }
+          }
+        ]
+      },
+      {
+        name: 'Company',
+        path: '/company',
+        redirect: '/adn/accounts',
+        component: PageView,
+        hideChildrenInMenu: true,
+        meta: {
+          title: 'Ad Network Accounts',
+          icon: Company,
+          keepAlive: false,
+          permission: ['accounts'],
+          hiddenHeaderContent: true
+        },
+        children: [
+          {
+            path: '/adn/accounts',
+            name: 'accounts',
+            component: () => import('@/views/company/OrgAdNetwork'),
+            meta: { title: 'Ad Network Accounts', keepAlive: false, hiddenHeaderContent: true, permission: ['accounts'] }
           }
         ]
       },

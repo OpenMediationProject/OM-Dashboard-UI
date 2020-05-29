@@ -95,11 +95,12 @@ export default {
     }
   },
   data () {
+    const type = this.$route.query.type
     return {
       list: this.data,
       dragging: false,
       disable: this.autoOpt,
-      canEdit: this.$auth('mediation.edit')
+      canEdit: this.$auth('mediation.edit') && type !== 'Details'
     }
   },
   watch: {
@@ -114,8 +115,10 @@ export default {
     }
   },
   methods: {
-    sortEnd () {
-      this.$emit('sortEnd', this.list.filter(item => item.priority > 0))
+    sortEnd (e) {
+      const priority = e.newIndex + 1
+      const item = this.list[e.newIndex]
+      this.$emit('sortEnd', item.placementRuleInstanceId, priority)
     },
     update (item) {
       this.$emit('updateStatus', item, 'instance')

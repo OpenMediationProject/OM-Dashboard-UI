@@ -16,12 +16,13 @@
         style="border: none"
         :data="middleLineData"
         :height="350"
+        :loading="headLoading"
         :legend="{ offsetY: 16, marker: 'circle' }"
         padding="auto"
         :xTickCount="7"
         x-column="day"
         y-column="cost"
-        y-format="$0,0"
+        y-format="$0,0.00"
         group-by="country" />
       <om-chart-ring
         class="right"
@@ -30,7 +31,7 @@
         :height="350"
         x-column="country"
         y-column="cost"
-        y-format="$0,0" />
+        y-format="$0,0.00" />
     </div>
     <div class="ds-bottom">
       <a-select
@@ -50,15 +51,20 @@
                 <om-ds-bottom-chart :data="bottom.chartData" :sum="bottom.sumData" title="Revenue" y-column="cost" y-format="$0,0.00a" />
               </a-col>
               <a-col :span="12">
-                <om-ds-bottom-chart :data="bottom.chartData" :sum="bottom.sumData" title="Requests" y-column="request" />
+                <om-ds-bottom-chart :data="bottom.chartData" :sum="bottom.sumData" title="eCPM" y-column="ecpm" y-format="$0.00a"/>
               </a-col>
             </a-row>
             <a-row :gutter="32">
               <a-col :span="12">
-                <om-ds-bottom-chart :data="bottom.chartData" :sum="bottom.sumData" title="Impressions" y-column="impr" />
+                <om-ds-bottom-chart :data="bottom.chartData" :sum="bottom.sumData" title="Impressions" y-column="impr" y-format="0,0.[00]a" />
               </a-col>
               <a-col :span="12">
-                <om-ds-bottom-chart :data="bottom.chartData" :sum="bottom.sumData" title="Fill Rate" y-column="fillRate" y-format="0,0.00a%" />
+                <om-ds-bottom-chart
+                  :data="bottom.chartData"
+                  :sum="bottom.sumData"
+                  title="Fill Rate"
+                  y-column="fillRate"
+                  y-format="0,0.00a%" />
               </a-col>
             </a-row>
             <a-row :gutter="32">
@@ -74,18 +80,30 @@
             <div class="title">User Activity</div>
             <a-row :gutter="32">
               <a-col :span="12">
-                <om-ds-bottom-chart :data="bottom.chartData" :sum="bottom.sumData" title="DAU" y-column="dau" />
+                <om-ds-bottom-chart
+                  :data="bottom.chartData"
+                  :dateRange="bottom.dateRange"
+                  :sum="bottom.sumData"
+                  title="DAU"
+                  y-format="0,0.[00]a"
+                  y-column="dau" />
               </a-col>
               <a-col :span="12">
-                <om-ds-bottom-chart :data="bottom.chartData" :sum="bottom.sumData" title="ARPDAU" y-column="arpDau" y-format="$0.000"/>
+                <om-ds-bottom-chart :data="bottom.chartData" :sum="bottom.sumData" title="ARPDAU" y-column="arpDau" y-format="$0.000a"/>
               </a-col>
             </a-row>
             <a-row :gutter="32">
               <a-col :span="12">
-                <om-ds-bottom-chart :data="bottom.chartData" :sum="bottom.sumData" title="DEU" y-column="deu" />
+                <om-ds-bottom-chart
+                  :data="bottom.chartData"
+                  :dateRange="bottom.dateRange"
+                  :sum="bottom.sumData"
+                  y-format="0,0.[00]a"
+                  title="DEU"
+                  y-column="deu" />
               </a-col>
               <a-col :span="12">
-                <om-ds-bottom-chart :data="bottom.chartData" :sum="bottom.sumData" title="ARPDEU" y-column="arpDeu" y-format="$0.000"/>
+                <om-ds-bottom-chart :data="bottom.chartData" :sum="bottom.sumData" title="ARPDEU" y-column="arpDeu" y-format="$0.000a"/>
               </a-col>
             </a-row>
             <a-row :gutter="32">
@@ -142,8 +160,19 @@ export default {
   computed: mapState({
     pubAppId (state) {
       return this.$route.path === '/overview/dashboard' ? 0 : state.publisher.searchApp
-    }
+    },
+    currentOrgId: state => state.publisher.currentOrgId
   }),
+  watch: {
+    currentOrgId (curVal) {
+      if (curVal) {
+        this.$router.replace({
+          path: '/overview/back',
+          name: 'supplierAllBack'
+        })
+      }
+    }
+  },
   created () {
     this.reloadAllData()
   },
@@ -171,7 +200,7 @@ export default {
         .then(res => {
           if (!res.code) {
             const { yesterdayRevenue, lastSevenDayRevenue, currentMonthRevenue, lastMonthRevenue } = res.data
-            const format = '$0,0'
+            const format = '$0,0.00'
             this.headRevenueData = {
               'Yesterday': numerify(yesterdayRevenue, format),
               'Last 7 days': numerify(lastSevenDayRevenue, format),
@@ -190,6 +219,7 @@ export default {
       if (this.pubAppId > 0) {
         ps.pubAppId = this.pubAppId
       }
+      const that = this
       getDashboardRegionsRevenues(ps)
         .then(res => {
           if (!res.code) {
@@ -205,9 +235,13 @@ export default {
                 sumData[row.country] += row.cost
               }
             })
-            this.middleLineData = middleLineData
-            this.middlePieData = Object.keys(sumData).map(country => {
+            that.middleLineData = middleLineData.sort((a, b) => {
+              return b.cost - a.cost
+            })
+            that.middlePieData = Object.keys(sumData).map(country => {
               return { country, cost: sumData[country] }
+            }).sort((a, b) => {
+              return b.cost - a.cost
             })
           }
         })
@@ -216,19 +250,20 @@ export default {
         })
     },
     loadBottomData () {
+      const that = this
       const dfmt = 'YYYY-MM-DD'
-      const tmp = moment().utc().add(1, 'd')
+      const tmp = moment().utc()
       const dayX = {} // map date to x
       for (let j = 0; j < 2; j++) {
         // [ currentPeriod = 0, lastPeriod = 1 ]
         const g = String(j)
-        for (let i = this.bottom.dateRange / 2; i > 0; --i) {
+        for (let i = (this.bottom.dateRange) / 2; i > 0; --i) {
           dayX[tmp.add(-1, 'd').format(dfmt)] = { x: i, g }
         }
       }
       const ps = {}
-      ps.dateBegin = moment().utc().add(-this.bottom.dateRange, 'd').format(dfmt)
-      ps.dateEnd = moment().utc().format(dfmt)
+      ps.dateBegin = moment().utc().add(-this.bottom.dateRange - 1, 'd').format(dfmt)
+      ps.dateEnd = moment().utc().add(-1, 'd').format(dfmt)
       ps.type = ['lr', 'api', 'dau']
       ps.dimension = ['day']
       if (this.pubAppId > 0) {
@@ -312,8 +347,14 @@ export default {
             sumData.deu[0] / sumData.dau[0],
             sumData.deu[1] / sumData.dau[1]
           ]
-          this.bottom.chartData = list.sort((a, b) => b.g - a.g)
-          this.bottom.sumData = sumData
+          // reset DAU & DEU from sum to avg
+          for (const dxu of [sumData.dau, sumData.deu]) {
+            for (let i = 0; i < dxu.length; i++) {
+              dxu[i] = Math.round(dxu[i] / list.length * 2)
+            }
+          }
+          that.bottom.chartData = list.sort((a, b) => b.g - a.g)
+          that.bottom.sumData = sumData
         })
         .finally(_ => {
           this.bottom.loading = false

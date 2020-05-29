@@ -9,10 +9,11 @@
       <a-table
         ref="table"
         class="ant-card-table-default"
+        style="margin-left:16px;margin-right:16px;"
         rowKey="id"
         fixed="true"
         :dataSource="data"
-        :scroll="{ y: 345 }"
+        :scroll="{ y: scroll }"
         :columns="columns"
         :pagination="false"
       >
@@ -35,7 +36,7 @@
       </a-table>
     </a-form>
     <div class="button-div">
-      <a-button type="primary" style="bottom: -40px;width: 168px;" @click="goStep1()">OK</a-button>
+      <a-button type="primary" style="bottom: -40px;width: 168px;" v-action:add @click="goStep1()">OK</a-button>
     </div>
   </div>
 </template>
@@ -59,7 +60,15 @@ const adTypeMap = {
   },
   3: {
     adType: 0,
+    text: 'Interactive'
+  },
+  4: {
+    adType: 0,
     text: 'Interstitial'
+  },
+  5: {
+    adType: 8,
+    text: 'Splash'
   }
 }
 
@@ -77,8 +86,10 @@ export default {
       adnId: this.$parent.$parent.adnId,
       adName: this.$parent.$parent.adName,
       pubAppId: this.$store.state.publisher.searchApp,
+      devAppId: this.$parent.$parent.devAppId,
       timer: 0,
       data: [],
+      scroll: 200,
       num: 0,
       resultNum: 1,
       columns: [
@@ -105,10 +116,14 @@ export default {
   },
   mounted () {
     const params = {}
+    this.scroll = window.innerHeight - 390
     params.pubAppId = this.pubAppId
     params.adnId = this.adnId
     AdNetworkPlacements(params).then(res => {
       this.data = res.data
+      if (!this.devAppId) {
+        this.devAppId = res.data[0].devAppId
+      }
     })
   },
   filters: {
@@ -117,19 +132,6 @@ export default {
     }
   },
   methods: {
-    nextStep () {
-      const that = this
-      const { form: { validateFields } } = this
-      that.loading = true
-      validateFields((err, values) => {
-        if (!err) {
-          that.loading = false
-          that.$emit('nextStep', values)
-        } else {
-          that.loading = false
-        }
-      })
-    },
     prevStep () {
       this.$emit('prevStep')
     },
@@ -167,7 +169,7 @@ export default {
       }
       const params = {}
       params.devResult = this.resultNum
-      params.devAppId = this.data[0]['devAppId']
+      params.devAppId = this.devAppId
       updateDevAppTestResult(params).then(res => {
         if (res.code === 0) {
           this.prevStep()
@@ -197,6 +199,6 @@ export default {
   position: fixed;
   width: 80%;
   height: 100px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.6) 32.36%, #ffffff 100%);
+  /*background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.6) 32.36%, #ffffff 100%);*/
 }
 </style>

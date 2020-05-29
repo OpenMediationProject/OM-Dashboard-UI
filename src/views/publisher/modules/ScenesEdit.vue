@@ -30,13 +30,13 @@
           :labelCol="{lg: { span: 10 }, sm: { span: 10 }}"
           :wrapperCol="{lg: { span: 10 }, sm: { span: 10 } }">
           Limit to <a-input-number
-          type="number"
-          size="small"
-          :disabled="!record.editStatus"
-          :min="0"
-          :max="9999"
-          style="width:66px;"
-          v-decorator="[record.id+'frequencyCap',{initialValue: record.frequencyCap}]"/> impressions per
+            type="number"
+            size="small"
+            :disabled="!record.editStatus"
+            :min="0"
+            :max="9999"
+            style="width:66px;"
+            v-decorator="[record.id+'frequencyCap',{initialValue: record.frequencyCap}]"/> impressions per
           <a-input-number
             type="number"
             size="small"
@@ -46,30 +46,14 @@
             style="width:50px;"
             v-decorator="[record.id+'frequencyUnit',{initialValue: record.frequencyUnit}]"/> hour(s)
         </a-form-item>
-        <a-form-item
-          style="margin-bottom: 0px;"
-          label="Pacing"
-          :colon="false"
-          :labelCol="{lg: { span: 10 }, sm: { span: 10 }}"
-          :wrapperCol="{lg: { span: 10 }, sm: { span: 10 } }">
-          Show a maximun ad 1ad per <a-input-number
-          type="number"
-          :disabled="!record.editStatus"
-          size="small"
-          :min="0"
-          :max="1440"
-          style="width:66px;"
-          v-decorator="[record.id+'frequencyInterval',{initialValue: record.frequencyInterval}]"/> minute(s)
-        </a-form-item>
       </p>
       <span slot="frequencyCap" slot-scope="text, record">
-        <span :style="record.status===0 ? 'opacity: 0.3;' : null" v-if="record.frequencyCap===0 &&record.frequencyInterval===0">
+        <span :style="record.status===0 ? 'opacity: 0.3;' : null" v-if="record.frequencyCap===0">
           <a-icon style="margin-tottom:5px;" class="expand-icon" @click="handleExpand(record)" :type="record.expandStatus ? 'minus':'plus'" /> All
         </span>
         <span v-else>
           <div :style="record.status===0 ? 'opacity: 0.3;' : null">
             <div style="margin-top:-4px;"><a-icon class="expand-icon" @click="handleExpand(record)" :type="record.expandStatus ? 'minus':'plus'" />Frequency Cap: <span style="color:#1890ff;">{{ record.frequencyCap }} impr / {{ record.frequencyUnit }} h</span><br></div>
-            <div style="margin-top:5px;margin-bottom:-4px;"><span style="margin-left:24px;">Pacing: <span style="color:#1890ff;">1 ads / {{ record.frequencyInterval }} min</span></span></div>
           </div>
         </span>
       </span>
@@ -132,7 +116,7 @@ export default {
         scopedSlots: { customRender: 'status' }
       }
     ]
-    if (!this.$auth('placement.edit') && !this.$auth('placement.add')) {
+    if ((!this.$auth('placement.edit') && !this.$auth('placement.add')) || this.$route.query.type === 'Details') {
       columns.pop()
     }
     return {
@@ -143,7 +127,7 @@ export default {
       height: '500px',
       count: -100,
       activeKey: '1',
-      canEdit: this.$auth('placement.edit') || this.$auth('placement.add'),
+      canEdit: (this.$auth('placement.edit') || this.$auth('placement.add')) && this.$route.query.type !== 'Details',
       placementId: this.$route.query.placementId,
       curExpandedRowKeys: [],
       currentExpandedStatOpen: false,
@@ -171,7 +155,6 @@ export default {
           const item = { ...record }
           item.name = values[record.id + 'name']
           item.frequencyCap = values[record.id + 'frequencyCap']
-          item.frequencyInterval = values[record.id + 'frequencyInterval']
           item.frequencyUnit = values[record.id + 'frequencyUnit']
           if (record.createNew) {
             item.placementId = that.placementId
@@ -259,7 +242,6 @@ export default {
         expandStatus: true,
         frequencyCap: 0,
         frequencyUnit: 1,
-        frequencyInterval: 0,
         createNew: true,
         editStatus: true
       }
@@ -294,7 +276,7 @@ export default {
 </script>
 
 <style type="less" scoped>
-  .expand-icon {
+.expand-icon {
     display: inline-block;
     width: 20px;
     height: 20px;
@@ -307,19 +289,19 @@ export default {
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
-  }
-  .plcedit >>> .ant-card-head-title {
-    margin-left: -8px;
-    margin-top: -6px;
-  }
-  .plcedit >>> .ant-card-head {
-    height: 48px;
-  }
-  .plcedit >>> .ant-form-item {
-    margin-bottom: 0;
-  }
-  .plcedit >>> .ant-form-explain, .ant-form-extra {
-    line-height: 1.5;
-    margin-bottom: -20px;
-  }
+}
+.plcedit >>> .ant-card-head-title {
+  margin-left: -8px;
+  margin-top: -6px;
+}
+.plcedit >>> .ant-card-head {
+  height: 48px;
+}
+.plcedit >>> .ant-form-item {
+  margin-bottom: 0;
+}
+.plcedit >>> .ant-form-explain, .ant-form-extra {
+  line-height: 1.5;
+  margin-bottom: -20px;
+}
 </style>

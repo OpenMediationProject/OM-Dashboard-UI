@@ -1,8 +1,10 @@
 <template>
   <div class="user-wrapper" >
     <div class="content-box" style="text-align:right">
-      <span @click="click" class="action ant-dropdown-link user-dropdown-menu">
-        <a-avatar class="avatar" size="small" src="/icon/User.svg"/>
+      <span @click="click" class="">
+        <a href="#" style="width:64px; height:64px;">
+          <a-avatar class="avatar" size="small" src="/icon/User.svg"/>
+        </a>
       </span>
     </div>
     <a-select
@@ -97,7 +99,7 @@ export default {
     click () {
       this.open = true
     },
-    ...mapActions(['Logout']),
+    ...mapActions(['Logout', 'GetInfo']),
     handleLogout () {
       this.$confirm({
         title: 'Tips',
@@ -118,30 +120,83 @@ export default {
         }
       })
     },
+    setUserInfo () {
+      this.GetInfo().then(res => {
+        const result = res.data
+        if (result.perms && result.perms.length > 0) {
+          const pmap = {}
+          const perms = {}
+          result.perms.forEach(m => {
+            pmap[m.pid] || (pmap[m.pid] = [])
+            pmap[m.pid].push(m)
+            if (m.type === 'perm' || m.type === 'menu') {
+              perms[m.name] = m
+            }
+          })
+          Object.values(perms).forEach(m => {
+            const children = pmap[m.id]
+            if (children) {
+              m.actions = children.filter(item => item.type === 'action').map(item => item.name)
+            }
+          })
+
+          result.perms = perms
+          result.roles = result.roles.map(r => r instanceof String ? r : r.name)
+
+          this.$store.commit('SET_ROLES', { roles: result.roles, perms })
+          this.$store.commit('SET_INFO', result)
+        }
+      })
+    },
     updateSelectList () {
       const that = this
       orgSelectList({ userId: this.$store.state.user.info.id })
         .then(res => {
           if (res.code === 0 && res.data.length) {
             that.pubList = res.data
-            that.tempOption = res.data
+            that.tempOption = [ ...res.data ]
+            that.tempOption = that.tempOption.splice(0, 20)
             this.value = res.data[0].id
             if (localStorage.getItem('currentOrgId')) {
               const localOrg = localStorage.getItem('currentOrgId')
               const row = res.data.find(item => item.id === parseInt(localOrg))
               if (row) {
                 that.value = parseInt(localOrg)
-                that.$store.commit('SET_ORG', that.value)
-                switchPublisher({ pubId: parseInt(localOrg), roleId: row.roleId })
+                switchPublisher({ pubId: parseInt(localOrg), roleId: row.roleId }).then(res => {
+                  if (res.code === 0) {
+                    that.$store.commit('SET_ORG', that.value)
+                    that.setUserInfo(res.data)
+                    // that.$store.commit('SET_ROLES', [])
+                  }
+                })
+                if (!that.tempOption.find(item => item.id === parseInt(localOrg))) {
+                  that.tempOption.unshift(row)
+                }
               } else {
                 that.value = that.pubList[0].id
-                this.$store.commit('SET_ORG', that.pubList[0].id)
-                switchPublisher({ pubId: that.pubList[0].id, roleId: that.pubList[0].roleId })
+                switchPublisher({ pubId: that.pubList[0].id, roleId: that.pubList[0].roleId }).then(res => {
+                  if (res.code === 0) {
+                    this.$store.commit('SET_ORG', that.pubList[0].id)
+                    that.setUserInfo(res.data)
+                    // this.$store.commit('SET_ROLES', [])
+                  }
+                })
+                if (!that.tempOption.find(item => item.id === that.value)) {
+                  that.tempOption.unshift(that.pubList[0])
+                }
               }
             } else {
               that.value = that.pubList[0].id
-              this.$store.commit('SET_ORG', that.pubList[0].id)
-              switchPublisher({ pubId: that.pubList[0].id, roleId: that.pubList[0].roleId })
+              switchPublisher({ pubId: that.pubList[0].id, roleId: that.pubList[0].roleId }).then(res => {
+                if (res.code === 0) {
+                  this.$store.commit('SET_ORG', that.pubList[0].id)
+                  that.setUserInfo(res.data)
+                  // this.$store.commit('SET_ROLES', [])
+                }
+              })
+              if (!that.tempOption.find(item => item.id === that.value)) {
+                that.tempOption.unshift(that.pubList[0])
+              }
             }
           }
         })
@@ -150,11 +205,12 @@ export default {
       const row = this.pubList.find(item => item.id === v)
       this.dropdownVisibleChange(false)
       this.lock = false
-      this.$refs.searchinput.stateValue = ''
+      // this.$refs.searchinput.stateValue = ''
       switchPublisher({ pubId: v, roleId: row.roleId }).then(res => {
         if (res.code === 0) {
           this.$store.commit('SET_ORG', v)
           this.$router.push({ path: '/overview/dashboard' })
+          window.location.reload()
         }
       })
     },
@@ -179,14 +235,20 @@ export default {
     },
     inputSearch (e) {
       const v = e.target.value
-      this.tempOption = [ ...this.pubList ]
+      const temp = [ ...this.pubList ]
       this.pubList.forEach(element => {
         const mathStr = element.roleName + '' + element.name + '' + element.id
         if (!v) { return }
         if (mathStr.toLowerCase().indexOf(v.toLowerCase()) === -1) {
-          this.tempOption.splice(this.tempOption.findIndex(o => o.id === element.id), 1)
+          temp.splice(temp.findIndex(o => o.id === element.id), 1)
         }
       })
+      this.tempOption = temp.splice(0, 20)
+      if (!v) {
+        if (!this.tempOption.find(item => item.id === this.value)) {
+          this.tempOption.unshift(this.pubList.find(item => item.id === this.value))
+        }
+      }
     }
   }
 }

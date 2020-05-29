@@ -120,11 +120,11 @@ export default {
     },
     select (v) {
       this.$store.commit('SET_APP', v)
-      this.$emit('appChange', 'change')
       this.lock = false
       this.tempOption = [ ...this.appList ]
       this.$refs.searchinput.stateValue = ''
       this.$router.push({ path: '/app/dashboard', query: { pubAppId: v } })
+      this.$emit('appChange', 'change')
     },
     mouseDown (VNode) {
       this.lock = true

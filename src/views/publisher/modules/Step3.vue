@@ -1,6 +1,6 @@
 <template>
   <div class="step3">
-    <a-form :form="form" style="max-width: 500px; height: 500px;margin: 64px auto 0;">
+    <a-form :form="form" style="max-width: 500px;margin: 64px auto 0;">
       <om-app-info
         :icon="appInfo.icon"
         :app-name="appInfo.appName"
@@ -145,6 +145,5 @@ export default {
   position: fixed;
   width: 80%;
   height: 100px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.6) 32.36%, #ffffff 100%);
 }
 </style>

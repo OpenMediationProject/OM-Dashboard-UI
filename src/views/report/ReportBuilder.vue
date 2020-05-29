@@ -1,7 +1,7 @@
 <!-- Report ReportBuilder tab -->
 <template>
   <div>
-    <div style="margin-bottom: 16px;height: 32px">
+    <div style="margin-top:16px;margin-bottom: 16px;height: 32px">
       <a-button type="primary" @click="handleAdd()" :disabled="disableEdit || table.data.length>9" style="float: right" >Add Reporting</a-button>
     </div>
 
@@ -26,7 +26,7 @@
         </span>
         <span slot="dataSource" slot-scope="v,row">
           <a-form-item v-if="row.editing">
-            <a-select :showArrow="false" v-model="row.dataSource">
+            <a-select v-model="row.dataSource">
               <a-select-option v-for="(name, i) in dataSourceArray" :key="i" v-if="i">{{ name }}</a-select-option>
             </a-select>
           </a-form-item>
@@ -43,13 +43,12 @@
             <a-cascader
               :options="scheduleOptions"
               v-model="row.schedule"
-              :allowClear="false"
-              :showArrow="false"
               expandTrigger="hover"
+              :showArrow="false"
               :changeOnSelect="true"
               @change="val => handleScheduleChange(val,row)"/>
           </a-form-item>
-          <span v-else>{{ row.schedule[0] === 2 ? scheduleTypes[2] + ' / ' + weekDays[row.schedule[1]] : scheduleTypes[row.schedule[0]] }}</span>
+          <span v-else>{{ row.schedule[0] === 2 ? scheduleTypes[2] + ' / ' + weekDays[row.schedule[1]] : scheduleTypes[row.schedule[0]] === 'Daily' ? scheduleTypes[row.schedule[0]] + '(Data last 7 days)': scheduleTypes[row.schedule[0]] }}</span>
         </span>
         <span slot="nextExecuteTime" slot-scope="v,row">
           <span>{{ renderNextExecuteTime(row) }}</span>
@@ -71,10 +70,10 @@
             <a-divider type="vertical" />
             <a v-if="row.status === 0" @click="handleStatusUpdate(row,1)">Run</a>
             <a v-if="row.status === 1" @click="handleStatusUpdate(row,0)">Stop</a>
-            <a-divider type="vertical" />
-            <a-popconfirm @confirm="handleTest(row)" title="Are you sure test this Reporting?" okText="Yes" cancelText="No">
-              <a>Test</a>
-            </a-popconfirm>
+            <!--            <a-divider type="vertical" />-->
+            <!--            <a-popconfirm @confirm="handleTest(row)" title="Are you sure test this Reporting?" okText="Yes" cancelText="No">-->
+            <!--              <a>Test</a>-->
+            <!--            </a-popconfirm>-->
             <a-divider type="vertical" />
             <a-popconfirm @confirm="handleRemove(row)" title="Are you sure remove this Reporting?" okText="Yes" cancelText="No">
               <a>Remove</a>
@@ -93,8 +92,8 @@
                 <a-select
                   :placeholder="'Column'+(i+1)"
                   :allowClear="true"
-                  :showArrow="false"
                   :disabled="!row.editing"
+                  :showArrow="false"
                   :value="row.dimensions[i]"
                   @change="val => handleDimensionChange(val, i, row)">
                   <a-select-option

@@ -3,6 +3,7 @@
 import { axios } from '@/utils/request'
 
 const api = {
+  publisherGet: '/publisher/get',
   appInfo: '/publisher/app/list',
   appList: '/publisher/app/list',
   updateApp: '/publisher/app/update',
@@ -18,7 +19,22 @@ const api = {
   placementScenesUpdate: '/placement/scene/update',
   appSelectList: '/publisher/app/sort_list',
   brandSearch: '/util/device/brand/list',
-  modelSearch: '/util/device/model/list'
+  modelSearch: '/util/device/model/list',
+  currencyList: '/util/currency/list'
+}
+export function publisherGet (params) {
+  return axios({
+    url: api.publisherGet,
+    method: 'get',
+    params: params
+  })
+}
+export function currencyList (params) {
+  return axios({
+    url: api.currencyList,
+    method: 'get',
+    params: params
+  })
 }
 export function searchAppFromStore (params) {
   return axios({

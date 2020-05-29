@@ -7,7 +7,15 @@ const api = {
   adNetWorkList: '/sdk/adnetworks',
   AdNetworkPlacements: '/sdk/adnetwork/placements',
   createDevApp: '/sdk/dev_app/create',
-  updateDevAppTestResult: '/sdk/dev_app/dev_result/update'
+  updateDevAppTestResult: '/sdk/dev_app/dev_result/update',
+  devAppGet: '/sdk/dev_app/get'
+}
+export function devAppGet (params) {
+  return axios({
+    url: api.devAppGet,
+    method: 'get',
+    params: params
+  })
 }
 export function deviceList (params) {
   return axios({

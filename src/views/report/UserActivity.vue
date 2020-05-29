@@ -9,20 +9,23 @@
       <a-form-item>
         <a-button ghost @click="handleApply" type="primary" style="width: 84px;">Apply</a-button>
       </a-form-item>
-      <om-report-date-picker/>
+      <om-report-date-picker @ok="handleApply"/>
     </a-form>
 
-    <div style="background-color: white; margin-top: 16px; padding: 16px">
-      <a-select
-        showSearch
-        style="width:220px;margin-bottom: 16px;"
-        placeholder="Breakdown"
-        optionLabelProp="title"
-        :showArrow="false"
-        :defaultValue="chartGroupBy"
-        @change="handleDim4ChartChange">
-        <a-select-option v-for="o in dimList4Chart" :key="o.id" :title="o.title">{{ o.title }}</a-select-option>
-      </a-select>
+    <div style="background-color: white; margin-top: 8px; padding: 16px">
+      <div style="margin-bottom: 16px;">
+        <span style="font-size: 16px;color: #333333;font-weight:500;margin-right: 4px;">Breakdown by</span>
+        <a-dropdown :trigger="['click']">
+          <a class="ant-dropdown-link" style="font-size:16px;font-weight:bold;" @click="e => e.preventDefault()">
+            {{ chartGroupBreakdown }} <a-icon type="down" />
+          </a>
+          <a-menu slot="overlay">
+            <a-menu-item v-for="s in dimList4Chart" :key="s.id" :title="s.title">
+              <a href="javascript:;" @click="handleDim4ChartChange(s)">{{ s.title }}</a>
+            </a-menu-item>
+          </a-menu>
+        </a-dropdown>
+      </div>
 
       <a-row :gutter="16">
         <a-col :span="8">
@@ -43,6 +46,7 @@
             :height="248"
             x-column="day"
             y-column="arpDau"
+            y-format="$0.000"
             :group-by="chartGroupViewDim" />
         </a-col>
         <a-col :span="8">
@@ -75,6 +79,7 @@
             :height="248"
             x-column="day"
             y-column="arpDeu"
+            y-format="$0.000"
             :group-by="chartGroupViewDim" />
         </a-col>
         <a-col :span="8">
@@ -98,7 +103,6 @@
         mode="multiple"
         :maxTagCount="1"
         :allowClear="true"
-        :showArrow="false"
         optionLabelProp="title"
         @change="handleDim4TableChange"
         :value="table.dimension">
@@ -110,7 +114,7 @@
         style="width:304px;margin:0 0 16px 16px;"
         placeholder="Metrics"
         mode="multiple"
-        :maxTagCount="2"
+        :maxTagCount="1"
         :allowClear="true"
         :showArrow="false"
         optionLabelProp="title"
@@ -127,12 +131,12 @@
         :loading="table.loading"
         :dataSource="table.data"
         :columns="table.columns"
+        @change="tableChange"
         row-key="id"
         :pagination="false"/>
       <div v-else class="performance_no_data">
         <div class="no_data">
-          <div>No data available</div>
-          <div>Try changing your filters</div>
+          <img src="/icon/empty.svg" />
         </div>
       </div>
     </div>
@@ -179,11 +183,11 @@ export default {
       country: [],
       supportedMetrics: {
         dau: { title: 'DAU' },
-        arpDau: { title: 'ARPDAU' },
-        imprDau: { title: 'Impressions / DAU', format: '0.00 %' },
+        arpDau: { title: 'ARPDAU', format: '$0.000' },
+        imprDau: { title: 'Impressions / DAU', format: '0.00' },
         deu: { title: 'DEU' },
-        arpDeu: { title: 'ARPDEU' },
-        imprDeu: { title: 'Impressions / DEU', format: '0.00 %' },
+        arpDeu: { title: 'ARPDEU', format: '$0.000' },
+        imprDeu: { title: 'Impressions / DEU', format: '0.00' },
         engagementRate: { title: 'Engagement Rate', format: '0.00 %' }
       },
       dimList4Chart: this.filterDim('pubAppId', 'country'),
@@ -203,6 +207,9 @@ export default {
   computed: {
     chartGroupViewDim () {
       return dimColumnMapper[this.chartGroupBy] || this.chartGroupBy
+    },
+    chartGroupBreakdown () {
+      return supportedDimensions[this.chartGroupBy] || this.chartGroupBy
     }
   },
   mounted () {
@@ -223,7 +230,7 @@ export default {
       this.reloadTable('dimension')
     },
     handleDim4ChartChange (dim) {
-      this.chartGroupBy = dim
+      this.chartGroupBy = dim.id
       this.reloadChart()
     },
     handleDim4TableChange (dim) {
@@ -250,7 +257,7 @@ export default {
       getReportList(ps)
         .then(res => {
           if (!res.code) {
-            this.chartData = res.data.map(this.mapMetrics)
+            this.chartData = res.data.map(this.mapMetrics).sort((a, b) => b.cost || 0 - a.cost || 0)
           }
         })
         .finally(_ => {
@@ -298,7 +305,12 @@ export default {
         getReportList(ps)
           .then(res => {
             if (!res.code) {
-              this.table.data = res.data.map(this.mapMetrics)
+              this.table.data = res.data.map(this.mapMetrics).sort((a, b) => {
+                if (b.day) {
+                  return b.day.localeCompare(a.day)
+                }
+                return 0
+              })
             }
           })
           .finally(_ => {
@@ -327,21 +339,41 @@ export default {
         row.arpDeu = row.cost / row.deu
         row.imprDeu = row.impr / row.deu
       }
+      if (!row.country) {
+        row.country = '(Empty)'
+      }
+      if (!row.pubAppName) {
+        row.pubAppName = '(Empty)'
+      }
       return row
+    },
+    tableChange (pagination, filters, sorter) {
+      this.sorter = sorter
     },
     handleDownload () {
       const header = this.table.columns.map(col => col.title).join(',')
-      const data = this.table.data.map(row => {
-        return this.table.columns.map(col => {
-          return row[col.dataIndex]
-        }).join(',')
-      }).join('\n')
-      const blob = new Blob([header + '\n' + data], { type: 'text/csv,charset=UTF-8' })
-      const link = document.createElement('a')
-      link.href = URL.createObjectURL(blob)
-      link.download = 'download.csv'
-      link.click()
-      URL.revokeObjectURL(link.href)
+      let data = [...this.table.data]
+      const that = this
+      if (this.sorter) {
+        data = data.sort((a, b) => {
+          if (that.sorter.order === 'ascend') {
+            return (a[that.sorter.field] + '').localeCompare(b[that.sorter.field] + '')
+          } else {
+            return (b[that.sorter.field] + '').localeCompare(a[that.sorter.field] + '')
+          }
+        })
+        data = data.map(row => {
+          return this.table.columns.map(col => {
+            return row[col.dataIndex]
+          }).join(',')
+        }).join('\n')
+        const blob = new Blob([new Uint8Array([0xef, 0xbb, 0xbf]), header + '\n' + data], { type: 'text/csv,charset=UTF-8' })
+        const link = document.createElement('a')
+        link.href = URL.createObjectURL(blob)
+        link.download = 'download.csv'
+        link.click()
+        URL.revokeObjectURL(link.href)
+      }
     }
   }
 }
@@ -354,7 +386,7 @@ export default {
     }
   }
   .performance_no_data {
-    background: #E5E7EA;
+    background: #FBFBFB;
     height: 176px;
     display: flex;
     justify-content: center;

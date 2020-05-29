@@ -4,6 +4,7 @@
     <a-tag v-if="adTypes && adTypes.indexOf('Interstitial')>-1">Interstitial</a-tag>
     <a-tag v-if="adTypes && adTypes.indexOf('Native')>-1">Native</a-tag>
     <a-tag v-if="adTypes && adTypes.indexOf('Banner')>-1">Banner</a-tag>
+    <a-tag v-if="adTypes && adTypes.indexOf('Splash')>-1">Splash</a-tag>
   </span>
 </template>
 

@@ -45,6 +45,10 @@ export default {
     yFormat: {
       type: String,
       default: '0,0.00a'
+    },
+    dateRange: {
+      type: Number,
+      default: 14
     }
   },
   data () {
@@ -87,6 +91,9 @@ export default {
       this.upDown = v < 0 ? 'down' : 'up'
       this.value = numerify(current, this.yFormat)
       this.growthValue = numerify(v, this.yFormat)
+      if (this.growthValue === '0$.000') {
+        this.growthValue = '$0.000'
+      }
       this.growthRate = numerify(current / (last || 1) - 1, '+0,0.00a%')
     },
     getColumnValue (d, x) {

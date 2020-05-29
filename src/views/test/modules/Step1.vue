@@ -1,14 +1,14 @@
 <template>
   <div>
-    <a-form :form="form" :hideRequiredMark="true" style="margin-top:84px;text-align: center;">
-      <div style="background-color:#ffffff">
+    <a-form :form="form" :hideRequiredMark="true" style="margin-top:84px;text-align: center;padding-left: 16px;padding-right: 16px">
+      <div style="background-color:#ffffff;margin-bottom:64px;">
         <a-table
           ref="table"
           class="ant-card-table-default"
           rowKey="id"
           fixed="true"
           :dataSource="data"
-          :scroll="{ y: 500 }"
+          :scroll="{ y: scroll }"
           :columns="columns"
           :pagination="false"
         >
@@ -42,11 +42,9 @@
         </a-table>
       </div>
     </a-form>
-    <div class="button-div">
-      <a-button type="primary" style="bottom: -40px;width: 168px;" v-action:add @click="nextStep()">Start</a-button>
+    <div class="button-div" v-action:add>
+      <a-button type="primary" style="bottom: 16px;width: 168px;left: 50%;position: fixed;bottom: 16px;" @click="nextStep()">Start</a-button>
     </div>
-    <a-spin :spinning="loading" style="width:100%; height: 80%">
-    </a-spin>
   </div>
 </template>
 
@@ -67,6 +65,7 @@ export default {
       showInfo: true,
       loading: false,
       plat: 0,
+      scroll: 500,
       data: [],
       curExpandedRowKeys: [],
       curExpandedRowData: {},
@@ -103,6 +102,7 @@ export default {
   },
   mounted () {
     const params = {}
+    this.scroll = window.innerHeight - 400
     params.pubAppId = this.pubAppId
     adNetWorkList(params).then(res => {
       if (res.data) {
@@ -118,7 +118,10 @@ export default {
           this.selectData.push(this.data[i])
         }
       }
-
+      if (this.selectData.length < 1) {
+        this.$message.error('Please select one Ad NetWork ')
+        return false
+      }
       const item = {}
       const that = this
       item.pubAppId = this.pubAppId
@@ -179,12 +182,15 @@ export default {
   }
 }
 .button-div {
-  text-align: center;
-  bottom: 0;
-  z-index: 100;
-  position: fixed;
-  width: 80%;
-  height: 100px;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.6) 32.36%, #ffffff 100%);
+}
+.ds-bottom{
+  margin-top: 4px;
+  margin-left: 4px;
+  margin-right: 4px;
+  margin-bottom: 16px;
+  -webkit-box-shadow: 0px 4px 10px rgba(221, 224, 228, 0.3), 0px 0px 4px rgba(221, 224, 228, 0.3);
+  box-shadow: 0px 4px 10px rgba(221, 224, 228, 0.3), 0px 0px 4px rgba(221, 224, 228, 0.3);
+  border-radius: 2px;
 }
 </style>

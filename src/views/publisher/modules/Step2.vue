@@ -1,16 +1,16 @@
 <template>
   <div>
     <a-form :form="form" style="margin-top:84px;text-align: center;">
-      <om-form :showTip="false" label="App Name" field="appName" style="margin-bottom:32px;position:">
+      <om-form :form="form" :showTip="false" label="App Name" field="appName" style="margin-bottom:32px;position:">
         <a-input placeholder="my appname" :appName="appName" v-decorator="['appName', { initialValue: appName || '', rules: [{validator: handleCheckAppName}] }]"/>
       </om-form>
-      <a-form-item :wrapperCol="{span: 19, offset: 4}">
-      </a-form-item>
     </a-form>
     <div class="button-div">
       <a-button type="primary" style="width:168px;" ghost @click="prevStep">Previous</a-button>
       <a-button type="primary" :loading="loading" style="margin-left: 55px;width:168px" @click="nextStep">Next</a-button>
     </div>
+    <a-spin :spinning="loading" style="width:100%; height: 80%;" >
+    </a-spin>
   </div>
 </template>
 
@@ -84,6 +84,5 @@ export default {
   position: fixed;
   width: 80%;
   height: 100px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.6) 32.36%, #ffffff 100%);
 }
 </style>

@@ -1,18 +1,15 @@
 <template>
-  <div>
-    <a-form :form="form" :hideRequiredMark="true" style="margin-top:84px;text-align: center;">
-      <om-form :showTip="false" label="Organization" field="batchSize" tip="Org.name" >
-        <OrgSelect :value="publisherId"/>
-      </om-form>
+  <div style="height:100%">
+    <a-form :form="form" :hideRequiredMark="true" style="margin-top:84px;text-align: center;" >
       <om-form :showTip="false" label="App ID" field="appId" tip="App ID" style="margin-top:-12px;">
         <a-input placeholder="App ID" autocomplete="off" :appId="appId" v-decorator="['appId', { initialValue: appId || '', rules: [{ validator: handleCheckAppId }] }]"/>
       </om-form>
     </a-form>
     <div class="button-div">
-      <a-button type="primary" style="width:168px" ghost @click="search">Import Info From Store</a-button>
+      <a-button type="primary" ghost @click="search">Import Info From Store</a-button>
       <a-button type="primary" ghost style="margin-left: 55px;width:168px" @click="nextStep">Not Live in Store</a-button>
     </div>
-    <a-spin :spinning="loading" style="width:100%; height: 80%">
+    <a-spin :spinning="loading" style="width:100%; height: 80%;" >
     </a-spin>
   </div>
 </template>
@@ -20,21 +17,18 @@
 <script>
 import { searchAppFromStore } from '@/api/publisher'
 import OmForm from '@/components/OmForm'
-import OrgSelect from '@/components/om/OrgSelect'
 
 export default {
   name: 'Step1',
   components: {
-    OmForm,
-    OrgSelect
+    OmForm
   },
   data () {
     return {
       labelCol: { lg: { span: 5 }, sm: { span: 5 } },
       wrapperCol: { lg: { span: 19 }, sm: { span: 19 } },
       form: this.$form.createForm(this),
-      appId: this.$parent.$parent.appId,
-      publisherId: this.$parent.$parent.publisherId,
+      appId: this.$parent.$parent.appInfo.appId || '',
       showInfo: true,
       loading: false,
       plat: 0
@@ -156,11 +150,10 @@ export default {
 }
 .button-div {
   text-align: center;
-  bottom: 0;
+  bottom: 16px;
   z-index: 100;
   position: fixed;
   width: 80%;
   height: 100px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.6) 32.36%, #ffffff 100%);
 }
 </style>

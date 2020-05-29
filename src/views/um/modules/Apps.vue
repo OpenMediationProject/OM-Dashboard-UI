@@ -1,6 +1,6 @@
 <!-- User Management Apps tab -->
 <template>
-  <a-form :form="form" :hideRequiredMark="true">
+  <a-form class="ummange" :form="form" :hideRequiredMark="true">
     <a-row type="flex" justify="start">
       <AppSelectSimple />
       <a-form-item>
@@ -220,4 +220,7 @@ export default {
 </script>
 
 <style type="less" scoped>
+  .ummange >>> .ant-form-item {
+    margin-bottom: 4px;
+  }
 </style>

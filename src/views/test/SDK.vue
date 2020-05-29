@@ -1,8 +1,8 @@
-<!-- SDK Intergration page router '/sdk/intergration' -->
+<!-- SDK Integration page router '/sdk/integration' -->
 <template>
-  <a-tabs class="mytabs" :tabBarStyle="{ backgroundColor: '#F7F7F7', marginLeft: '10px', marginTop: '-12px'}" defaultActiveKey="1">
+  <a-tabs class="mytabs" :tabBarStyle="{ backgroundColor: '#F7F7F7', marginLeft: '10px'}" defaultActiveKey="1">
     <a-tab-pane tab="Testing" key="1">
-      <testing style="margin-top:16px;padding-left:16px;padding-right:16px;"/>
+      <testing/>
     </a-tab-pane>
     <a-tab-pane tab="Devices" key="2" forceRender>
       <devices />
@@ -24,8 +24,6 @@ export default {
     return {
       form: this.$form.createForm(this),
       loadding: false,
-      curExpandedRowKeys: [],
-      currentExpandedStatOpen: false,
       data: [],
       columns: [
       ]

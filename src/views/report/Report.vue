@@ -3,6 +3,7 @@
   <a-tabs class="mytabs" defaultActiveKey="1">
     <a-tab-pane tab="Performance" key="1">
       <Performance />
+      <div style="height:16px; width:100%"></div>
     </a-tab-pane>
     <a-tab-pane tab="User Activity" key="2">
       <UserActivity/>

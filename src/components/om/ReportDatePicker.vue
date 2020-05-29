@@ -1,11 +1,5 @@
 <template>
   <div style="display: inline;float: right;">
-    <svg style="margin:5px 4px 0 0" width="4" height="32" viewBox="0 0 4 32" fill="none">
-      <circle cx="2" cy="4" r="2" fill="#E5E7EA"/>
-      <circle cx="2" cy="12" r="2" fill="#E5E7EA"/>
-      <circle cx="2" cy="20" r="2" fill="#E5E7EA"/>
-      <circle cx="2" cy="28" r="2" fill="#E5E7EA"/>
-    </svg>
     <a-form-item style="margin-right: 0">
       <a-range-picker
         class="om-date-picker"

@@ -1,6 +1,6 @@
 <template>
   <a-card class="card-noline" title="Basic Information" :bordered="false" >
-    <om-form :maxlength="40" label="Name" field="name" tip="Segment Name" :showTip="false"/>
+    <om-form :max-length="40" label="Name" field="name" tip="Segment Name" :showTip="false"/>
     <om-form label="Optimize Type" field="autoOpt" tip="Optimize Type" :showTip="false">
       <a-select @change="optChange" placeholder="Manual" v-decorator="['autoOpt',{rules: [{ required: true, message: 'Optimize Type can not be empty.'}] }]" >
         <a-select-option :value="0">Manual</a-select-option>
@@ -10,31 +10,43 @@
     <om-form label="Regions" field="regions" tip="Regions" :showTip="false" >
       <RegionsSelect @change="regionsSelectedId" :defaultSelected="countris" size="default" />
     </om-form>
-    <om-form label="Frequency" field="frequency" tip="Frequency" :fill="false" :showTip="false" >
-      <a-input-number
-        ref="iap-min"
-        style="width:100%"
-        type="number"
-        :min="0"
-        :max="500"
-        v-decorator="['frequency']"/>
-    </om-form>
-    <om-form label="IAP(USD)" field="iapMin" tip="IAP(USD)" :fill="false" :showTip="false">
-      <a-input-number
-        style="width:100px;"
-        ref="iapmin"
-        :max="9999"
-        :min="0"
-        v-decorator="['iapMin', {rules: [{ validator: handleCheckIapMin }]}]"/> -
-      <a-input-number
-        ref="iapmax"
-        :max="9999"
-        :min="0"
-        style="width:100px;"
-        v-decorator="['iapMax', {rules: [{ validator: handleCheckIapMax }]}]"/>
-    </om-form>
+    <a-form-item>
+      <om-form label="Channel" field="channel" :fill="false" :showTip="false">
+        <a-input-group style="width:100%" compact>
+          <a-select v-decorator="['channelBow', {initialValue: 0}]">
+            <a-select-option :value="0">include</a-select-option>
+            <a-select-option :value="1">exclude</a-select-option>
+          </a-select>
+          <a-select allowClear v-decorator="['channel']" mode="tags" style="width: 73%">
+          </a-select>
+        </a-input-group>
+      </om-form>
+    </a-form-item>
     <a-divider><img v-if="visible" @click="handleVisible" src="/assets/lineUp.svg"><img @click="handleVisible" v-else src="/assets/lineDown.svg"></a-divider>
     <span v-show="visible">
+      <om-form label="Frequency" field="frequency" tip="Frequency" :fill="false" :showTip="false" >
+        <a-input-number
+          ref="iap-min"
+          style="width:100%"
+          type="number"
+          :min="0"
+          :max="500"
+          v-decorator="['frequency']"/>
+      </om-form>
+      <om-form label="IAP(USD)" field="iapMin" tip="IAP(USD)" :fill="false" :showTip="false">
+        <a-input-number
+          style="width:100px;"
+          ref="iapmin"
+          :max="9999"
+          :min="0"
+          v-decorator="['iapMin', {rules: [{ validator: handleCheckIapMin }]}]"/> -
+        <a-input-number
+          ref="iapmax"
+          :max="9999"
+          :min="0"
+          style="width:100px;"
+          v-decorator="['iapMax', {rules: [{ validator: handleCheckIapMax }]}]"/>
+      </om-form>
       <om-form label="Interest" field="interest" tip="Interest" :fill="false" :showTip="false">
         <a-select mode="multiple" v-decorator="['interest']" placeholder="Tags">
           <a-select-option
@@ -49,6 +61,13 @@
           <a-checkbox :value="1">2G</a-checkbox>
           <a-checkbox :value="2">3G</a-checkbox>
           <a-checkbox :value="3">4G</a-checkbox>
+        </a-checkbox-group>
+      </om-form>
+      <om-form label="Model Type" field="modelType" tip="Model Type" :fill="false" :showTip="false">
+        <a-checkbox-group v-model="selectedModelType" :defaultValue="modelType" @change="modelTypeChance">
+          <a-checkbox :value="0">Phone</a-checkbox>
+          <a-checkbox :value="1">Pad</a-checkbox>
+          <a-checkbox :value="2">TV</a-checkbox>
         </a-checkbox-group>
       </om-form>
       <a-form-item>
@@ -100,14 +119,12 @@
 import { mapState } from 'vuex'
 import omForm from '@/components/OmForm'
 import RegionsSelect from '@/components/om/RegionsSelect'
-import DeviceSelect from './DeviceSelect'
 import { modelSearch, brandSearch } from '@/api/publisher'
 
 export default {
   components: {
     'om-form': omForm,
-    RegionsSelect,
-    DeviceSelect
+    RegionsSelect
   },
   props: {
     id: {
@@ -116,6 +133,11 @@ export default {
       default: 0
     },
     conType: {
+      type: Array,
+      required: false,
+      default: null
+    },
+    modelType: {
       type: Array,
       required: false,
       default: null
@@ -129,6 +151,10 @@ export default {
       type: Number,
       required: false,
       default: 0
+    },
+    form: {
+      type: Object,
+      default: null
     }
   },
   data () {
@@ -144,6 +170,7 @@ export default {
       fetching: false,
       value: [],
       selectedContype: this.conType,
+      selectedModelType: this.modelType,
       interestsOption: [
         {
           'id': 'american_football',
@@ -460,6 +487,9 @@ export default {
     conType (val) {
       this.selectedContype = val
     },
+    modelType (val) {
+      this.selectedModelType = val
+    },
     regions (val) {
       this.countris = val
     }
@@ -535,6 +565,9 @@ export default {
     contypeChance (e) {
       this.$emit('selectedContype', this.selectedContype)
     },
+    modelTypeChance (e) {
+      this.$emit('selectedModelType', this.selectedModelType)
+    },
     regionsSelectedId (value) {
       this.$emit('change', value)
     },
@@ -573,7 +606,43 @@ export default {
         this.deviceModelData = data
         this.fetching = false
       })
+    },
+    init () {
+      const that = this
+      setTimeout(function () {
+        if (document.getElementById('channel')) {
+          const dom = document.getElementById('channel').querySelectorAll('.ant-select-search__field')[0]
+          dom.addEventListener('paste', function (e) {
+            dom.blur()
+            for (var i = 0, len = e.clipboardData.items.length; i < len; i++) {
+              var item = e.clipboardData.items[i]
+              if (item.kind === 'string') {
+                item.getAsString(function (str) {
+                  let list = str.split('\n')
+                  list = list.filter(item => {
+                    return item.trim() !== ''
+                  })
+                  let old = that.form.getFieldsValue().channel
+                  if (old && old.length) {
+                    list.forEach(element => {
+                      if (!old.includes(element)) {
+                        old.push(element)
+                      }
+                    })
+                  } else {
+                    old = list
+                  }
+                  that.form.setFieldsValue({ 'channel': old })
+                })
+              }
+            }
+          }, false)
+        }
+      }, 1000)
     }
+  },
+  created () {
+    this.init()
   }
 }
 </script>

@@ -104,6 +104,10 @@ const adTypeMap = {
   3: {
     adType: 0,
     text: 'Interstitial'
+  },
+  4: {
+    adType: 0,
+    text: 'Splash'
   }
 }
 

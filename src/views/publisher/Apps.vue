@@ -57,6 +57,7 @@
           <a-tag v-if="text && text.Interstitial">Interstitial x {{ text.Interstitial }}</a-tag>
           <a-tag v-if="text && text.Native">Native x {{ text.Native }}</a-tag>
           <a-tag v-if="text && text.Banner">Banner x {{ text.Banner }}</a-tag>
+          <a-tag v-if="text && text.Splash">Splash x {{ text.Splash }}</a-tag>
         </span>
         <span slot="status" slot-scope="text, record">
           <a herf="#" @click="handleEdit(record)">{{ text===0?'Enable' : 'Disable' }}</a>

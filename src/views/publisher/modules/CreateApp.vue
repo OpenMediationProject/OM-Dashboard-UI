@@ -6,7 +6,7 @@
       <a-step title="App Name"/>
       <a-step title="Final Check"/>
     </a-steps>
-    <div class="content">
+    <div class="content" style="height:100%">
       <step1 v-if="currentTab === 0" @nextStep="nextStep" @platInfo="platInfo" @finalCheck="finalCheck"/>
       <step2 v-if="currentTab === 1" @nextStep="nextStep" @prevStep="prevStep"/>
       <step3 v-if="currentTab === 2" @prevStep="prevStep" @finish="finish"/>
@@ -43,6 +43,7 @@ export default {
       params: {},
       publisherId: 0,
       currentStep: 0,
+      appInfo: { appId: '' },
       style: 'height:600px'
     }
   },
@@ -66,7 +67,7 @@ export default {
       }
     },
     prevStep () {
-      if (Object.keys(this.appInfo).length > 5) {
+      if (this.appInfo.icon) {
         this.currentTab = 0
       } else {
         if (this.currentTab > 0) {
@@ -97,5 +98,11 @@ export default {
   .steps {
     max-width: 750px;
     margin: 16px auto;
+  }
+  .ant-card{
+    margin-left: 4px;
+    margin-right: 4px;
+    margin-bottom: 4px;
+    border: 4px solid #f5f5f5;
   }
 </style>

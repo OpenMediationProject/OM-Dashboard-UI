@@ -5,14 +5,14 @@
     <a-form :form="form">
       <a-card :bordered="false" >
         <a-tabs :activeKey="activeKey" class="createplacement" style="margin-left:14px;" @change="tabClickHandler">
-          <a-tab-pane tab="Basic" key="1" :style="{height: height}">
+          <a-tab-pane tab="Basic" key="1" :style="{height: height, overflowY: 'scroll'}">
             <div style="margin: 16px auto 0;">
-              <om-form label="Name" field="name" :showTip="false" style="margin-bottom:24px;">
+              <om-form :form="form" label="Name" field="name" :showTip="false" style="margin-bottom:24px;">
                 <a-form-item style="width: 408px;">
-                  <a-input placeholder="Appname-Placement name" v-decorator="['mdl.name', { initialValue: '', rules: [{ required: true, message: 'Placement name can not be empty.' },{max: 30, message: 'Android App Name max length limited to 30 characters'}] }]"/>
+                  <a-input placeholder="Placement name" v-decorator="['mdl.name', { initialValue: '', rules: [{ required: true, message: 'Placement name can not be empty.' },{max: 30, message: 'Android App Name max length limited to 30 characters'}] }]"/>
                 </a-form-item>
               </om-form>
-              <om-form label="Type" :showTip="false">
+              <om-form :form="form" label="Type" :showTip="false">
                 <a-form-item v-if="editType==='Edit' || editType === 'Details'">
                   <div v-if="mdl.adType===2" :class="mdl.adType===2? 'item-main-selected': 'item-main'" style="cursor: not-allowed;">
                     <img class="item-icon" src="/icon/placement/video-blue.svg" style="width: 30px;height: 55.5px;">
@@ -40,6 +40,13 @@
                     <div class="item-content">
                       <div class="item-title"><span style="margin-right: 10px;">Banner</span><a><a-icon type="question-circle" /></a></div>
                       <div class="item-desc">Rewarded Video ad rewards your users with valuable virtual item in exchange for a completed view.</div>
+                    </div>
+                  </div>
+                  <div v-if="mdl.adType===4" :class="mdl.adType===4? 'item-main-selected': 'item-main'" style="cursor: not-allowed;margin: 0 0px 16px 0;">
+                    <img class="item-icon" src="/icon/placement/splash.svg" style="width: 30px;height: 55.5px;">
+                    <div class="item-content">
+                      <div class="item-title"><span style="margin-right: 10px;">Splash</span><a><a-icon type="question-circle" /></a></div>
+                      <div class="item-desc">Branded full screen ad that appears for a few seconds after the branded application splash screen.</div>
                     </div>
                   </div>
                 </a-form-item>
@@ -72,9 +79,22 @@
                       <div class="item-desc">Rewarded Video ad rewards your users with valuable virtual item in exchange for a completed view.</div>
                     </div>
                   </div>
+                  <div
+                    @mouseenter="enter(4, $event)"
+                    @mouseleave="leave(4, $event)"
+                    @click="handleTypeChance(4)"
+                    :class="mdl.adType===4? 'item-main-selected': 'item-main'"
+                    :style="placementId? 'cursor: not-allowed;':'' ">
+                    <img class="item-icon" src="/icon/placement/splash.svg" style="width: 30px;height: 55.5px;">
+                    <div class="item-content">
+                      <div class="item-title"><span style="margin-right: 10px;">Splash</span><a><a-icon type="question-circle" /></a></div>
+                      <div class="item-desc">Branded full screen ad that appears for a few seconds after the branded application splash screen.</div>
+                    </div>
+                  </div>
                 </a-form-item>
               </om-form>
             </div>
+            <div style="height:16px; width:100%"></div>
           </a-tab-pane>
           <a-tab-pane tab="Instances" key="4" :style="{height: height}">
             <instance-edit v-if="placementId" />
@@ -87,6 +107,7 @@
                 showIcon
               />
             </a-card>
+            <div style="height:16px; width:100%"></div>
           </a-tab-pane>
           <a-tab-pane tab="Scenes" key="2" forceRender :style="{height: height}">
             <a-card v-if="mdl.adType === 2 || mdl.adType ===3" :bordered="false" style="margin: 16px 16px 0;margin-left: 8px;margin-right: 24px;">
@@ -101,10 +122,20 @@
                 showIcon
               />
             </a-card>
+            <div style="height:16px; width:100%"></div>
           </a-tab-pane>
           <a-tab-pane tab="Advanced Settings" key="3" :style="{height: height}">
             <a-card :bordered="false" style="margin: 16px auto 0;">
               <a-form-item
+                label="Callback URL"
+                :colon="false"
+                v-if="mdl.adType===2"
+                :labelCol="{lg: { span: 9 }, sm: { span: 9 }}"
+                :wrapperCol="{lg: { span: 9 }, sm: { span: 9 } }">
+                <a-input v-decorator="['mdl.icUrl',{initialValue: mdl.icUrl}]" style="width:400px;"></a-input>
+              </a-form-item>
+              <a-form-item
+                v-if="[0, 1].includes(mdl.adType)"
                 label="Frequency Cap"
                 :colon="false"
                 style="margin-bottom: 8px;"
@@ -190,6 +221,7 @@
                 </a-input-group>
               </a-form-item>
             </a-card>
+            <div style="height:16px; width:100%"></div>
           </a-tab-pane>
         </a-tabs>
       </a-card>
@@ -202,7 +234,7 @@ import { modelSearch, brandSearch, placementGet, placementUpdate, placementCreat
 import OmForm from '@/components/OmForm'
 import InstanceEdit from './InstanceEdit'
 import ScenesEdit from './ScenesEdit'
-
+import { mapState } from 'vuex'
 export default {
   name: 'CreatePlacement',
   components: {
@@ -211,7 +243,10 @@ export default {
     ScenesEdit
   },
   data () {
+    const canEdit = this.$route.query.type !== 'Details'
     return {
+      canEdit,
+      loading: false,
       labelCol: { lg: { span: 4 }, sm: { span: 4 } },
       wrapperCol: { lg: { span: 19 }, sm: { span: 19 } },
       form: this.$form.createForm(this),
@@ -219,7 +254,7 @@ export default {
       height: '500px',
       count: -100,
       activeKey: '1',
-      mdl: { pubAppId: this.$store.state.publisher.searchApp, name: '', frequencyCap: 0, frequencyUnit: 1, frequencyInterval: 0, adType: this.$route.params.type === 'Edit' ? null : 1, modelType: 'include', brandType: 'include' },
+      mdl: { pubAppId: this.$store.state.publisher.searchApp, name: '', icUrl: '', frequencyCap: 0, frequencyUnit: 1, frequencyInterval: 0, adType: this.$route.params.type === 'Edit' ? null : 1, modelType: 'include', brandType: 'include' },
       placementId: this.$route.query.placementId,
       data: [],
       deviceData: [],
@@ -229,8 +264,11 @@ export default {
       fetching: false
     }
   },
+  computed: mapState({
+    isNgp: state => state.user.info.isNgp
+  }),
   mounted () {
-    this.height = (window.innerHeight - 209) + 'px'
+    this.height = (window.innerHeight - 206) + 'px'
     if (this.placementId > 0) {
       placementGet({ placementId: this.$route.query.placementId })
         .then(res => {
@@ -269,6 +307,7 @@ export default {
       this.$router.push('/publisher/placement/list')
     },
     createPlacement () {
+      this.loading = true
       const { form: { validateFields } } = this
       const that = this
       validateFields((err, values) => {
@@ -292,6 +331,8 @@ export default {
               } else {
                 this.$message.error(`create placement success`)
               }
+            }).finally(() => {
+              this.loading = false
             })
           } else {
             placementCreate(that.mdl).then(res => {
@@ -301,10 +342,13 @@ export default {
               } else {
                 this.$message.error(`create placement error`)
               }
+            }).finally(() => {
+              this.loading = false
             })
           }
         } else {
           this.activeKey = '1'
+          this.loading = false
         }
       })
     },

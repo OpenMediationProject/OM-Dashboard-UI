@@ -82,6 +82,13 @@
     <om-form label="User Name" :fill="false" :edit="canEdit" field="clientId" tip="From <a target=&quot;_blank&quot; href=&quot;https://platform.ironsrc.com/partners/account/generalInfo&quot;>ironSource My Account</a> page,selected User Info Tab to get your User Name" />
     <om-form label="Secret Key" :fill="false" :edit="canEdit" field="clientSecret" tip="From <a target=&quot;_blank&quot; href=&quot;https://platform.ironsrc.com/partners/account/apiDetails&quot;>ironSource My Account</a> page,selected API Tab to get your Secret Key" />
   </div>
+  <div v-else-if="id===30">
+    <!-- Fyber -->
+    <om-form label="App ID" :edit="canEdit" field="adnAppKey" :showTip="false" />
+    <om-form label="Publisher ID" :fill="false" :edit="canEdit" field="apiKey" :showTip="false" />
+    <om-form label="Consumer Key" :fill="false" :edit="canEdit" field="clientId" :showTip="false" />
+    <om-form label="Consumer Secret" :fill="false" :edit="canEdit" field="clientSecret" :showTip="false" />
+  </div>
 </template>
 <script>
 import { mapState } from 'vuex'
