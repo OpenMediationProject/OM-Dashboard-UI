@@ -190,7 +190,8 @@ export default {
     }
   },
   computed: mapState({
-    searchApp: state => state.publisher.searchApp
+    searchApp: state => state.publisher.searchApp,
+    clientId: state => state.user.info.clientId
   }),
   watch: {
     edit (val) {
@@ -212,82 +213,55 @@ export default {
         }, 1)
       }
     },
-    // googleApiInit () {
-    //   this.$emit('admobAuth')
-    // },
     googleApiInit () {
       const scope = 'https://www.googleapis.com/auth/adsense.readonly https://www.googleapis.com/auth/dfp'
-      if (this.record && this.record.id > 0) {
-        // eslint-disable-next-line no-undef
-        gapi.load('auth2', _ => {
+      const { form: { validateFields } } = this
+      validateFields((err, values) => {
+        if (!err) {
           // eslint-disable-next-line no-undef
-          const GoogleAuth = gapi.auth2.init({
-            client_id: '22744042822-iec4lvvm2vgqkshnom4jrv2opjel3kd5.apps.googleusercontent.com',
-            fetch_basic_profile: false,
-            scope: scope
-          })
-          GoogleAuth.grantOfflineAccess({
-            scope: scope,
-            prompt: 'select_account'
-          }).then(resp => {
-            if (resp.code) {
-              const params = { accountId: this.record.id, authCode: resp.code }
-              googleTokenSave(params).then(res => {
-                if (res.code === 0) {
-                  this.$emit('authSuccess', this.record.id)
-                  this.$message.success('success')
-                }
-              })
-            }
-          })
-        })
-      } else {
-        const { form: { validateFields } } = this
-        validateFields((err, values) => {
-          if (!err) {
-            values.authType = this.aType
-            if (this.record) {
-              values.id = this.record.id
-              values.adnAccountId = this.record.adnAccountId
-            } else {
-              values.adnAccountId = 0
-            }
-            values.adnId = 2
-            accountCreate(values).then(res => {
-              if (res.code === 0) {
-                if (this.record) {
-                  this.record = Object.assign(this.record, res.data)
-                } else {
-                  this.record = res.data
-                }
-                // eslint-disable-next-line no-undef
-                gapi.load('auth2', _ => {
-                  // eslint-disable-next-line no-undef
-                  const GoogleAuth = gapi.auth2.init({
-                    client_id: '22744042822-iec4lvvm2vgqkshnom4jrv2opjel3kd5.apps.googleusercontent.com',
-                    fetch_basic_profile: false,
-                    scope: scope
-                  })
-                  GoogleAuth.grantOfflineAccess({
-                    scope: scope,
-                    prompt: 'select_account'
-                  }).then(resp => {
-                    if (resp.code) {
-                      const params = { accountId: this.record.id, authCode: resp.code }
-                      googleTokenSave(params).then(res => {
-                        if (res.code === 0) {
-                          this.$emit('authSuccess', this.record.id)
-                          this.$message.success('success')
-                        }
-                      })
+          gapi.load('auth2', _ => {
+            // eslint-disable-next-line no-undef
+            const GoogleAuth = gapi.auth2.init({
+              client_id: this.clientId,
+              fetch_basic_profile: false,
+              scope: scope
+            })
+            GoogleAuth.grantOfflineAccess({
+              scope: scope,
+              prompt: 'select_account'
+            }).then(resp => {
+              if (resp.code) {
+                const params = { authCode: resp.code }
+                googleTokenSave(params).then(res => {
+                  if (res.code === 0) {
+                    values.userId = res.data.pubId
+                    values.adnAppToken = res.data.refreshToken
+                    values.authType = this.aType
+                    if (this.record) {
+                      values.id = this.record.id
+                      values.adnAccountId = this.record.adnAccountId
+                    } else {
+                      values.adnAccountId = 0
                     }
-                  })
+                    values.adnId = 2
+                    accountCreate(values).then(res => {
+                      if (res.code === 0) {
+                        if (this.record) {
+                          this.record = Object.assign(this.record, res.data)
+                        } else {
+                          this.record = res.data
+                        }
+                        this.$emit('authSuccess', this.record.id)
+                        this.$message.success('success')
+                      }
+                    })
+                  }
                 })
               }
             })
-          }
-        })
-      }
+          })
+        }
+      })
     },
     grantToken () {
       const params = { accountId: this.record.id }
@@ -303,15 +277,15 @@ export default {
 }
 </script>
 <style lang="less" scoped>
-img {
-margin-left:6px;margin-top:-5px;
-}
-.tip {
-  position: absolute;
-  top: 1px;
-  margin-left: 8px;
-}
-.ant-form-item {
-  margin-bottom: 12px;
-}
+  img {
+    margin-left:6px;margin-top:-5px;
+  }
+  .tip {
+    position: absolute;
+    top: 1px;
+    margin-left: 8px;
+  }
+  .ant-form-item {
+    margin-bottom: 12px;
+  }
 </style>

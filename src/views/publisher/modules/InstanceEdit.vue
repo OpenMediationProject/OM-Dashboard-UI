@@ -168,7 +168,7 @@
               :id="record.adnId"
               :status="record.status"
             />
-            <ADNSelect @change="adnChange" :name="record.id+'adnId'" :defaultValue="record.adnId" v-else/>
+            <ADNSelect @change="adnChange" :placementId="id" :name="record.id+'adnId'" :defaultValue="record.adnId" v-else/>
           </span>
           <span class="row-edit" slot="placementKey" slot-scope="text, record">
             <span :style="record.status===0 ? 'opacity: 0.3;' : null">
@@ -431,7 +431,7 @@ export default {
           if (values.adnId === 14 && values['mt_left']) {
             values.adnAppKey = values['mt_left'].trim() + '#' + values['mt_right'].trim()
           }
-          if (values.adnId === 1 && !values.adnAppId) {
+          if (values.adnId === 2 && !values.adnAppId) {
             values.authType = 1
           } else {
             values.authType = 2

@@ -190,8 +190,8 @@ export default {
         readyRate: { title: 'Ad-Availability Rate', format: '0.00 %' }
       },
       dimList4Chart: this.filterDim('pubAppId', 'country', 'adnId'),
-      // dimList4Table: this.filterDim('day', 'country', 'pubAppId', 'placementId', 'adnId', 'instanceId', 'sceneId'),
-      dimList4Table: this.filterDim('day', 'country', 'pubAppId', 'placementId', 'adnId', 'instanceId'),
+      dimList4Table: this.filterDim('day', 'country', 'pubAppId', 'placementId', 'adnId', 'instanceId', 'sceneId'),
+      // dimList4Table: this.filterDim('day', 'country', 'pubAppId', 'placementId', 'adnId', 'instanceId'),
       loading: false,
       chartGroupBy: 'pubAppId',
       chartData: [],

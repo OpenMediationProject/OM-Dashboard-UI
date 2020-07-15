@@ -104,7 +104,6 @@
             rowKey="id"
           >
             <NetworkAppAccount
-              @admobAuth="admobAuth"
               @authSuccess="authSuccess"
               style="margin-top:24px;"
               v-if="record.expandStatus"
@@ -125,7 +124,7 @@
 </template>
 
 <script>
-import { accountList, accountDelete, accountUpdate, accountCreate, googleTokenSave } from '@/api/account'
+import { accountList, accountDelete, accountUpdate, accountCreate } from '@/api/account'
 import AdNetwork from '@/components/Mediation/AdNetwork'
 import NetworkAppAccount from './NetworkAppAccount'
 import ADNSelect from './ADNSelect'
@@ -250,84 +249,16 @@ export default {
         node.scrollTop = 0
       })
     },
-    admobAuth () {
-      let record = this.data.find(item => item.id === this.curExpandedRowKeys[0])
-      const scope = 'https://www.googleapis.com/auth/adsense.readonly https://www.googleapis.com/auth/dfp'
-      if (record && record.id > 0) {
-        // eslint-disable-next-line no-undef
-        gapi.load('auth2', _ => {
-          // eslint-disable-next-line no-undef
-          const GoogleAuth = gapi.auth2.init({
-            client_id: '22744042822-iec4lvvm2vgqkshnom4jrv2opjel3kd5.apps.googleusercontent.com',
-            fetch_basic_profile: false,
-            scope: scope
-          })
-          GoogleAuth.grantOfflineAccess({
-            scope: scope,
-            prompt: 'select_account'
-          }).then(resp => {
-            if (resp.code) {
-              const params = { accountId: record.id, authCode: resp.code }
-              googleTokenSave(params).then(res => {
-                if (res.code === 0) {
-                  this.$emit('authSuccess', record.id)
-                  this.$message.success('success')
-                }
-              })
-            }
-          })
-        })
-      } else {
-        const { form: { validateFields } } = this
-        validateFields((err, values) => {
-          if (!err) {
-            values.authType = this.aType
-            if (record) {
-              values.id = record.id
-              values.adnAccountId = record.adnAccountId
-            } else {
-              values.adnAccountId = 0
-            }
-            values.adnId = 1
-            accountCreate(values).then(res => {
-              if (res.code === 0) {
-                if (record) {
-                  record = Object.assign(record, res.data)
-                } else {
-                  record = res.data
-                }
-                // eslint-disable-next-line no-undef
-                gapi.load('auth2', _ => {
-                  // eslint-disable-next-line no-undef
-                  const GoogleAuth = gapi.auth2.init({
-                    client_id: '22744042822-iec4lvvm2vgqkshnom4jrv2opjel3kd5.apps.googleusercontent.com',
-                    fetch_basic_profile: false,
-                    scope: scope
-                  })
-                  GoogleAuth.grantOfflineAccess({
-                    scope: scope,
-                    prompt: 'select_account'
-                  }).then(resp => {
-                    if (resp.code) {
-                      const params = { accountId: record.id, authCode: encodeURIComponent(resp.code) }
-                      googleTokenSave(params).then(res => {
-                        if (res.code === 0) {
-                          this.$emit('authSuccess', record.id)
-                          this.$message.success('success')
-                        }
-                      })
-                    }
-                  })
-                })
-              }
-            })
-          }
-        })
-      }
-    },
     authSuccess (accountId) {
       const record = this.data.find(item => item.id === accountId)
-      this.handleOpen(record)
+      if (this.curExpandedRowKeys.length && this.curExpandedRowKeys[0] < 0) {
+        this.curExpandedRowKeys = []
+        this.currentExpandedStatOpen = false
+        record.editStatus = false
+        record.expandStatus = false
+      } else {
+        this.handleOpen(record)
+      }
       this.searchTable()
     },
     saveAccount (record) {

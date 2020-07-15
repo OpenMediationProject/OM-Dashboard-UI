@@ -8,7 +8,6 @@
       placeholder="Ad Network"
       :size="size"
       :disabled="disabled"
-      :allowClear="true"
       optionLabelProp="title"
       v-decorator="[name, {initialValue: initValue, rules: [{ required: true, message: 'Ad Network can not be empty.' }]}]"
       @change="handleChange">
@@ -25,7 +24,6 @@
       placeholder="Ad Network"
       :size="size"
       :disabled="disabled"
-      :allowClear="true"
       optionLabelProp="title"
       v-decorator="[name, {rules: [{ required: true, message: 'Ad Network can not be empty.' }]}]"
       @change="handleChange">
@@ -63,6 +61,10 @@ export default {
     disabled: {
       type: Boolean,
       default: false
+    },
+    placementId: {
+      type: Number,
+      default: null
     }
   },
   data () {
@@ -77,7 +79,11 @@ export default {
     },
     async updateSelectList () {
       try {
-        const res = await adNetworkSelectList({ pubAppId: this.$store.state.publisher.searchApp })
+        const params = { pubAppId: this.$store.state.publisher.searchApp }
+        if (this.placementId) {
+          params.placementId = this.placementId
+        }
+        const res = await adNetworkSelectList(params)
         this.optionList = res.data
       } catch (e) {
         console.log('get adn list error', e)

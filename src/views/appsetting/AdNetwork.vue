@@ -183,8 +183,8 @@ export default {
           if (record.id === 14) {
             values.adnAppKey = values['mt_left'] + '#' + values['mt_right']
           }
-          values.adnId = 1
-          if (record.id === 1 && !values.adnAppId) {
+          values.adnId = 2
+          if (record.id === 2 && !values.adnAppId) {
             values.authType = 1
           } else {
             values.authType = 2
@@ -231,7 +231,7 @@ export default {
           }
           if (!values.reportAccountId && ![1, 3, 6].includes(record.id)) {
             values.adnId = record.id
-            if (record.id === 1 && !values.adnAppId) {
+            if (record.id === 2 && !values.adnAppId) {
               values.authType = 1
             } else {
               values.authType = 2

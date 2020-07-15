@@ -38,7 +38,7 @@ yarn run lint
 |  :----  | :----  |
 | 登录页Logo  | /public/assets/logo.svg |
 | 登录页背景  | /public/assets/background.svg |
-| 页面菜单栏Logo  | /public/logo-red.svg |
+| 页面菜单栏Logo  | /public/om-logo.svg |
 | primary-color  | #1A7DF1 (vue.config.js) |
 | info-color  | #1A7DF1 |
 | success-color  | #00CA08 |

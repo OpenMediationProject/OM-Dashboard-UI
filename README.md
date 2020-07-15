@@ -37,7 +37,7 @@ yarn run lint
 |  :----  | :----  |
 | Login Logo  | /public/assets/logo.svg |
 | Login background  | /public/assets/background.svg |
-| Menu Logo  | /public/logo-red.svg |
+| Menu Logo  | /public/om-logo.svg |
 | primary-color  | #1A7DF1 (vue.config.js) |
 | info-color  | #1A7DF1 |
 | success-color  | #00CA08 |
