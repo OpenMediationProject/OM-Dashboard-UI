@@ -29,6 +29,13 @@ export function getInfo () {
   })
 }
 
+export function getMessageDict () {
+  return axios({
+    url: '/msg/dict',
+    method: 'get'
+  })
+}
+
 export function getCurrentUserNav (token) {
   return axios({
     url: '/user/nav',

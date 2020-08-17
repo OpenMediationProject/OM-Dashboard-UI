@@ -14,6 +14,7 @@ const api = {
   placementSelectList: '/placement/select/list',
   placementCreate: '/placement/create',
   placementUpdate: '/placement/update',
+  placementUpdateWithScenes: '/placement/create_update',
   placementScenesList: '/placement/scenes',
   placementScenesCreate: '/placement/scene/create',
   placementScenesUpdate: '/placement/scene/update',
@@ -143,5 +144,12 @@ export function modelSearch (params) {
     url: api.modelSearch,
     method: 'get',
     params: params
+  })
+}
+export function placementUpdateWithScenes (data) {
+  return axios({
+    url: api.placementUpdateWithScenes,
+    method: 'post',
+    data: data
   })
 }

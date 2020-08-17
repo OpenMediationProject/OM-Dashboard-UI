@@ -40,7 +40,7 @@
                 <a-input
                   v-if="record.createNew"
                   placeholder="name"
-                  v-decorator="[record.id + 'deviceName',{initialValue: record.deviceName,rules: [{ required: true, message: '.' }]}]"
+                  v-decorator="[record.id + 'deviceName',{initialValue: record.deviceName,rules: [{ required: true, message: $msg('sdk.device_name_empty') }]}]"
                 />
                 <template v-else >{{ text }}</template>
               </a-form-item>
@@ -52,7 +52,7 @@
                 <a-input
                   v-if="record.createNew"
                   placeholder="id"
-                  v-decorator="[record.id + 'deviceId',{initialValue: record.deviceId,rules: [{ required: true, message: '.' }]}]"
+                  v-decorator="[record.id + 'deviceId',{initialValue: record.deviceId,rules: [{ required: true, message: $msg('sdk.id_empty') }]}]"
                 />
                 <span v-else >{{ text }}</span>
               </a-form-item>

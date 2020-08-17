@@ -131,7 +131,9 @@ export default {
           smooth: true,
           xField: 'x',
           yField: 'y',
-          seriesField: 'g',
+          // point: { //显示数据点
+          //   visible: true
+          // },
           xAxis: { tickCount: this.xTickCount, ...axisCommon },
           yAxis: {
             formatter: v => numerify(v, this.yFormat),

@@ -2,17 +2,35 @@
 <template>
   <a-form-item>
     <a-select
+      v-if="mode==='multiple'"
       showSearch
       :style="{ width: width }"
-      placeholder="AdNetwork"
+      placeholder="Ad Network"
       :size="size"
       :disabled="disabled"
       :allowClear="true"
-      :showArrow="false"
-      mode="multiple"
+      :mode="mode"
       optionLabelProp="title"
       :maxTagCount="1"
       :maxTagPlaceholder="(h,vm) => '+' + (vm.value.length - 1)"
+      v-decorator="[name, {initialValue: initValue}]"
+      @change="handleChange">
+      <a-select-option v-for="adn in optionList" :key="adn.id" :title="adn.className">
+        <div class="selected-app-small">
+          <img style="height:24px;" :src="'/logo/'+adn.className + '.svg'">
+        </div>
+      </a-select-option>
+    </a-select>
+    <a-select
+      v-else
+      showSearch
+      :style="{ width: width }"
+      placeholder="Ad Network"
+      :size="size"
+      :disabled="disabled"
+      :showArrow="showArrow"
+      :allowClear="true"
+      optionLabelProp="title"
       v-decorator="[name, {initialValue: initValue}]"
       @change="handleChange">
       <a-select-option v-for="adn in optionList" :key="adn.id" :title="adn.className">
@@ -51,6 +69,18 @@ export default {
     disabled: {
       type: Boolean,
       default: false
+    },
+    mode: {
+      type: String,
+      default: 'multiple'
+    },
+    pubAppId: {
+      type: Number,
+      default: null
+    },
+    showArrow: {
+      type: Boolean,
+      default: true
     }
   },
   data () {

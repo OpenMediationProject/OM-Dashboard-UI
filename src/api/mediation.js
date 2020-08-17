@@ -18,6 +18,7 @@ const api = {
   segmentList: '/mediation/segment/list',
   segmentGet: '/mediation/segment/get',
   segmentUpdate: '/mediation/segment/update',
+  segmentUpdateWithInstance: '/mediation/segment/save',
   segmentCreate: '/mediation/segment/create',
   segmentRuleUpdate: '/mediation/segment/rule/update',
   mediationRuleInstanceList: '/mediation/segment/instance/list',
@@ -218,5 +219,12 @@ export function admobGrantToken (params) {
     url: api.admobGrantToken,
     method: 'get',
     params: params
+  })
+}
+export function segmentUpdateWithInstance (data) {
+  return axios({
+    url: api.segmentUpdateWithInstance,
+    method: 'post',
+    data: data
   })
 }

@@ -17,7 +17,8 @@ const getters = {
   searchPlacement: state => state.publisher.searchPlacement,
   searchPlacementName: state => state.publisher.searchPlacementName,
   searchPlacementType: state => state.publisher.searchPlacementType,
-  currentOrgId: state => state.publisher.currentOrgId
+  currentOrgId: state => state.publisher.currentOrgId,
+  msg: state => state.dict.msg
 
 }
 

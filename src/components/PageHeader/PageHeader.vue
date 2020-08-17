@@ -6,12 +6,13 @@
           <div class="row">
             <img v-if="logo" :src="logo" class="logo"/>
             <h1 v-if="title" class="title">
-              <span v-if="this.$route.query.type==='Details'">{{ title + ' ' + this.$route.query.type }}</span>
-              <span v-else>{{ this.$route.query.type + ' ' + title }}</span>
+              <span v-if="this.$route.query.type==='Details'">{{ title + ' ' + this.$route.query.type || '' }}</span>
+              <span v-else>{{ this.$route.query.type || '' + ' ' + title }}</span>
             </h1>
+            <!-- <page-header-placement /> -->
             <div class="action">
               <slot name="action">
-                <span v-if="$route.meta.hidden" @click="goPage($route.meta.parent)"><img src="/icon/close.svg" /></span>
+                <a v-if="$route.meta.hidden" @click="goPage($route.meta.parent)"><img src="/icon/close.svg" /></a>
               </slot>
             </div>
           </div>
@@ -36,10 +37,12 @@
 </template>
 
 <script>
+import PageHeaderPlacement from '@/components/om/PageHeaderPlacement'
 
 export default {
   name: 'PageHeader',
   components: {
+    PageHeaderPlacement
   },
   props: {
     title: {

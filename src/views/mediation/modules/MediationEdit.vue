@@ -1,46 +1,92 @@
 <!-- MediationEdit page router '/mediation/mediation/add' -->
 <template>
-  <div class="water-fall">
-    <a v-if="canEdit" @click="segmentSave" style="position: absolute;right: 50px;top: 80px;"><img width="24px" src="/icon/save.svg" /></a>
-    <page-header-placement />
-    <a-form :form="form" :hideRequiredMark="true" >
-      <MediationEditForm
-        :form="form"
-        :regions="this.countries"
-        @change="regoinsSelectedId"
-        :conType="conType"
-        :modelType="deviceModelType"
-        :autoOpt="this.autoOpt || 1"
-        @optChange="optChange"
-        @selectedModelType="selectedModelType"
-        @selectedContype="selectedContype" />
-      <a-card class="card-noline om-card-style" :bordered="false" title="Waterfall" style="margin-top:8px;" >
-        <a-row type="flex" justify="start" style="margin-bottom: 16px;">
-          <om-ad-network-select size="default" style="margin-left:24px; display:inline-block; margin-right:16px;"/>
-          <OmInstanceSelect modelName="instanceId" :placementId="this.placementId" />
-          <a-button type="primary" style="margin-left:16px;width:100px;margin-top: 3px;" ghost @click="search">Apply</a-button>
-          <a-button type="primary" style="margin-left:16px;width:100px;margin-top: 3px;" ghost @click="resetSearchForm()">Clear</a-button>
-        </a-row>
-        <a-spin :spinning="fetching">
-          <WaterfallTable
-            :autoOpt="autoOpt"
-            :data="instances"
-            style="margin-left:24px;margin-right:24px;margin-bottom:16px;"
-            @updateStatus="instanceStatusUpdate"
-            @sortEnd="sortInstance"
-            @priorityUpdate="onCellChange"
-          />
-        </a-spin>
-      </a-card>
-      <div style="height:16px;"></div>
-    </a-form>
-  </div>
-
+  <a-spin :spinning="spinning" size="large">
+    <div v-show="!spinning" class="water-fall">
+      <a v-if="canEdit" @click="segmentSave" style="position: absolute;right: 44px;top: -44px;"><img width="24px" src="/icon/save.svg" /></a>
+      <page-header-placement />
+      <a-form :form="form" :hideRequiredMark="true" >
+        <MediationEditForm
+          :form="form"
+          :regions="this.countries"
+          @change="regoinsSelectedId"
+          :conType="conType"
+          :gender="gender"
+          :modelType="deviceModelType"
+          :autoOpt="this.autoOpt || 1"
+          @optChange="optChange"
+          @selectedModelType="selectedModelType"
+          @selectedGender="selectedGender"
+          @selectedContype="selectedContype" />
+        <a-card v-show="headerbidding.length" class="card-noline om-card-style" title="Header Bidding" :bordered="false" style="margin-top:8px;" >
+          <a-spin :spinning="fetchingHB">
+            <a-table
+              style="margin-top: 8px;margin-left: 24px;margin-right: 24px;margin-bottom: 24px;"
+              class="ant-card-table-default-noshadow"
+              ref="hbTable"
+              rowKey="id"
+              :dataSource="headerbidding"
+              :columns="columnsHB"
+              :pagination="false"
+              :bordered="false"
+            >
+              <span slot="status" slot-scope="text, record">
+                <template>
+                  <a herf="#" @click="instanceHbStatusUpdate(record, 'hb')">{{ record.priority >0 ? 'Disable' : 'Enable' }}</a>
+                </template>
+              </span>
+              <span slot="name" slot-scope="text, record">
+                <span :style="record.priority >0 ? null: 'opacity: 0.3;' ">
+                  <a-tooltip :title="record.placementKey">{{ text }}</a-tooltip>
+                </span>
+              </span>
+              <span slot="className" slot-scope="text, record">
+                <ad-network
+                  :className="text"
+                  :id="record.id"
+                  :status="record.priority>0 ? 1: 0"
+                />
+              </span>
+            </a-table>
+          </a-spin>
+        </a-card>
+        <a-card class="card-noline om-card-style" :bordered="false" title="Waterfall" style="margin-top:8px;" >
+          <a-row type="flex" justify="start" style="height: 44px;">
+            <om-ad-network-select :pubAppId="this.appId" @change="adnChange" size="default" style="margin-left:24px; display:inline-block; margin-right:8px;"/>
+            <OmInstanceSelect :adnIds="adnIds" :hb="true" :allowClear="true" modelName="instanceId" :placementId="this.placementId" />
+            <a-form-item>
+              <a-select style="width:200px;margin-left: 8px;" @change="hourChange" v-decorator="['hourBefore', {initialValue: 24}]" :allowClear="false" >
+                <span slot="suffixIcon"><img src="/icon/Clock.svg"></span>
+                <a-select-option v-for="time in [{value: 12, title:'In 12 hours'},{value: 24, title:'In 24 hours'},{value:48, title:'In 48 hours'}]" :key="time.value" :title="time.title">
+                  {{ time.title }}
+                </a-select-option>
+              </a-select>
+            </a-form-item>
+            <a-button type="primary" style="margin-left:8px;width:100px;margin-top: 3px;" ghost @click="search(true)">Apply</a-button>
+          </a-row>
+          <a-spin :spinning="fetching">
+            <WaterfallTable
+              ref="waterfallTable"
+              :autoOpt="autoOpt"
+              :hour="hourBefore"
+              :data="filter ? templist:instances"
+              :sortdisable="filter"
+              style="margin-left:24px;margin-right:24px;margin-bottom:16px;"
+              @updateStatus="instanceUpdate"
+              @sortEnd="sortInstance"
+              @priorityUpdate="onCellChange"
+            />
+          </a-spin>
+        </a-card>
+        <div style="height:16px;"></div>
+      </a-form>
+    </div>
+    <div v-show="spinning" style="height:500px; width: 100%;"></div>
+  </a-spin>
 </template>
 
 <script>
 import MediationEditForm from './MediationEditForm'
-import { segmentCreate, segmentUpdate, segmentGet, segmentResortPriority, mediationRuleInstanceList, mediationSegmentRuleInstanceCreate, mediationSegmentRuleInstanceDelete } from '@/api/mediation'
+import { segmentGet, mediationRuleInstanceList, segmentUpdateWithInstance } from '@/api/mediation'
 import AdNetwork from '@/components/Mediation/AdNetwork'
 import OmAdNetworkSelect from '@/components/om/AdNetworkSelect'
 import OmInstanceSelect from '@/components/om/InstanceSelect'
@@ -50,6 +96,7 @@ import OmText from '@/components/om/Text'
 import pick from 'lodash.pick'
 import Save from '../../../../public/icon/save.svg'
 import PageHeaderPlacement from '@/components/om/PageHeaderPlacement'
+import numerify from 'numerify'
 
 export default {
   name: 'MediationEdit',
@@ -66,14 +113,39 @@ export default {
   },
   data () {
     const type = this.$route.query.type
+    const columnsHB = [
+      {
+        title: 'Ad Network',
+        dataIndex: 'className',
+        width: '40%',
+        scopedSlots: { customRender: 'className' }
+      },
+      {
+        title: 'Instance',
+        dataIndex: 'name',
+        width: '40%',
+        scopedSlots: { customRender: 'name' }
+      },
+      {
+        title: 'Operations',
+        dataIndex: 'status',
+        scopedSlots: { customRender: 'status' }
+      }
+    ]
+    if (!this.$auth('mediation.edit')) {
+      columnsHB.pop()
+    }
     return {
       labelCol: { lg: { span: 4 }, sm: { span: 4 } },
       wrapperCol: { lg: { span: 19 }, sm: { span: 19 } },
       form: this.$form.createForm(this),
       params: {},
+      type,
       canEdit: this.$auth('mediation.edit') && type !== 'Details',
       name: '',
       countries: [],
+      spinning: true,
+      adnIds: [],
       placementId: this.$route.params.placementId,
       appId: this.$route.params.pubAppId,
       ruleId: this.$route.params.ruleId,
@@ -84,13 +156,22 @@ export default {
       lastFetchId: 0,
       regions: this.countries,
       value: [],
+      count: -100,
       segmentId: null,
       conType: [],
       deviceModelType: [],
-      instances: [],
+      gender: [],
       fetching: false,
       currentId: null,
-      waterfallInstance: []
+      columnsHB,
+      fetchingHB: false,
+      instances: [],
+      hourBefore: 24,
+      instancesOld: [],
+      headerbidding: [],
+      headerbiddingOld: [],
+      templist: [],
+      filter: false
     }
   },
   mounted () {
@@ -126,6 +207,14 @@ export default {
             }
             this.conType = carr
           }
+          if (res.data.gender) {
+            const gender = []
+            const gd = res.data.gender
+            for (var z = 0; z < 3; ++z) {
+              if ((gd & (1 << z)) === (1 << z)) gender.push(z)
+            }
+            this.gender = gender
+          }
           if (res.data.deviceModelType) {
             const modelType = []
             const mt = res.data.deviceModelType
@@ -134,53 +223,92 @@ export default {
             }
             this.deviceModelType = modelType
           }
+          if (this.type === 'Duplicate') {
+            res.data.name = ''
+          }
+
           this.$nextTick(() => {
-            this.form.setFieldsValue(pick(res.data, ['name', 'autoOpt', 'frequency', 'iapMin', 'iapMax', 'interest', 'brandType', 'brandList', 'modelType', 'modelList', 'channel', 'channelBow']))
+            this.form.setFieldsValue(pick(res.data, ['name', 'autoOpt', 'frequency', 'iapMin', 'iapMax', 'interest', 'brandType', 'brandList', 'modelType', 'modelList', 'channel', 'channelBow', 'gender', 'ageMax', 'ageMin']))
           })
+          this.spinning = false
         }
+      }).finally(() => {
+        this.spinning = false
       })
-      mediationRuleInstanceList(params).then(res => {
-        if (res.code === 0) {
-          this.instances = res.data
-        }
-      })
-    } else {
-      const params = { pubAppId: this.appId, placementId: this.placementId }
-      mediationRuleInstanceList(params).then(res => {
-        if (res.code === 0) {
-          this.instances = res.data
-        }
-      })
-      this.form.setFieldsValue({ autoOpt: 1 })
     }
+    this.search()
   },
   methods: {
+    adnChange (val) {
+      this.adnIds = val
+      this.form.resetFields(['instanceId'])
+    },
+    hourChange (val) {
+      this.hourBefore = val
+    },
     resetSearchForm () {
       this.form.resetFields(['adnId', 'instanceId'])
     },
     optChange (value) {
       this.autoOpt = value
     },
-    sortInstance (placementRuleInstanceId, value) {
-      segmentResortPriority({ placementRuleInstanceId: placementRuleInstanceId, priority: value }).then(res => {
-        if (res.code === 0) {
-          this.search('instance')
+    frontSort (ids, rowDataId) {
+      this.fetching = true
+      const j = this.instances.filter(row => { return ids.includes(row.placementRuleInstanceId) })
+      const x = this.instances.filter(row => { return !ids.includes(row.placementRuleInstanceId) })
+      const d = []
+      for (let i = 0; i < ids.length; i++) {
+        const item = j.find(o => { return o.placementRuleInstanceId === ids[i] })
+        item.priority = i + 1
+        d.push(item)
+      }
+      this.instances = d.concat(x)
+      if (rowDataId) {
+        const target = this.instances.find(item => item.id === rowDataId)
+        if (target) {
+          const scroll = (target.priority - 1) * 64
+          if (this.headerbidding.length > 0) {
+            this.$vnode.elm.querySelectorAll('.ant-table-body')[1].scrollTop = scroll
+          } else {
+            this.$vnode.elm.querySelectorAll('.ant-table-body')[0].scrollTop = scroll
+          }
         }
-      })
+      }
+      this.fetching = false
+    },
+    sortInstance (list) {
+      const params = []
+      for (const item of list) {
+        params.push(item.placementRuleInstanceId)
+      }
+      this.frontSort(params)
     },
     onCellChange (record, dataIndex, value) {
       if (record.priority === value) {
         return
       }
-      segmentResortPriority({ placementRuleInstanceId: record.placementRuleInstanceId, priority: value }).then(res => {
-        if (res.code === 0) {
-          this.search(record.id)
+      const params = []
+      let hasAdded = false
+      for (const item of this.instances) {
+        if (!item.placementRuleInstanceId || item.id === record.id) {
+          continue
         }
-      })
+        if (item.priority === value) {
+          hasAdded = true
+          params.push(record.placementRuleInstanceId)
+        }
+        if (item.priority) {
+          params.push(item.placementRuleInstanceId)
+        }
+      }
+      if (!hasAdded) {
+        params.push(record.placementRuleInstanceId)
+      }
+      this.frontSort(params, record.id)
     },
-    search (rowDataId) {
+    search (type) {
       const params = { ruleId: this.ruleId, pubAppId: this.appId, placementId: this.placementId }
-      const formSearch = this.form.getFieldsValue(['instanceId', 'adnId'])
+      const formSearch = this.form.getFieldsValue(['instanceId', 'adnId', 'hourBefore'])
       this.fetching = true
       if (formSearch.instanceId) {
         params.instanceId = formSearch.instanceId
@@ -188,26 +316,128 @@ export default {
       if (formSearch.adnId) {
         params.adNetworkIds = formSearch.adnId.join(',')
       }
-      const that = this
-      mediationRuleInstanceList(params).then(res => {
-        if (res.code === 0) {
-          that.fetching = false
-          that.instances = res.data
-          if (rowDataId) {
-            const target = that.instances.find(item => item.id === rowDataId)
-            if (target) {
-              const scroll = (target.priority - 1) * 64
-              that.$vnode.elm.querySelectorAll('.ant-table-body')[0].scrollTop = scroll
-            }
+      if (formSearch.hourBefore) {
+        params.hourBefore = formSearch.hourBefore
+      }
+      if (params.instanceId > 0 || params.adNetworkIds) {
+        this.filter = true
+      } else {
+        this.filter = false
+      }
+      if (!type) {
+        mediationRuleInstanceList(params).then(res => {
+          if (!res.code) {
+            const ins = []
+            const hb = []
+            res.data.forEach(row => {
+              row.fillRate = row.instanceFilledLatest > 0 ? row.instanceFilledLatest / row.instanceRequestLatest : 0
+              row.fillRate2 = row.instanceFilledSecondLatest > 0 ? row.instanceFilledSecondLatest / row.instanceRequestSecondLatest : 0
+              row.ecpm = row.costLatest > 0 ? row.costLatest * 1000 / row.apiImprLatest : 0
+              row.ecpm2 = row.costSecondLatest > 0 ? row.costSecondLatest * 1000 / row.apiImprSecondLatest : 0
+              if (row.instanceRequestSecondLatest > 0) {
+                row.reqGrowth = numerify(row.instanceRequestLatest / (row.instanceRequestSecondLatest || 1) - 1, '0,0.00a%')
+              } else {
+                row.reqGrowth = '--'
+              }
+              if (row.fillRate2 > 0) {
+                row.fillGrowth = numerify(row.fillRate / (row.fillRate2 || 1) - 1, '0,0.00a%')
+              } else {
+                row.fillGrowth = '--'
+              }
+              if (row.ecpm2 > 0) {
+                row.ecpmGrowth = numerify(row.ecpm / (row.ecpm2 || 1) - 1, '0,0.00a%')
+              } else {
+                row.ecpmGrowth = '--'
+              }
+              if (row.headbidding) {
+                if (!row.priority) {
+                  row.priority = 0
+                }
+                hb.push(row)
+              } else {
+                if (row.placementRuleInstanceId > 0) {
+                } else {
+                  row.placementRuleInstanceId = this.count
+                  this.count--
+                }
+                ins.push(row)
+              }
+            })
+            this.instances = ins
+            this.templist = JSON.parse(JSON.stringify(ins))
+            this.headerbidding = hb
           }
+        }).finally(() => {
+          this.fetching = false
+          this.spinning = false
+        })
+      } else {
+        // 本地查询
+        this.templist = JSON.parse(JSON.stringify(this.instances))
+        if (params.instanceId > 0 || formSearch.adnId.length) {
+          this.templist = this.templist.filter(row => {
+            if ((params.instanceId > 0 && row.id !== params.instanceId) || (formSearch.adnId && formSearch.adnId.length > 0 && !formSearch.adnId.includes(row.adnId))) {
+              return false
+            } else {
+              return true
+            }
+          })
         }
-      })
-    },
-    modelTypeChange (value) {
-      this.deviceModelType = value
-    },
-    brandTypeChange (value) {
-      this.brandType = value
+        const ps = { ruleId: this.ruleId, pubAppId: this.appId, placementId: this.placementId }
+        const fs = this.form.getFieldsValue(['hourBefore'])
+        ps.hourBefore = fs.hourBefore
+        mediationRuleInstanceList(ps).then(res => {
+          if (!res.code) {
+            const ins = []
+            res.data.forEach(row => {
+              const newItem = {}
+              newItem.id = row.id
+              newItem.instanceFilledLatest = row.instanceFilledLatest
+              newItem.instanceRequestLatest = row.instanceRequestLatest
+              newItem.instanceFilledSecondLatest = row.instanceFilledSecondLatest
+              newItem.instanceRequestSecondLatest = row.instanceRequestSecondLatest
+              newItem.costLatest = row.costLatest
+              newItem.apiImprLatest = row.apiImprLatest
+              newItem.costSecondLatest = row.costSecondLatest
+              newItem.apiImprSecondLatest = row.apiImprSecondLatest
+              newItem.fillRate = row.instanceFilledLatest > 0 ? row.instanceFilledLatest / row.instanceRequestLatest : 0
+              newItem.fillRate2 = row.instanceFilledSecondLatest > 0 ? row.instanceFilledSecondLatest / row.instanceRequestSecondLatest : 0
+              newItem.ecpm = row.costLatest > 0 ? row.costLatest * 1000 / row.apiImprLatest : 0
+              newItem.ecpm2 = row.costSecondLatest > 0 ? row.costSecondLatest * 1000 / row.apiImprSecondLatest : 0
+              if (newItem.instanceRequestSecondLatest > 0) {
+                newItem.reqGrowth = numerify(newItem.instanceRequestLatest / (newItem.instanceRequestSecondLatest || 1) - 1, '0,0.00a%')
+              } else {
+                newItem.reqGrowth = '--'
+              }
+              if (newItem.fillRate2 > 0) {
+                newItem.fillGrowth = numerify(newItem.fillRate / (newItem.fillRate2 || 1) - 1, '0,0.00a%')
+              } else {
+                newItem.fillGrowth = '--'
+              }
+              if (newItem.ecpm2 > 0) {
+                newItem.ecpmGrowth = numerify(newItem.ecpm / (newItem.ecpm2 || 1) - 1, '0,0.00a%')
+              } else {
+                newItem.ecpmGrowth = '--'
+              }
+              ins.push(newItem)
+            })
+
+            this.instances.forEach(d => {
+              d = Object.assign(d, ins.find(item => {
+                return item.id === d.id
+              }))
+            })
+            this.templist.forEach(d => {
+              d = Object.assign(d, ins.find(item => {
+                return item.id === d.id
+              }))
+            })
+          }
+        }).finally(() => {
+          this.fetching = false
+          this.spinning = false
+        })
+      }
     },
     segmentSave () {
       const { form: { validateFields } } = this
@@ -215,29 +445,31 @@ export default {
       const that = this
       validateFields((err, values) => {
         if (!err) {
+          values.id = that.placementId
+          let ct = 0
+          for (const i in that.conType) { ct |= (1 << that.conType[i]) }
           if (values.channel && values.channel.length) {
             values.channel = values.channel.join(',')
             if (values.channel.length > 1000) {
-              this.$message.error('Data too long for Channel, Please control at 1000 characters')
+              this.$message.error(this.$msg('mediation.channel_too_long'))
               return false
             }
           } else {
             values.channel = ''
           }
-          values.id = that.placementId
-          let ct = 0
-          for (const i in that.conType) { ct |= (1 << that.conType[i]) }
           values.conType = ct
           let mt = 0
           for (const i in that.deviceModelType) { mt |= (1 << that.deviceModelType[i]) }
           values.deviceModelType = mt
+          let gd = 0
+          for (const i in that.gender) { gd |= (1 << that.gender[i]) }
+          values.gender = gd
           values.brandWhitelist = values.brandType === 'include' && values.brandList ? values.brandList.join('\n') : ''
           values.brandBlacklist = values.brandType === 'exclude' && values.brandList ? values.brandList.join('\n') : ''
           values.modelWhitelist = values.modelType === 'include' && values.modelList ? values.modelList.join('\n') : ''
           values.modelBlacklist = values.modelType === 'exclude' && values.modelList ? values.modelList.join('\n') : ''
           if (!that.regions || that.regions.length === 0) {
-            that.form.setFields({ 'regions': { value: null, errors: 'Regions can not be empty.' } })
-            that.$message.error('Regions can not be empty.')
+            that.$message.error(this.$msg('mediation.regions_empty'))
             return false
           }
           const countries = [ ...that.regions ]
@@ -248,34 +480,37 @@ export default {
           values.countries = countries && countries.join(',')
           values.interest = values.interest && values.interest.join(',')
           params = Object.assign(params, values)
-          if (this.ruleId) {
+          params.instances = this.instances
+          params.headerbidding = this.headerbidding
+          if (this.ruleId && this.type !== 'Duplicate') {
             params.id = this.ruleId
             params.segmentId = this.segmentId
-            segmentUpdate(params).then(res => {
+            segmentUpdateWithInstance(params).then(res => {
               if (res.code === 0) {
-                this.$message.success(`success`)
+                this.$message.success(this.$msg('mediation.update_success'))
                 this.$router.push({
-                  name: 'MediationList'
+                  name: 'MediationList',
+                  query: {
+                    type: '2'
+                  }
                 })
-              } else {
-                this.$message.error(`error`)
               }
             })
           } else {
-            segmentCreate(params).then(res => {
+            params.id = -100
+            segmentUpdateWithInstance(params).then(res => {
               if (res.code === 0) {
                 this.ruleId = res.data.id
                 this.$router.push({
-                  name: 'MediationList'
+                  name: 'MediationList',
+                  query: {
+                    type: '2'
+                  }
                 })
-                this.$message.success(`success`)
-              } else {
-                this.$message.error(`error`)
+                this.$message.success(this.$msg('mediation.create_success'))
               }
             })
           }
-        } else {
-          console.log(err)
         }
       })
     },
@@ -288,84 +523,45 @@ export default {
     selectedModelType (value) {
       this.deviceModelType = value
     },
-    instanceStatusUpdate (record, ref) {
-      if (!this.ruleId) {
-        const { form: { validateFields } } = this
-        let params = { pubAppId: this.appId, placementId: this.placementId }
-        const that = this
-        validateFields((err, values) => {
-          if (!err) {
-            if (values.channel && values.channel.length) {
-              values.channel = values.channel.join(',')
-              if (values.channel.length > 1000) {
-                this.$message.error('Data too long for Channel, Please control at 1000 characters')
-                return false
-              }
-            } else {
-              values.channel = ''
-            }
-            values.id = that.placementId
-            let ct = 0
-            for (const i in that.conType) { ct |= (1 << that.conType[i]) }
-            values.conType = ct
-            let mt = 0
-            for (const i in that.deviceModelType) { mt |= (1 << that.deviceModelType[i]) }
-            values.deviceModelType = mt
-            values.brandWhitelist = values.brandType === 'include' && values.brandList ? values.brandList.join('\n') : ''
-            values.brandBlacklist = values.brandType === 'exclude' && values.brandList ? values.brandList.join('\n') : ''
-            values.modelWhitelist = values.modelType === 'include' && values.modelList ? values.modelList.join('\n') : ''
-            values.modelBlacklist = values.modelType === 'exclude' && values.modelList ? values.modelList.join('\n') : ''
-            if (!that.regions || that.regions.length === 0) {
-              that.form.setFields({ 'regions': { value: null, errors: 'Regions can not be empty.' } })
-              that.$message.error('Regions can not be empty.')
-              return false
-            }
-            const countries = [ ...that.regions ]
-            if (countries && countries.indexOf('ALL') > -1) {
-              countries.splice(countries.indexOf('ALL'), 1)
-              countries.push('00')
-            }
-            values.countries = countries && countries.join(',')
-            values.interest = values.interest && values.interest.join(',')
-            params = Object.assign(params, values)
-            segmentCreate(params).then(res => {
-              if (res.code === 0) {
-                this.ruleId = res.data.id
-                this.segmentId = res.data.segmentId
-                this.instanceUpdate(record)
-              }
-            })
-          } else {
-            document.documentElement.scrollTop = 0
-          }
-        })
-      } else {
-        this.instanceUpdate(record)
+    selectedGender (value) {
+      this.gender = value
+    },
+    instanceHbStatusUpdate (record, ref) {
+      const status = record.priority > 0 ? 0 : 1
+      if (status === 1) {
+        if (this.headerbidding.find(row => { return row.adnId === record.adnId && row.priority > 0 })) {
+          this.$message.error(this.$msg('mediation.already_existed_hb'))
+          return false
+        }
       }
+      record.priority = status
+      this.headerbidding.sort((a, b) => {
+        return b.priority - a.priority
+      })
     },
     instanceUpdate (record) {
       const status = record.priority > 0 ? 0 : 1
-      if (status === 1) {
-        mediationSegmentRuleInstanceCreate({ ruleId: this.ruleId, adnId: record.adnId, instanceId: record.id }).then(res => {
-          if (res.code === 0) {
-            this.search(res.data.id)
-          }
-        })
+      const target = this.instances.find(row => { return row.placementRuleInstanceId === record.placementRuleInstanceId })
+      if (!status) {
+        target.priority = 0
       } else {
-        mediationSegmentRuleInstanceDelete({ ruleId: this.ruleId, instanceId: record.id }).then(res => {
-          if (res.code === 0) {
-            record.priority = undefined
-            this.search()
-          }
-        })
+        target.priority = this.instances.filter(row => row.priority > 0).length + 1
       }
+      const d = [...this.instances.filter(item => item.priority > 0)]
+      const params = []
+      for (const o of d) {
+        params.push(o.placementRuleInstanceId)
+      }
+      const t = this.templist.find(row => { return row.placementRuleInstanceId === record.placementRuleInstanceId })
+      t.priority = target.priority
+      this.frontSort(params, record.id)
     }
   }
 }
 </script>
 
 <style type="less" scoped>
-.water-fall >>> .ant-card-head-wrapper {
-  margin-left: -8px;
-}
+  .water-fall >>> .ant-card-head-wrapper {
+    margin-left: -8px;
+  }
 </style>

@@ -5,7 +5,9 @@ const publisher = {
     searchPlacement: localStorage.getItem('searchPlacement') || '',
     searchPlacementName: localStorage.getItem('searchPlacementName') || '',
     searchPlacementType: localStorage.getItem('searchPlacementType') || 0,
-    updateList: ''
+    searchPlacementAbt: localStorage.getItem('searchPlacementAbt') || 0,
+    updateList: '',
+    useUnity: false
   },
 
   mutations: {
@@ -22,13 +24,23 @@ const publisher = {
         state.searchPlacement = params.id
         state.searchPlacementName = params.name
         state.searchPlacementType = params.adType
+        state.searchPlacementAbt = params.abTestModel
         localStorage.setItem('searchPlacement', params.id)
         localStorage.setItem('searchPlacementName', params.name)
         localStorage.setItem('searchPlacementType', params.adType)
+        localStorage.setItem('searchPlacementAbt', params.abTestModel)
+      } else {
+        state.searchPlacement = undefined
+        state.searchPlacementName = undefined
+        state.searchPlacementType = undefined
+        state.searchPlacementAbt = undefined
       }
     },
     UPDATESELECTLIST: (state, val) => {
       state.updateList = val
+    },
+    SET_USEUNITY: (state, val) => {
+      state.useUnity = val
     }
   }
 }

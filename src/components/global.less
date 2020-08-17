@@ -30,13 +30,15 @@ body {
     border-bottom-color: rgba(255, 255, 255, 0);
     border-top-color: rgba(255, 255, 255, 0);
   }
-
+  .ant-tooltip-arrow::before {
+    background-color: rgba(255, 255, 255, 0.75);
+  }
   .ant-tooltip-inner {
     font-size: 12px;
     color: #666666;
     background-color: #FFFFFF;
     border-radius: 5px;
-    //padding: 3px 5px;
+    padding: 8px 8px !important;
   }
 
   .ant-tooltip-placement-bottom .ant-tooltip-arrow, .ant-tooltip-placement-bottomLeft .ant-tooltip-arrow, .ant-tooltip-placement-bottomRight .ant-tooltip-arrow {
@@ -429,7 +431,7 @@ body {
   background-color: #211E1E;
 
   .ant-layout-sider-children {
-    overflow-y: hidden;
+    overflow: hidden;
     &:hover {
       overflow-y: auto;
     }
@@ -687,7 +689,10 @@ body {
 .ant-table-expanded-row .ant-table-default {
   box-shadow: 0px 0px 0px rgba(221, 224, 228, 0.3), 0px 0px 4px rgba(221, 224, 228, 0.3);
   border-radius: 0px;
-  border: 1px #EEEEEE solid;
+  border: 0px #EEEEEE solid;
+}
+.ant-table-expanded-row .ant-table-thead th {
+  background-color: #F5F5F5;
 }
 .ant-table-thead > tr {
   height: 48px;
@@ -699,7 +704,7 @@ body {
   line-height: 1;
 }
 .ant-table-thead > tr > th .ant-table-column-sorter {
-  position: absolute;
+  //position: absolute;
   display: inline-block;
   margin-left: 8px;
   margin-top: -3px;
@@ -717,11 +722,17 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.ant-select-dropdown-menu {
+  padding: 0;
+}
 .ant-select-dropdown-menu-item {
   line-height: 1;
   padding: 16px 14px;
   padding-top: 12px;
   padding-bottom: 12px;
+}
+.account-class .ant-select-dropdown-menu-item {
+  white-space: inherit;
 }
 .ant-tag {
   height: 26px;
@@ -737,11 +748,11 @@ body {
 }
 .userLayout .ant-message {
   left: 0;
-  top: 64px,
+  top: 64px;
 }
 .ant-message {
   left: 128px;
-  top: 64px,
+  top: 64px;
 }
 .ant-btn-primary {
   text-shadow: none;
@@ -777,6 +788,9 @@ body {
 }
 .ant-btn-background-ghost {
   background: #FFFFFF !important;
+}
+.ghost-button-default .ant-btn-background-ghost {
+  background-color: transparent !important;
 }
 .ant-menu-dark, .ant-menu-dark .ant-menu-sub {
   background: #070100
@@ -870,7 +884,6 @@ body {
   width: 14px;
   height: 14px;
   margin-top: -5px;
-  margin-left: -7px;
   background-color: #FFFFFF;
   border: solid 1px #FFFFFF;
   box-shadow: 0px 4px 16px rgba(0, 0, 0, 0.15), 0px 1px 4px rgba(0, 0, 0, 0.15);
@@ -878,7 +891,7 @@ body {
 .ant-slider:hover .ant-slider-track {
   background-color:#F87E49
 }
-.ant-select-selection-selected-value .plc-type {
+.plcament-select .ant-select-selection-selected-value .plc-type {
   display: none
 }
 .ant-popover-placement-bottomRight .ant-popover-message-title {
@@ -920,4 +933,100 @@ body {
 }
 .text-length {
   color: #bfbfbf;
+}
+.ant-cascader-menu {
+  min-height: 250px;
+}
+.ant-select-selection--multiple > ul > li {
+  line-height: 24px;
+}
+.ant-tabs { // 解决a-card加阴影下方不显示 ant-tabs默认样式有overflow设置导致
+  overflow: unset;
+}
+.ant-table-footer {
+  position: relative;
+  padding: 0;
+  color: rgba(0, 0, 0, 0.85);
+  background: #fafafa;
+  border-top: 0px solid #e8e8e8;
+  border-radius: 0 0 4px 4px;
+}
+
+.adtLoading{
+  width: 100%;
+  height: 100%;
+  background: rgba(255,255,255,.8);
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 100;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  i{
+    color: rgb(32, 160, 255);
+    font-size: 30px;
+  }
+}
+.ant-table-footer {
+  position: relative;
+  padding: 0;
+  color: rgba(0, 0, 0, 0.85);
+  background: #fafafa;
+  border-top: 0px solid #e8e8e8;
+  border-radius: 0 0 4px 4px;
+}
+.adt-cell-blue:after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: auto;
+  bottom: -2px;
+  right: auto;
+  height: 4px;
+  width: calc(100% - 8px);
+  border-radius: 8px;
+  background-color: #1A7DF1;
+}
+.adt-cell-green:after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: auto;
+  bottom: -2px;
+  right: auto;
+  height: 4px;
+  width: calc(100% - 8px);
+  border-radius: 8px;
+  background-color: #32B611;
+}
+.ant-table-footer .ant-table-tbody > tr > td {
+  text-align: right;
+}
+// disable菜单使用正常样式
+.ant-menu-dark .ant-menu-item-disabled, .ant-menu-dark .ant-menu-submenu-disabled, .ant-menu-dark .ant-menu-item-disabled > a, .ant-menu-dark .ant-menu-submenu-disabled > a {
+  color: rgba(255, 255, 255) !important;
+  opacity: 1;
+  cursor: default;
+}
+.ant-carousel .slick-prev {
+  left: unset;
+}
+.ant-drawer-title{
+  color: white;
+  font-size: 18px;
+  //margin-top: 4px;
+}
+.ant-drawer-content-wrapper .ant-list-pagination {
+  text-align: center;
+}
+.ant-list-item {
+  align-items: start;
+}
+.ant-list-item-meta-description {
+  color: #666666;
+}
+.ant-drawer-body {
+  padding: 16px;
 }

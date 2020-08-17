@@ -4,13 +4,13 @@
     <a-row v-if="canEdit" type="flex" justify="start" style="height: 44px;margin-top:-8px">
       <a-form-item v-action:edit style="position:absolute; right:0;">
         <span class="table-page-search-submitButtons" >
-          <a-button type="primary" ghost @click="handleAddSence">Add Scene</a-button>
+          <a-button type="primary" :disabled="curExpandedRowKeys.length>0" ghost @click="handleAddSence">Add Scene</a-button>
         </span>
       </a-form-item>
     </a-row>
     <a-table
       class="ant-card-table-default-noshadow"
-      style="margin-bottom:64px;"
+      style="margin-bottom:0;"
       ref="table"
       rowKey="id"
       fixed="true"
@@ -75,7 +75,7 @@
         <a-form-item v-if="record.editStatus" :style="record.status===0 ? 'opacity: 0.3;' : null">
           <a-input
             placeholder="scene name"
-            v-decorator="[record.id+'name',{initialValue: record.name,rules: [{ required: true, message: 'Scene Name can not be empty.' }]}]"
+            v-decorator="[record.id+'name',{initialValue: record.name,rules: [{ required: true, message: name_empty }]}]"
           />
         </a-form-item>
         <span :style="record.status===0 ? 'opacity: 0.3;' : null" v-else >{{ text }}</span>
@@ -85,7 +85,6 @@
 </template>
 
 <script>
-import { placementScenesUpdate, placementScenesCreate } from '@/api/publisher'
 import OmForm from '@/components/OmForm'
 
 export default {
@@ -120,6 +119,7 @@ export default {
       columns.pop()
     }
     return {
+      name_empty: this.$msg('scenes.name_empty'),
       labelCol: { lg: { span: 4 }, sm: { span: 4 } },
       wrapperCol: { lg: { span: 19 }, sm: { span: 19 } },
       form: this.$form.createForm(this),
@@ -144,7 +144,7 @@ export default {
   },
   mounted () {
     this.height = (window.innerHeight - 209) + 'px'
-    this.scroll = window.innerHeight - 350
+    this.scroll = window.innerHeight - 330
   },
   methods: {
     handleSceneSave (record) {
@@ -158,29 +158,17 @@ export default {
           item.frequencyUnit = values[record.id + 'frequencyUnit']
           if (record.createNew) {
             item.placementId = that.placementId
-            placementScenesCreate(item).then(res => {
-              if (res.code === 0) {
-                Object.assign(record, res.data)
-                record.expandStatus = false
-                record.editStatus = false
-                record.createNew = false
-                this.handleExpand(item)
-                this.$message.success(`create scene success`)
-              } else {
-                this.$message.error(`create scene error`)
-              }
-            })
+            record = Object.assign(record, item)
+            record.expandStatus = false
+            record.editStatus = false
+            record.createNew = false
+            this.$message.success(this.$msg('scenes.create_success'))
+            this.handleExpand(item)
           } else {
-            placementScenesUpdate(item).then(res => {
-              if (res.code === 0) {
-                this.$message.success(`update scene success`)
-                Object.assign(record, item)
-                record.editStatus = false
-                this.handleExpand(record)
-              } else {
-                this.$message.error(`update scene error`)
-              }
-            })
+            record = Object.assign(record, item)
+            record.editStatus = false
+            this.handleExpand(record)
+            this.$message.success(this.$msg('scenes.update_success'))
           }
         }
       })
@@ -220,15 +208,9 @@ export default {
       this.handleExpand(record)
     },
     handelSceneStatusUpdate (record) {
-      placementScenesUpdate(Object.assign(record, { status: record.status === 0 ? 1 : 0 }))
-        .then(res => {
-          if (res.code === 0) {
-            this.$message.success(`update success`)
-            this.arraySort(this.data)
-          } else {
-            this.$message.error(res.msg)
-          }
-        })
+      record = Object.assign(record, { status: record.status === 0 ? 1 : 0 })
+      this.$message.success(this.$msg('placement.scene_status'))
+      this.arraySort(this.data)
     },
     handleAddSence () {
       this.data.forEach(item => {

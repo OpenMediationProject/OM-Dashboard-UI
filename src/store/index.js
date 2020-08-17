@@ -11,6 +11,7 @@ import permission from './modules/permission'
 // dynamic router permission control (Experimental)
 // import permission from './modules/async-router'
 import getters from './getters'
+import dict from './modules/dict'
 
 Vue.use(Vuex)
 
@@ -19,7 +20,8 @@ export default new Vuex.Store({
     app,
     user,
     publisher,
-    permission
+    permission,
+    dict
   },
   state: {
   },

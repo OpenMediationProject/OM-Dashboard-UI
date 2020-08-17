@@ -35,7 +35,7 @@
     </div>
     <div class="ds-bottom">
       <a-select
-        style="margin-bottom: 16px"
+        style="margin-bottom: 16px;width:280px;"
         :value="bottom.dateRange"
         @change="handleRangeChange">
         <a-select-option :key="14">Last 7 days vs Previous 7 days</a-select-option>
@@ -69,9 +69,19 @@
             </a-row>
             <a-row :gutter="32">
               <a-col :span="12">
-                <om-ds-bottom-chart :data="bottom.chartData" :sum="bottom.sumData" title="eCPM" y-column="ecpm" y-format="$0.00a"/>
+                <om-ds-bottom-chart
+                  :data="bottom.chartData"
+                  :sum="bottom.sumData"
+                  title="Requests"
+                  y-column="request"
+                  y-format="0,0.[00]a" />
               </a-col>
-              <a-col :span="12"></a-col>
+              <a-col :span="12" style="height: 102px;"></a-col>
+            </a-row>
+            <a-row :gutter="32">
+              <a-col :span="12">
+              </a-col>
+              <a-col :span="12" style="height: 24px;"><a @click="viewReport(1)" class="view-report">VIEW DETAILS<img style="margin-top: -4px;margin-left:4px;" src="/icon/link.svg"></a></a-col>
             </a-row>
           </a-spin>
         </a-col>
@@ -110,7 +120,12 @@
               <a-col :span="12">
                 <om-ds-bottom-chart :data="bottom.chartData" :sum="bottom.sumData" title="Engagement Rate" y-column="engagementRate" y-format="0,0.00%" />
               </a-col>
-              <a-col :span="12"></a-col>
+              <a-col :span="12" style="height: 102px;"></a-col>
+            </a-row>
+            <a-row :gutter="32">
+              <a-col :span="12">
+              </a-col>
+              <a-col :span="12" style="height: 24px;"><a @click="viewReport(2)" class="view-report">VIEW DETAILS<img style="margin-top: -4px;margin-left:4px;" src="/icon/link.svg"></a></a-col>
             </a-row>
           </a-spin>
         </a-col>
@@ -181,14 +196,30 @@ export default {
     next()
   },
   methods: {
+    viewReport (type) {
+      if (type === 1) {
+        localStorage.removeItem('condition-p-' + this.$store.state.publisher.currentOrgId)
+      } else {
+        localStorage.removeItem('condition-ua-' + this.$store.state.publisher.currentOrgId)
+      }
+      const query = { type }
+      if (this.pubAppId) {
+        query.pubAppId = this.pubAppId
+      }
+      if (type === 1) {
+        this.$router.push({ path: '/report/main', query })
+      } else {
+        this.$router.push({ path: '/report/ua', query: { pubAppId: this.pubAppId } })
+      }
+    },
     handleRangeChange (val) {
       this.bottom.dateRange = val
       this.loadBottomData()
     },
     reloadAllData () {
       this.loadHeadData()
-      this.loadMiddleData()
       this.loadBottomData()
+      this.loadMiddleData()
     },
     loadHeadData () {
       this.middleLoading = true
@@ -326,6 +357,7 @@ export default {
             const { x, g } = dayX[day]
             list.push({ x, g, ...defaultRow })
           }
+
           // fill sum rates
           sumData.fillRate = [
             sumData.filled[0] / sumData.request[0],
@@ -433,5 +465,7 @@ export default {
       }
     }
   }
-
+  .view-report {
+    position: absolute; bottom: 8px;right:16px;color:#1A7DF1; font-size: 16px;
+  }
 </style>

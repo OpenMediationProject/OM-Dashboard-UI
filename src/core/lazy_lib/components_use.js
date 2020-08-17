@@ -1,7 +1,7 @@
 /* eslint-disable */
 import Vue from 'vue'
 import {
-  LocaleProvider,
+  ConfigProvider,
   Layout,
   Input,
   InputNumber,
@@ -39,10 +39,11 @@ import {
   Popconfirm,
   message,
   notification,
-  TreeSelect
+  TreeSelect,
+  Statistic
 } from 'ant-design-vue'
 
-Vue.use(LocaleProvider)
+Vue.use(ConfigProvider)
 Vue.use(Layout)
 Vue.use(Input)
 Vue.use(InputNumber)
@@ -80,6 +81,7 @@ Vue.use(Skeleton)
 Vue.use(Popconfirm)
 Vue.use(notification)
 Vue.use(TreeSelect)
+Vue.use(Statistic)
 
 Vue.prototype.$confirm = Modal.confirm
 Vue.prototype.$message = message

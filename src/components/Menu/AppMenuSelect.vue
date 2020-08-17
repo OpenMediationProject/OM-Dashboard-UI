@@ -47,6 +47,8 @@
 import { appSelectList } from '@/api/publisher'
 import { mapState } from 'vuex'
 import OmAppInfo from '@/components/om/AppInfo'
+import { adNetworkList } from '@/api/mediation'
+import { accountList } from '@/api/account'
 
 export default {
   name: 'OmAppInfoSelect',
@@ -82,7 +84,7 @@ export default {
     search () {
       var _this = this
       if (!this.currentOrgId) return
-      appSelectList({ userId: this.$store.state.user.info.id })
+      appSelectList({ userId: this.$store.state.user.info.id, status: 1 })
         .then(res => {
           _this.appList = res.data
           _this.tempOption = res.data
@@ -163,6 +165,27 @@ export default {
   watch: {
     searchApp (val) {
       this.selected = val
+      const _this = this
+      this.$store.commit('SET_USEUNITY', false)
+      if (this.$store.state.user.info.userType === 0) {
+        adNetworkList({ pubAppId: val }).then(res => {
+          const temp = res.data.filter(row => row.status === 1 && row.id === 3 && row.adNetworkAppId > 0)
+          if (temp.length === 0) {
+            return
+          }
+          // check Unity
+          accountList()
+            .then(r => {
+              r.data.filter(item => {
+                return item.adnId === 4
+              }).forEach(row => {
+                if (!row.userId) {
+                  _this.$store.commit('SET_USEUNITY', true)
+                }
+              })
+            })
+        })
+      }
     },
     openSelect (val) {
       this.open = val

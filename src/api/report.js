@@ -4,6 +4,7 @@ import { axios, JsonHeader } from '@/utils/request'
 
 const api = {
   reportList: '/report/list',
+  inAppList: '/report/list/in_app',
   dashboardHeadRevenues: '/report/dashboard/head/revenues',
   dashboardRegionRevenues: '/report/dashboard/regions/revenues',
   reportBuilders: '/report/builders',
@@ -86,5 +87,14 @@ export function testReportBuilder (params) {
     url: api.reportBuilderTest,
     method: 'get',
     params: params
+  })
+}
+
+export function inAppList (params) {
+  return axios({
+    url: api.inAppList,
+    method: 'POST',
+    headers: JsonHeader,
+    data: params
   })
 }

@@ -5,9 +5,9 @@
       <a-input v-if="fill" :placeholder="hint" :disabled="!canEdit" :max-length="maxlength" v-decorator="[field, { rules: [{ whitespace: true, required: true, message: label + ' can not be empty.'}] }]"/>
       <a-input v-else :disabled="!canEdit" :placeholder="hint" :max-length="maxlength" v-decorator="[field]"/>
     </slot>
-    <a-tooltip v-if="showTip" placement="right" :mouseEnterDelay="0.4" :mouseLeaveDelay="0.4">
+    <a-tooltip v-if="tip" placement="right" :mouseEnterDelay="0.4" :mouseLeaveDelay="0.4">
       <p slot="title" v-html="tip"></p>
-      <a class="tip" href="#"><a-icon type="exclamation-circle" /></a>
+      <a class="tip"><a-icon type="exclamation-circle" /></a>
     </a-tooltip>
   </a-form-item>
 </template>

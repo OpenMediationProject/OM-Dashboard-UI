@@ -2,9 +2,9 @@
 <template>
   <div>
     <a-form layout="inline" :form="form" >
-      <om-pub-app-select/>
+      <om-pub-app-select :defaultValue="def.defaultApps" @change="appSelect"/>
       <a-form-item>
-        <om-regions-select @change="countryChange" :ignoreApp="true" style="width: 220px"/>
+        <om-regions-select :defaultSelected="def.defaultRegions" @change="countryChange" :ignoreApp="true" style="width: 220px"/>
       </a-form-item>
       <a-form-item>
         <a-button ghost @click="handleApply" type="primary" style="width: 84px;">Apply</a-button>
@@ -14,7 +14,7 @@
 
     <div style="background-color: white; margin-top: 8px; padding: 16px">
       <div style="margin-bottom: 16px;">
-        <span style="font-size: 16px;color: #333333;font-weight:500;margin-right: 4px;">Breakdown by</span>
+        <span style="font-size: 16px;color: #333333;font-weight:500;margin-right: 4px;">User Activity by</span>
         <a-dropdown :trigger="['click']">
           <a class="ant-dropdown-link" style="font-size:16px;font-weight:bold;" @click="e => e.preventDefault()">
             {{ chartGroupBreakdown }} <a-icon type="down" />
@@ -36,6 +36,7 @@
             :height="248"
             x-column="day"
             y-column="dau"
+            y-format="0,0.[00]a"
             :group-by="chartGroupViewDim" />
         </a-col>
         <a-col :span="8">
@@ -46,7 +47,7 @@
             :height="248"
             x-column="day"
             y-column="arpDau"
-            y-format="$0.000"
+            y-format="$0.[0000]"
             :group-by="chartGroupViewDim" />
         </a-col>
         <a-col :span="8">
@@ -69,6 +70,7 @@
             :height="248"
             x-column="day"
             y-column="deu"
+            y-format="0,0.[00]a"
             :group-by="chartGroupViewDim" />
         </a-col>
         <a-col :span="8">
@@ -79,7 +81,7 @@
             :height="248"
             x-column="day"
             y-column="arpDeu"
-            y-format="$0.000"
+            y-format="$0.[0000]"
             :group-by="chartGroupViewDim" />
         </a-col>
         <a-col :span="8">
@@ -96,6 +98,10 @@
     </div>
 
     <div style="background-color: white; margin-top: 16px; padding: 16px">
+      <div style="margin-bottom: 4px;color: #999999;">
+        <div style="display: inline-block;">Breakdown</div>
+        <div style="position: absolute; margin-top: -20px; margin-left: 258px;">Metrics</div>
+      </div>
       <a-select
         showSearch
         style="width:240px;margin-bottom:16px;"
@@ -140,6 +146,9 @@
         </div>
       </div>
     </div>
+    <ul v-if="table.data.length" style="list-style:disc;margin-left: -16px;margin-top:8px;color: #999999;">
+      <li>All reports and dates are in UTC</li>
+    </ul>
   </div>
 </template>
 
@@ -152,6 +161,7 @@ import { generateUUID } from 'ant-design-vue/lib/vc-select/util'
 import numerify from 'numerify'
 import numerifyCurrency from 'numerify/lib/plugins/currency.es'
 import numerifyPercent from 'numerify/lib/plugins/percent.es'
+import { mapState } from 'vuex'
 numerify.register('currency', numerifyCurrency)
 numerify.register('percent', numerifyPercent)
 
@@ -178,27 +188,49 @@ export default {
     Ellipsis
   },
   data () {
+    const def = {
+      defaultApps: [],
+      defaultRegions: [],
+      dimension: ['day'],
+      metric: ['dau', 'deu']
+    }
+    let lastCondition = localStorage.getItem('condition-ua-' + this.$store.state.publisher.currentOrgId)
+    if (lastCondition) {
+      lastCondition = JSON.parse(lastCondition)
+      const { pubAppId = [], country = [], dimension = ['day'], metric = ['dau', 'deu'] } = { ...lastCondition }
+      def.defaultApps = pubAppId
+      def.defaultRegions = country
+      def.dimension = dimension
+      def.metric = metric
+    }
+    const queryPubAppId = this.$route.query.pubAppId
+    if (queryPubAppId) {
+      def.defaultApps = [queryPubAppId]
+    }
     return {
+      def,
       form: this.$form.createForm(this),
+      regions: def.defaultRegions || [],
       country: [],
       supportedMetrics: {
         dau: { title: 'DAU' },
-        arpDau: { title: 'ARPDAU', format: '$0.000' },
+        arpDau: { title: 'ARPDAU', format: '$0.[0000]' },
         imprDau: { title: 'Impressions / DAU', format: '0.00' },
         deu: { title: 'DEU' },
-        arpDeu: { title: 'ARPDEU', format: '$0.000' },
+        arpDeu: { title: 'ARPDEU', format: '$0.[0000]' },
         imprDeu: { title: 'Impressions / DEU', format: '0.00' },
         engagementRate: { title: 'Engagement Rate', format: '0.00 %' }
       },
       dimList4Chart: this.filterDim('pubAppId', 'country'),
-      dimList4Table: this.filterDim('day', 'country', 'pubAppId', 'placementId', 'adnId', 'instanceId'),
+      dimList4Table: this.filterDim('day', 'country', 'pubAppId'),
       loading: false,
       chartGroupBy: 'pubAppId',
       chartData: [],
+      sorter: null,
       table: {
         loading: false,
-        dimension: ['day'],
-        metric: ['dau', 'deu'],
+        dimension: def.dimension,
+        metric: def.metric,
         data: [],
         columns: []
       }
@@ -208,6 +240,9 @@ export default {
     chartGroupViewDim () {
       return dimColumnMapper[this.chartGroupBy] || this.chartGroupBy
     },
+    ...mapState({
+      currentOrgId: state => state.publisher.currentOrgId
+    }),
     chartGroupBreakdown () {
       return supportedDimensions[this.chartGroupBy] || this.chartGroupBy
     }
@@ -217,13 +252,16 @@ export default {
     this.reloadTable('dimension')
   },
   methods: {
+    appSelect (val) {
+      console.log(val)
+    },
     filterDim (...ids) {
       return ids.map(id => {
         return { id, title: supportedDimensions[id] }
       })
     },
     countryChange (val) {
-      this.country = val
+      this.regions = val
     },
     handleApply () {
       this.reloadChart()
@@ -246,7 +284,11 @@ export default {
       ps.dateBegin = ps.dateRange[0].format('YYYY-MM-DD')
       ps.dateEnd = ps.dateRange[1].format('YYYY-MM-DD')
       delete ps.dateRange
-      ps.country = this.country
+      ps.country = JSON.parse(JSON.stringify(this.regions))
+      if (ps.country && ps.country.indexOf('ALL') > -1) {
+        ps.country.splice(ps.country.indexOf('ALL'), 1)
+        ps.country.push('00')
+      }
       ps.type = ['dau', 'api']
       ps.dimension = ['day'].concat(this.chartGroupBy)
       return ps
@@ -272,13 +314,22 @@ export default {
         return
       }
       const ps = this.buildBaseParams()
+      const { pubAppId, country } = { ...ps }
       ps.dimension = dimension
       ps.metric = metric
+      const cond = { pubAppId, country, dimension, metric }
+      localStorage.setItem('condition-ua-' + this.currentOrgId, JSON.stringify(cond))
       const columns = dimension.map(dim => {
         const di = dimColumnMapper[dim] || dim
         return {
           title: supportedDimensions[dim],
           dataIndex: di,
+          customHeaderCell: (custom) => {
+            return {
+              style: { borderBottom: 'none' },
+              class: 'adt-cell-blue'
+            }
+          },
           sorter: (a, b) => a[di].localeCompare(b[di])
         }
       })
@@ -293,6 +344,13 @@ export default {
           customRender (v, row, i) {
             return numerify(v, metric.format)
           },
+          customHeaderCell: (custom) => {
+            return {
+              style: { borderBottom: 'none' },
+              class: 'adt-cell-green'
+            }
+          },
+          align: 'right',
           sorter (a, b) {
             return a[name] - b[name]
           }
@@ -357,23 +415,23 @@ export default {
       if (this.sorter) {
         data = data.sort((a, b) => {
           if (that.sorter.order === 'ascend') {
-            return (a[that.sorter.field] + '').localeCompare(b[that.sorter.field] + '')
+            return a[that.sorter.field].localeCompare ? a[that.sorter.field].localeCompare(b[that.sorter.field]) : a[that.sorter.field] - b[that.sorter.field]
           } else {
-            return (b[that.sorter.field] + '').localeCompare(a[that.sorter.field] + '')
+            return b[that.sorter.field].localeCompare ? b[that.sorter.field].localeCompare(a[that.sorter.field]) : b[that.sorter.field] - a[that.sorter.field]
           }
         })
-        data = data.map(row => {
-          return this.table.columns.map(col => {
-            return row[col.dataIndex]
-          }).join(',')
-        }).join('\n')
-        const blob = new Blob([new Uint8Array([0xef, 0xbb, 0xbf]), header + '\n' + data], { type: 'text/csv,charset=UTF-8' })
-        const link = document.createElement('a')
-        link.href = URL.createObjectURL(blob)
-        link.download = 'download.csv'
-        link.click()
-        URL.revokeObjectURL(link.href)
       }
+      data = data.map(row => {
+        return this.table.columns.map(col => {
+          return row[col.dataIndex]
+        }).join(',')
+      }).join('\n')
+      const blob = new Blob([new Uint8Array([0xef, 0xbb, 0xbf]), header + '\n' + data], { type: 'text/csv,charset=UTF-8' })
+      const link = document.createElement('a')
+      link.href = URL.createObjectURL(blob)
+      link.download = 'download.csv'
+      link.click()
+      URL.revokeObjectURL(link.href)
     }
   }
 }

@@ -1,6 +1,7 @@
 <!-- Placement list page router '/publisher/placement/list' -->
 <template>
   <div>
+    <om-alert v-if="this.$route.query.isnew && canEdit" @click="alertAdn" :message="alertAdnMessage"></om-alert>
     <div class="table-page-search-wrapper">
       <a-form>
         <a-row type="flex" justify="start" style="height: 44px;margin-top: 7px;">
@@ -13,7 +14,7 @@
               :maxTagCount="1"
               @change="handleChange"
               v-decorator="['queryAdType']">
-              <a-select-option value="2">Reward Video</a-select-option>
+              <a-select-option value="2">Rewarded Video</a-select-option>
               <a-select-option value="3">Interstitial</a-select-option>
               <a-select-option value="1">Native</a-select-option>
               <a-select-option value="0">Banner</a-select-option>
@@ -32,7 +33,7 @@
         </a-row>
       </a-form>
     </div>
-    <a-card :bordered="false" class="ant-card-table-default">
+    <a-card :bordered="false" class="ant-card-table-default" style="margin-bottom: 16px;">
       <a-table
         ref="table"
         size="default"
@@ -40,12 +41,13 @@
         :columns="columns"
         :dataSource="data"
         :loading="loading"
-        :scroll="{ y: scroll, x: 1340 }"
+        :scroll="{ y: 'auto'}"
         :pagination="false"
         @change="tableChange"
       >
         <span slot="name" slot-scope="text, record">
           <om-placement-info
+            :copy-id="true"
             :type="record.adType"
             :status="record.status"
             :name="record.name"
@@ -56,13 +58,13 @@
           <a-tag :style="record.status===0 ? 'opacity: 0.3;' : null">{{ text | typeFilter }}</a-tag>
         </span>
         <span slot="scenes" slot-scope="text, record">
-          <span :style="record.status===0 ? 'opacity: 0.3;' : null">{{ (record.adType === 1 || record.adType=== 0)? '--' : record.sceneSize || '0' }} </span>
+          <span :style="record.status===0 ? 'opacity: 0.3;' : null">
+            <span v-if="[1, 0].includes(record.adType)">--</span>
+            <a v-else @click="editScene(record.id)">{{ record.sceneSize || '0' }}</a>
+          </span>
         </span>
-        <span slot="sceneSize" slot-scope="text, record">
-          <div :style="record.status===0 ? 'opacity: 0.3;' : null" >
-            <div style="margin-top: -4px;">Placement-level: {{ record.frequencyCap===0 && record.frequencyInterval===0 && record.brandList.length===0 && record.modelList.length===0 ? 'All' : 'Limited' }}<br></div>
-            <div style="margin-top: 8px;">Scene-level: {{ !record.scenes || record.scenes.findIndex(item => item.frequencyCap !== 0 || item.frequencyInterval !== 0) === -1 ? 'All': 'Limited' }}</div>
-          </div>
+        <span slot="instanceSize" slot-scope="text, record">
+          <span :style="record.status===0 ? 'opacity: 0.3;' : null"><a @click="editInstance(record.id)">{{ record.instanceSize.length || '0' }}</a></span>
         </span>
         <span slot="status" slot-scope="text, record">
           <span>
@@ -70,6 +72,10 @@
               <a @click="handleUpdate(record)">Edit</a>
               <a-divider type="vertical" />
               <a herf="#" @click="handleEdit(record)">{{ text===0?'Enable' : 'Disable' }}</a>
+              <a-divider type="vertical" v-if="record.status" />
+              <a herf="#" v-if="record.status" @click="editInstance(record.id)">Instances</a>
+              <a-divider v-if="record.status" type="vertical" />
+              <a herf="#" v-if="record.status" @click="editMediation(record.id)">Mediation</a>
             </span>
             <span v-else>
               <a @click="viewPlacement(record)">Details</a>
@@ -83,7 +89,7 @@
 
 <script>
 import moment from 'moment'
-import { Ellipsis } from '@/components'
+import { Ellipsis, OmAlert } from '@/components'
 import { placementList, placementUpdate } from '@/api/publisher'
 import OmPlacementInfo from '@/components/om/PlacementInfo'
 import { mapState } from 'vuex'
@@ -115,7 +121,8 @@ export default {
   name: 'TableList',
   components: {
     Ellipsis,
-    OmPlacementInfo
+    OmPlacementInfo,
+    OmAlert
   },
   created () {
     this.scroll = window.innerHeight - 210
@@ -123,10 +130,23 @@ export default {
       this.searchTable()
     }
   },
+  destroyed () {
+    if (!this.$route.query.isnew && this.$route.path !== '/publisher/placement/add') {
+      localStorage.removeItem('isnew_plc')
+    }
+  },
   data () {
+    const isnewPlc = parseInt(localStorage.getItem('isnew_plc')) || 0
     return {
+      alertAdnMessage: {
+        title: 'Your Placement is created successfully.',
+        content: 'Next steps: Setup ad network settings for monetize',
+        button: 'Setup Ad Network'
+      },
       data: [],
+      isnewPlc,
       scroll: 200,
+      showAlert: false,
       queryParam: {},
       adType: [],
       sortOrder: '',
@@ -137,7 +157,7 @@ export default {
           title: 'Placement',
           dataIndex: 'name',
           width: '300px',
-          fixed: 'left',
+          ellipsis: true,
           sorter: this.buildSorter((a, b) => {
             return a.name.localeCompare(b.name)
           }),
@@ -145,7 +165,7 @@ export default {
         },
         {
           title: 'Type',
-          width: '12%',
+          width: '15%',
           dataIndex: 'adType',
           sorter: this.buildSorter((a, b) => {
             return a.typeStr.localeCompare(b.typeStr)
@@ -153,20 +173,20 @@ export default {
           scopedSlots: { customRender: 'adType' }
         },
         {
+          title: 'Enabled Instance',
+          width: '15%',
+          align: 'center',
+          dataIndex: 'instanceSize',
+          scopedSlots: { customRender: 'instanceSize' }
+        },
+        {
           title: 'Enable Scenes',
-          width: '20%',
+          width: '15%',
           align: 'center',
           dataIndex: 'scenes',
           scopedSlots: { customRender: 'scenes' }
         },
         {
-          title: 'Traffic Control',
-          dataIndex: 'sceneSize',
-          scopedSlots: { customRender: 'sceneSize' }
-        },
-        {
-          fixed: 'right',
-          width: '250px',
           title: 'Operations',
           dataIndex: 'status',
           scopedSlots: { customRender: 'status' }
@@ -189,6 +209,38 @@ export default {
     }
   },
   methods: {
+    alertAdn () {
+      localStorage.setItem('isnew_plc', this.$route.query.newplc)
+      this.$router.push({
+        path: '/adn/list',
+        query: { isnew: 1, newplc: this.$route.query.newplc }
+      })
+    },
+    editInstance (id) {
+      const target = this.data.filter(row => { return row.id === parseInt(id) })[0]
+      if (target) {
+        this.$store.commit('SET_PLACEMENT', target)
+      }
+      this.$router.push({
+        path: '/mediation/mediation/list'
+      })
+    },
+    editMediation (id) {
+      const target = this.data.filter(row => { return row.id === parseInt(id) })[0]
+      if (target) {
+        this.$store.commit('SET_PLACEMENT', target)
+      }
+      this.$router.push({
+        path: '/mediation/mediation/list',
+        query: { placementId: id, type: '2' }
+      })
+    },
+    editScene (id) {
+      this.$router.push({
+        path: '/publisher/placement/add',
+        query: { placementId: id, type: 'Edit', key: '2' }
+      })
+    },
     searchTable () {
       this.loading = true
       const params = { pubAppId: this.searchApp, placementTypes: this.adType }
@@ -207,10 +259,20 @@ export default {
       this.adType = value.join(',')
     },
     addPlacement () {
-      this.$router.push({
-        path: '/publisher/placement/add',
-        query: { type: 'Add' }
-      })
+      if (this.isnewPlc) {
+        localStorage.removeItem('isnew_plc')
+      }
+      if (this.$route.query.isnew) {
+        this.$router.push({
+          path: '/publisher/placement/add',
+          query: { type: 'Add', isnew: '2' }
+        })
+      } else {
+        this.$router.push({
+          path: '/publisher/placement/add',
+          query: { type: 'Add' }
+        })
+      }
     },
     handleEdit (record) {
       const status = record.status === 0 ? 1 : 0
@@ -219,13 +281,16 @@ export default {
           if (res.code === 0) {
             record.status = status
             this.arraySort(this.data)
-            this.$message.success(`update success`)
+            this.$message.success(this.$msg('placement.update_success'))
           } else {
             this.$message.error(res.msg)
           }
         })
     },
     handleUpdate (record) {
+      if (this.isnewPlc) {
+        localStorage.removeItem('isnew_plc')
+      }
       this.$router.push({
         path: '/publisher/placement/add',
         query: { placementId: record.id, type: 'Edit' }

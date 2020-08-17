@@ -25,6 +25,10 @@ export default {
       type: Boolean,
       required: false,
       default: false
+    },
+    useUnity: {
+      type: Boolean,
+      default: false
     }
   },
   data () {
@@ -56,7 +60,7 @@ export default {
       }
     },
     $route: function () {
-      // this.updateMenu()
+      this.updateMenu()
     }
   },
   methods: {
@@ -69,11 +73,18 @@ export default {
       if (this.open === true) {
         return
       }
-      this.open = true
-      if (!openKeys.includes('/publisher')) {
-        openKeys.push('/publisher')
+      if ((openKeys.includes('/publisher') && openKeys.includes('/report/main')) || (openKeys.includes('/publisher') && !openKeys.includes('/report'))) {
+        this.open = true
+      } else {
+        this.open = false
       }
-      this.openKeys = openKeys
+      const latestOpenKey = openKeys.find(key => this.openKeys.indexOf(key) === -1)
+      if (this.rootSubmenuKeys.indexOf(latestOpenKey) === -1) {
+        this.openKeys = openKeys
+      } else {
+        this.openKeys = latestOpenKey ? [latestOpenKey] : []
+      }
+      // this.openKeys = openKeys
     },
     appChange (action, empty) {
       if (empty) {
@@ -83,14 +94,19 @@ export default {
         }
         return false
       }
+      if (action === 'view') {
+        this.open = false
+      }
       if (action === 'change' || action === 'visible') {
         this.subMenuVisible = true
         if (this.$route.path === '/app/dashboard') {
           this.selectedKeys = ['/appdashboard']
         }
-      }
-      if (this.open) {
-        this.open = false
+        if (action === 'change') {
+          this.open = false
+        } else {
+          this.open = !this.open
+        }
       }
     },
     updateMenu () {
@@ -131,23 +147,29 @@ export default {
       }
       if (menu.meta.title === 'Apps') {
         return (
-          <Item disabled {...{ key: menu.path }}>
-            <tag {...{ props, attrs }}>
-              {this.renderIcon(menu.meta.icon)}
-              <span><AppMenuSelect style="width: 256px;margin-left: -40px;" { ...{ on: { appChange: this.appChange } } } collapsed={this.collapsed} openSelect={this.open}></AppMenuSelect></span>
-            </tag>
-          </Item>
+          <AppMenuSelect style="width: 256px;margin-top:8px;" { ...{ on: { appChange: this.appChange } } } collapsed={this.collapsed} openSelect={this.open}></AppMenuSelect>
         )
-      } else if (menu.meta.title === 'Ad Network Accounts') {
-        return (
-          <Item style="padding-top: 8px;" {...{ key: menu.path }}>
-            <tag {...{ props, attrs }}>
-              {this.renderIcon(menu.meta.icon)}
-              <span>{menu.meta.title}</span>
-            </tag>
-            <img style="margin-top:-138px;margin-left:-4px;" src='/menu/menu-line.svg' />
-          </Item>
-        )
+      } else if (menu.meta.title === 'Ad Network') {
+        if (this.useUnity) {
+          return (
+            <Item {...{ key: menu.path }}>
+              <tag {...{ props, attrs }}>
+                {this.renderIcon(menu.meta.icon)}
+                <span>{menu.meta.title}</span>
+              </tag>
+              <img style="left: 154px;top: 14px;position: absolute;" src='/icon/subtract.svg' />
+            </Item>
+          )
+        } else {
+          return (
+            <Item {...{ key: menu.path }}>
+              <tag {...{ props, attrs }}>
+                {this.renderIcon(menu.meta.icon)}
+                <span>{menu.meta.title}</span>
+              </tag>
+            </Item>
+          )
+        }
       } else {
         return (
           <Item {...{ key: menu.path }}>
@@ -177,7 +199,7 @@ export default {
         )
       } else {
         return (
-          <SubMenu class={this.subMenuVisible ? 'show-sub' : 'hide-sub'} {...{ key: menu.path }}>
+          <SubMenu {...{ key: menu.path }}>
             <span slot="title">
               {this.renderIcon(menu.meta.icon)}
               <span>{menu.meta.title}</span>

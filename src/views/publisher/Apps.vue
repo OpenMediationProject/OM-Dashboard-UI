@@ -1,6 +1,7 @@
 <!-- All App page router '/publisher/app' -->
 <template>
   <div>
+    <om-alert v-if="showAlert && canAddPlacement" @click="alertClick" :message="alert"></om-alert>
     <div class="table-page-search-wrapper">
       <a-form layout="inline">
         <a-row :gutter="48">
@@ -68,8 +69,7 @@
 </template>
 
 <script>
-import { Ellipsis } from '@/components'
-import CreateApp from './modules/CreateApp'
+import { Ellipsis, OmAlert } from '@/components'
 import { updateApp, getAppList } from '@/api/publisher'
 import OmAppInfo from '@/components/om/AppInfo'
 
@@ -78,7 +78,7 @@ export default {
   components: {
     OmAppInfo,
     Ellipsis,
-    CreateApp
+    OmAlert
   },
   created () {
     this.scroll = window.innerHeight - 202
@@ -130,21 +130,41 @@ export default {
     }
 
     return {
+      alert: {
+        title: 'Congrats! Your App is created successfully.',
+        content: 'Next steps: Create a placement to display ads in your app.',
+        button: 'Create'
+      },
       data: [],
       sortOrder: '',
+      showAlert: !!localStorage.getItem('show-create-placement'),
       loading: false,
       scroll: 650,
       columns: columns,
+      canAddPlacement: this.$auth('placement.add'),
       curApp: this.$store.state.publisher.searchApp
     }
   },
+  destroyed: function () {
+    localStorage.removeItem('show-create-placement')
+  },
   methods: {
+    alertClick () {
+      this.$router.push({ path: '/publisher/placement/add?type=Add', query: { isnew: 1 } })
+    },
     search () {
       this.loading = true
       getAppList()
         .then(res => {
-          this.arraySort(res.data)
-          this.data = res.data
+          if (res.data) {
+            if (this.showAlert) {
+              const newId = res.data[0].id
+              this.$store.commit('SET_APP', newId)
+              this.curApp = newId
+            }
+            this.arraySort(res.data)
+            this.data = res.data
+          }
         }).finally(() => {
           this.loading = false
         })
@@ -189,7 +209,7 @@ export default {
         .then(res => {
           if (res.code === 0) {
             record.status = status
-            this.$message.success(`update success`)
+            this.$message.success(this.$msg('pubapp.status_update'))
             // update menu app select options
             this.$store.commit('UPDATESELECTLIST', new Date().getTime())
             this.arraySort(this.data)
@@ -202,7 +222,7 @@ export default {
       this.$copyText(text).then(function (e) {
       }, function (e) {
       })
-      this.$message.success(`Copied App Key value to the clipboard`, 1)
+      this.$message.success(this.$msg('pubapp.app_key_copied'), 1)
     },
     addApp () {
       this.$router.push({

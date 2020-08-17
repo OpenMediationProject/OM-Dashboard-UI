@@ -11,21 +11,29 @@
       :menu="menus"
       :theme="theme"
       :mode="mode"
+      :useUnity="useUnity"
       @select="onSelect"
       style="padding: 16px 0px;"></s-menu>
-    <!-- <a-icon v-if="device==='mobile'" style="color:white;position: absolute; right: 0px; bottom: 56px;" class="trigger" :type="collapsed ? 'left' : 'right'" @click="toggle"/>
-    <a-icon v-else style="color:white;position: absolute; right: 0px; bottom: 56px;" class="trigger" :type="collapsed ? 'right' : 'left'" @click="toggle"/> -->
   </a-layout-sider>
 </template>
 
 <script>
-import SMenu from './index'
+import SMenu from './menu'
 import { mixin, mixinDevice } from '@/utils/mixin'
+import { mapState } from 'vuex'
 
 export default {
   name: 'SideMenu',
   components: { SMenu },
   mixins: [mixin, mixinDevice],
+  computed: mapState({
+    useUnity: state => state.publisher.useUnity
+  }),
+  data () {
+    return {
+      id: 1
+    }
+  },
   props: {
     mode: {
       type: String,

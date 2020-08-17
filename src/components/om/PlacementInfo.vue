@@ -2,17 +2,25 @@
 <template>
   <div :style="status?null:'opacity: 0.3;'">
     <div style="display: inline-block;">
-      <div style="color:#333333;font-size: 14px;margin-bottom:5px;">
+      <div class="plc-title">
         <ellipsis :length="20" tooltip>{{ name }}</ellipsis>
       </div>
-      <div style="color:#999999;font-size: 12px;">
-        <span v-if="type===0">Banner</span>
-        <span v-if="type===1">Native</span>
-        <span v-if="type===2">Rewarded Video</span>
-        <span v-if="type===3">Interstitial</span>
-        <span v-if="type===4">Splash</span>
-        <a-divider type="vertical" />
-        <span style="margin-left:-2px;">{{ id }}</span>
+      <div class="plc-type">
+        <span v-if="!copyId">
+          <span v-if="type===0">Banner</span>
+          <span v-if="type===1">Native</span>
+          <span v-if="type===2">Rewarded Video</span>
+          <span v-if="type===3">Interstitial</span>
+          <span v-if="type===4">Splash</span>
+          <a-divider type="vertical" />
+          <span style="margin-left:-2px;">{{ id }}</span>
+        </span>
+        <span v-else>
+          <span>{{ id }}</span>
+          <a-tooltip title="Copy">
+            <a style="margin-left: 8px;" @click="handleCopy(id)"><img src="/icon/copy-gray.svg" alt="Copy"></a>
+          </a-tooltip>
+        </span>
       </div>
     </div>
   </div>
@@ -43,6 +51,10 @@ export default {
       type: Number,
       required: false,
       default: 1
+    },
+    copyId: {
+      type: Boolean,
+      default: false
     }
   },
   components: {
@@ -52,9 +64,23 @@ export default {
     return {
       visible: true
     }
+  },
+  methods: {
+    handleCopy (text) {
+      this.$copyText(text).then(function (e) {
+      }, function (e) {
+      })
+      this.$message.success('Copied id to the clipboard', 1)
+    }
   }
 }
 </script>
 
 <style lang="less" scoped>
+  .plc-title {
+    color:#333333;font-size: 14px;margin-bottom:4px;
+  }
+  .plc-type {
+    color:#999999;font-size: 12px;text-align: left;
+  }
 </style>

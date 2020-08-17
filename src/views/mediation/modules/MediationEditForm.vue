@@ -1,16 +1,23 @@
 <template>
-  <a-card class="card-noline" title="Basic Information" :bordered="false" >
-    <om-form :max-length="40" label="Name" field="name" tip="Segment Name" :showTip="false"/>
-    <om-form label="Optimize Type" field="autoOpt" tip="Optimize Type" :showTip="false">
-      <a-select @change="optChange" placeholder="Manual" v-decorator="['autoOpt',{rules: [{ required: true, message: 'Optimize Type can not be empty.'}] }]" >
+  <a-card class="card-noline om-card-style" title="Basic Information" :bordered="false" >
+    <om-form
+      :form="form"
+      :max-length="40"
+      label="Name"
+      field="name"
+      :msg="this.$msg('mediation.name_empty')"
+      :tip="this.$msg('mediation.rule_name_tip')"
+    />
+    <om-form label="Optimized Type" field="autoOpt" :tip="this.$msg('mediation.optimized_type_tip')">
+      <a-select @change="optChange" placeholder="Manual" v-decorator="['autoOpt']" >
         <a-select-option :value="0">Manual</a-select-option>
         <a-select-option :value="1">Auto</a-select-option>
       </a-select>
     </om-form>
-    <om-form label="Regions" field="regions" tip="Regions" :showTip="false" >
+    <om-form label="Regions" field="regions" :tip="this.$msg('mediation.regions_tip')" >
       <RegionsSelect @change="regionsSelectedId" :defaultSelected="countris" size="default" />
     </om-form>
-    <a-form-item>
+    <a-form-item style="margin-bottom: -16px;">
       <om-form label="Channel" field="channel" :fill="false" :showTip="false">
         <a-input-group style="width:100%" compact>
           <a-select v-decorator="['channelBow', {initialValue: 0}]">
@@ -24,7 +31,7 @@
     </a-form-item>
     <a-divider><img v-if="visible" @click="handleVisible" src="/assets/lineUp.svg"><img @click="handleVisible" v-else src="/assets/lineDown.svg"></a-divider>
     <span v-show="visible">
-      <om-form label="Frequency" field="frequency" tip="Frequency" :fill="false" :showTip="false" >
+      <om-form label="Frequency" field="frequency" :fill="false" :tip="$msg('mediation.frequency_tip')" >
         <a-input-number
           ref="iap-min"
           style="width:100%"
@@ -33,45 +40,85 @@
           :max="500"
           v-decorator="['frequency']"/>
       </om-form>
-      <om-form label="IAP(USD)" field="iapMin" tip="IAP(USD)" :fill="false" :showTip="false">
-        <a-input-number
-          style="width:100px;"
-          ref="iapmin"
-          :max="9999"
-          :min="0"
-          v-decorator="['iapMin', {rules: [{ validator: handleCheckIapMin }]}]"/> -
-        <a-input-number
-          ref="iapmax"
-          :max="9999"
-          :min="0"
-          style="width:100px;"
-          v-decorator="['iapMax', {rules: [{ validator: handleCheckIapMax }]}]"/>
+      <om-form label="IAP(USD)" field="iapMin" :tip="$msg('mediation.iap_tip')" :fill="false">
+        <a-form-item style="margin-bottom: -16px;display:inline-block" :validate-status="iapstatus" :help="iapstatus==='error'?'illegal range':''">
+          <a-input-group compact>
+            <a-input-number
+              :min="0"
+              :max="9999"
+              ref="iapmin"
+              @change="handleCheckIapMin"
+              v-decorator="['iapMin']"
+              style=" width: 100px; text-align: center"
+              placeholder="Minimum" />
+            <a-input
+              style=" width: 30px; border-left: 0; pointer-events: none; backgroundColor: #fff"
+              placeholder="~"
+              disabled
+            />
+            <a-input-number
+              ref="iapmax"
+              :min="0"
+              @change="handleCheckIapMax"
+              :max="9999"
+              v-decorator="['iapMax']"
+              style="width: 100px; text-align: center; border-left: 0"
+              placeholder="Maximum" />
+            <AdtTip style="margin-top:4px;" :tip="$msg('mediation.iap_error')" />
+          </a-input-group>
+        </a-form-item>
       </om-form>
-      <om-form label="Interest" field="interest" tip="Interest" :fill="false" :showTip="false">
-        <a-select mode="multiple" v-decorator="['interest']" placeholder="Tags">
-          <a-select-option
-            v-for="item in interestsOption"
-            :key="item.id"
-          >{{ item.text }}</a-select-option>
-        </a-select>
+      <om-form label="Gender" field="gender" :tip="$msg('mediation.gender_tip')" :fill="false">
+        <a-checkbox-group v-model="selectedGender"@change="genderChance">
+          <a-checkbox :value="0">Male</a-checkbox>
+          <a-checkbox :value="1">Female</a-checkbox>
+        </a-checkbox-group>
       </om-form>
-      <om-form label="Connection Type" field="conType" tip="Connection Type" :fill="false" :showTip="false">
-        <a-checkbox-group v-model="selectedContype" :defaultValue="conType" @change="contypeChance">
+      <om-form label="Age" field="ageMin" :tip="this.$msg('mediation.age_tip')" :fill="false">
+        <a-form-item style="margin-bottom: -16px;display:inline-block" :validate-status="status" :help="status==='error'?'illegal range':''">
+          <a-input-group compact>
+            <a-input-number
+              :min="0"
+              :max="200"
+              ref="agemin"
+              @change="handleCheckAgeMin"
+              v-decorator="['ageMin']"
+              style=" width: 100px; text-align: center"
+              placeholder="Minimum" />
+            <a-input
+              style=" width: 30px; border-left: 0; pointer-events: none; backgroundColor: #fff"
+              placeholder="~"
+              disabled
+            />
+            <a-input-number
+              ref="agemax"
+              :min="0"
+              @change="handleCheckAgeMax"
+              :max="200"
+              v-decorator="['ageMax']"
+              style="width: 100px; text-align: center; border-left: 0"
+              placeholder="Maximum" />
+            <AdtTip style="margin-top:4px;" :tip="$msg('mediation.age_error')" />
+          </a-input-group>
+        </a-form-item>
+      </om-form>
+      <om-form label="Connection Type" field="conType" :fill="false" :tip="this.$msg('mediation.contype_tip')" >
+        <a-checkbox-group style="margin-top:8px;" v-model="selectedContype" @change="contypeChance">
           <a-checkbox :value="0">Wifi</a-checkbox>
           <a-checkbox :value="1">2G</a-checkbox>
           <a-checkbox :value="2">3G</a-checkbox>
           <a-checkbox :value="3">4G</a-checkbox>
         </a-checkbox-group>
       </om-form>
-      <om-form label="Model Type" field="modelType" tip="Model Type" :fill="false" :showTip="false">
-        <a-checkbox-group v-model="selectedModelType" :defaultValue="modelType" @change="modelTypeChance">
+      <om-form label="Model Type" field="modelType" :fill="false" :tip="this.$msg('mediation.model_type_tip')" >
+        <a-checkbox-group v-model="selectedModelType" @change="modelTypeChance">
           <a-checkbox :value="0">Phone</a-checkbox>
           <a-checkbox :value="1">Pad</a-checkbox>
           <a-checkbox :value="2">TV</a-checkbox>
         </a-checkbox-group>
       </om-form>
       <a-form-item>
-        <om-form label="Device Brand" field="brand" tip="Device Brand" :fill="false" :showTip="false">
+        <om-form label="Device Brand" field="brand" :tip="this.$msg('mediation.brand_tip')" :fill="false">
           <a-input-group style="width:100%" compact>
             <a-select v-decorator="['brandType', {initialValue: 'include'}]">
               <a-select-option value="include">include</a-select-option>
@@ -79,7 +126,6 @@
             </a-select>
             <a-select
               style="width: 73%"
-              :value="value"
               @search="selectBrand"
               :filterOption="false"
               :notFoundContent="fetching ? undefined : null"
@@ -92,15 +138,14 @@
         </om-form>
       </a-form-item>
       <a-form-item>
-        <om-form label="Device Model" field="model" tip="Device Model" :fill="false" :showTip="false">
+        <om-form label="Device Model" field="model" :tip="this.$msg('mediation.model_tip')" :fill="false">
           <a-input-group style="width:100%" compact>
-            <a-select defaultValue="include" v-decorator="['modelType', {initialValue: 'include'}]" >
+            <a-select v-decorator="['modelType', {initialValue: 'include'}]" >
               <a-select-option value="include">include</a-select-option>
               <a-select-option value="exclude">exclude</a-select-option>
             </a-select>
             <a-select
               style="width: 73%"
-              :value="value"
               @search="selectModel"
               :filterOption="false"
               :notFoundContent="fetching ? undefined : null"
@@ -120,11 +165,13 @@ import { mapState } from 'vuex'
 import omForm from '@/components/OmForm'
 import RegionsSelect from '@/components/om/RegionsSelect'
 import { modelSearch, brandSearch } from '@/api/publisher'
+import AdtTip from '@/components/AdtTip'
 
 export default {
   components: {
     'om-form': omForm,
-    RegionsSelect
+    RegionsSelect,
+    AdtTip
   },
   props: {
     id: {
@@ -155,6 +202,11 @@ export default {
     form: {
       type: Object,
       default: null
+    },
+    gender: {
+      type: Array,
+      required: false,
+      default: null
     }
   },
   data () {
@@ -168,315 +220,12 @@ export default {
       lastFetchId: 0,
       opt: this.autoOpt,
       fetching: false,
+      status: 'success',
       value: [],
+      iapstatus: 'success',
       selectedContype: this.conType,
       selectedModelType: this.modelType,
-      interestsOption: [
-        {
-          'id': 'american_football',
-          'text': 'American Football'
-        },
-        {
-          'id': 'anti-virus',
-          'text': 'Anti-virus'
-        },
-        {
-          'id': 'audio_books',
-          'text': 'Audio Books'
-        },
-        {
-          'id': 'automobiles',
-          'text': 'Automobiles'
-        },
-        {
-          'id': 'auto_racing',
-          'text': 'Auto Racing'
-        },
-        {
-          'id': 'baking',
-          'text': 'Baking'
-        },
-        {
-          'id': 'banking',
-          'text': 'Banking'
-        },
-        {
-          'id': 'baseball',
-          'text': 'Baseball'
-        },
-        {
-          'id': 'basketball',
-          'text': 'Basketball'
-        },
-        {
-          'id': 'beauty',
-          'text': 'Beauty'
-        },
-        {
-          'id': 'books',
-          'text': 'Books'
-        },
-        {
-          'id': 'business',
-          'text': 'Business'
-        },
-        {
-          'id': 'car_owner',
-          'text': 'Car owner'
-        },
-        {
-          'id': 'celebrities',
-          'text': 'Celebrities'
-        },
-        {
-          'id': 'cinema',
-          'text': 'Cinema'
-        },
-        {
-          'id': 'comics',
-          'text': 'Comics'
-        },
-        {
-          'id': 'commuting',
-          'text': 'Commuting'
-        },
-        {
-          'id': 'computers_technology',
-          'text': 'Computers & Technology'
-        },
-        {
-          'id': 'concert',
-          'text': 'Concert'
-        },
-        {
-          'id': 'cooking',
-          'text': 'Cooking'
-        },
-        {
-          'id': 'cosmetics',
-          'text': 'Cosmetics'
-        },
-        {
-          'id': 'coupon',
-          'text': 'Coupon'
-        },
-        {
-          'id': 'cricket',
-          'text': 'Cricket'
-        },
-        {
-          'id': 'dating',
-          'text': 'Dating'
-        },
-        {
-          'id': 'dieting_weight_loss',
-          'text': 'Dieting & Weight Loss'
-        },
-        {
-          'id': 'dogs',
-          'text': 'Dogs'
-        },
-        {
-          'id': 'education',
-          'text': 'Education'
-        },
-        {
-          'id': 'entertainment',
-          'text': 'Entertainment'
-        },
-        {
-          'id': 'fashion',
-          'text': 'Fashion'
-        },
-        {
-          'id': 'finance',
-          'text': 'Finance'
-        },
-        {
-          'id': 'fitness',
-          'text': 'Fitness'
-        },
-        {
-          'id': 'flight_search',
-          'text': 'Flight search'
-        },
-        {
-          'id': 'food_beverages',
-          'text': 'Food & Beverages'
-        },
-        {
-          'id': 'food_delivery',
-          'text': 'Food Delivery'
-        },
-        {
-          'id': 'gadgets',
-          'text': 'Gadgets'
-        },
-        {
-          'id': 'gastronomy',
-          'text': 'Gastronomy'
-        },
-        {
-          'id': 'golf',
-          'text': 'Golf'
-        },
-        {
-          'id': 'hair',
-          'text': 'Hair'
-        },
-        {
-          'id': 'healthy_living',
-          'text': 'Healthy living'
-        },
-        {
-          'id': 'hiphop',
-          'text': 'HipHop'
-        },
-        {
-          'id': 'hotel_search',
-          'text': 'Hotel search'
-        },
-        {
-          'id': 'in_a_relationship',
-          'text': 'In a Relationship'
-        },
-        {
-          'id': 'job_market',
-          'text': 'Job Market'
-        },
-        {
-          'id': 'jokes',
-          'text': 'Jokes'
-        },
-        {
-          'id': 'language_learning',
-          'text': 'Language learning'
-        },
-        {
-          'id': 'literature',
-          'text': 'Literature'
-        },
-        {
-          'id': 'manga',
-          'text': 'Manga'
-        },
-        {
-          'id': 'medical',
-          'text': 'Medical'
-        },
-        {
-          'id': 'meditation',
-          'text': 'Meditation'
-        },
-        {
-          'id': 'movies',
-          'text': 'Movies'
-        },
-        {
-          'id': 'music',
-          'text': 'Music'
-        },
-        {
-          'id': 'news',
-          'text': 'News'
-        },
-        {
-          'id': 'news_politics',
-          'text': 'News & Politics'
-        },
-        {
-          'id': 'parenting',
-          'text': 'Parenting'
-        },
-        {
-          'id': 'personal_finance',
-          'text': 'Personal Finance'
-        },
-        {
-          'id': 'photography',
-          'text': 'Photography'
-        },
-        {
-          'id': 'podcast',
-          'text': 'Podcast'
-        },
-        {
-          'id': 'pregnancy',
-          'text': 'Pregnancy'
-        },
-        {
-          'id': 'productivity',
-          'text': 'Productivity'
-        },
-        {
-          'id': 'radio_listening',
-          'text': 'Radio listening'
-        },
-        {
-          'id': 'real_estate',
-          'text': 'Real Estate'
-        },
-        {
-          'id': 'relaxation',
-          'text': 'Relaxation'
-        },
-        {
-          'id': 'restaurant',
-          'text': 'Restaurant'
-        },
-        {
-          'id': 'rock',
-          'text': 'Rock'
-        },
-        {
-          'id': 'running',
-          'text': 'Running'
-        },
-        {
-          'id': 'shopping',
-          'text': 'Shopping'
-        },
-        {
-          'id': 'soccer',
-          'text': 'Soccer'
-        },
-        {
-          'id': 'sports_entertainment',
-          'text': 'Sports entertainment'
-        },
-        {
-          'id': 'sports_recreation',
-          'text': 'Sports & Recreation'
-        },
-        {
-          'id': 'stock_market',
-          'text': 'Stock market'
-        },
-        {
-          'id': 'taxi',
-          'text': 'Taxi'
-        },
-        {
-          'id': 'television',
-          'text': 'Television'
-        },
-        {
-          'id': 'travel',
-          'text': 'Travel'
-        },
-        {
-          'id': 'value_shopper',
-          'text': 'Value Shopper'
-        },
-        {
-          'id': 'weightlifting',
-          'text': 'Weightlifting'
-        },
-        {
-          'id': 'yoga',
-          'text': 'Yoga'
-        }
-      ]
+      selectedGender: this.gender
     }
   },
   name: 'MediationEditForm',
@@ -486,6 +235,9 @@ export default {
   watch: {
     conType (val) {
       this.selectedContype = val
+    },
+    gender (val) {
+      this.selectedGender = val
     },
     modelType (val) {
       this.selectedModelType = val
@@ -499,63 +251,95 @@ export default {
       this.opt = value
       this.$emit('optChange', value)
     },
-    handleCheckIapMin (rule, value, callback) {
+    handleCheckIapMin (value) {
       if (!value) {
-        callback()
+        this.iapstatus = 'success'
+        return
       }
       if (isNaN(value)) {
-        callback(new Error('Illegal number'))
+        this.iapstatus = 'success'
       } else {
         const n = Number(value)
         if (n < 0) {
-          callback(new Error('Illegal number'))
+          this.iapstatus = 'success'
+          return
         }
         const max = Number(this.$refs.iapmax.value)
         if (isNaN(max) || (max === 0 && n === 0)) {
-          callback()
+          this.iapstatus = 'success'
           return
         }
         if (max && n < max) {
-          const form = this.$options.parent.form
-          if (form.getFieldError('iapMax')) {
-            setTimeout(_ => form.validateFields(['iapMax']), 100)
-          }
-          callback()
+          this.iapstatus = 'success'
         } else {
-          callback(new Error('Illegal number'))
+          this.iapstatus = 'error'
         }
       }
     },
-    handleCheckIapMax (rule, value, callback) {
+    handleCheckIapMax (value) {
       if (!value) {
-        callback()
+        this.iapstatus = 'success'
+        return
       }
       if (isNaN(value)) {
-        callback(new Error('Illegal number'))
+        this.iapstatus = 'success'
+      } else {
+        const n = Number(value)
+        const min = Number(this.$refs.iapmin.value)
+        if (isNaN(min) || (min === 0 && n === 0)) {
+          this.iapstatus = 'success'
+          return
+        }
+        if (min && n < min) {
+          this.iapstatus = 'error'
+        } else {
+          this.iapstatus = 'success'
+        }
+      }
+    },
+    handleCheckAgeMin (value) {
+      if (!value) {
+        this.status = 'success'
+        return
+      }
+      if (isNaN(value)) {
+        this.status = 'success'
       } else {
         const n = Number(value)
         if (n < 0) {
-          callback(new Error('Illegal number'))
-        }
-        const min = Number(this.$refs.iapmin.value)
-        if (isNaN(min) || (min === 0 && n === 0)) {
-          callback()
+          this.status = 'success'
           return
         }
-        const form = this.$options.parent.form
-        if (min && n > min && n <= 9999) {
-          if (form.getFieldError('iapMin')) {
-            setTimeout(_ => form.validateFields(['iapMin']), 100)
-          }
-          callback()
+        const max = Number(this.$refs.agemax.value)
+        if (isNaN(max) || (max === 0 && n === 0)) {
+          this.status = 'success'
+          return
+        }
+        if (max && n < max) {
+          this.status = 'success'
         } else {
-          if (min) {
-            form.setFieldsValue({ iapMax: min + 1 })
-            if (form.getFieldError('iapMin')) {
-              setTimeout(_ => form.validateFields(['iapMin']), 100)
-            }
-            callback()
-          }
+          this.status = 'error'
+        }
+      }
+    },
+    handleCheckAgeMax (value) {
+      if (!value) {
+        this.status = 'success'
+        return
+      }
+      if (isNaN(value)) {
+        this.status = 'success'
+      } else {
+        const n = Number(value)
+        const min = Number(this.$refs.agemin.value)
+        if (isNaN(min) || (min === 0 && n === 0)) {
+          this.status = 'success'
+          return
+        }
+        if (min && n < min) {
+          this.status = 'error'
+        } else {
+          this.status = 'success'
         }
       }
     },
@@ -567,6 +351,9 @@ export default {
     },
     modelTypeChance (e) {
       this.$emit('selectedModelType', this.selectedModelType)
+    },
+    genderChance (e) {
+      this.$emit('selectedGender', this.selectedGender)
     },
     regionsSelectedId (value) {
       this.$emit('change', value)

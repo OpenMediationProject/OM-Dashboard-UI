@@ -1,8 +1,8 @@
-<!-- SDK Integration page router '/sdk/integration' -->
+<!-- SDK Testing page router '/sdk/integration' -->
 <template>
   <a-tabs class="mytabs" :tabBarStyle="{ backgroundColor: '#F7F7F7', marginLeft: '10px'}" defaultActiveKey="1">
     <a-tab-pane tab="Testing" key="1">
-      <testing/>
+      <Integration/>
     </a-tab-pane>
     <a-tab-pane tab="Devices" key="2" forceRender>
       <devices />
@@ -11,13 +11,13 @@
 </template>
 
 <script>
-import testing from './modules/Testing'
+import Integration from './modules/Integration'
 import devices from './modules/Devices'
 
 export default {
   name: 'SDK',
   components: {
-    testing,
+    Integration,
     devices
   },
   data () {

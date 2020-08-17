@@ -6,21 +6,22 @@
       :style="{ width: width }"
       placeholder="Instance"
       size="default"
+      :allowClear="allowClear"
       :disabled="disabled"
       :mode="mode"
-      :showArrow="false"
-      allowClear
+      :showArrow="!allowClear"
       optionLabelProp="title"
+      :dropdownMatchSelectWidth="false"
       v-decorator="[modelName, {initialValue: initValue}]"
       :filterOption="instanceFilterOption"
       @change="handleChange">
       <a-select-option v-for="instance in data" :key="instance.id" :title="instance.name">
         <div style="display: inline-block;vertical-align: middle;">
           <div style="color:#333333;font-size: 14px;">
-            <ellipsis :length="20">{{ instance.name }}</ellipsis>
+            <ellipsis :length="30">{{ instance.name }}</ellipsis>
           </div>
           <div style="color:#999999;font-size: 12px;">
-            <ellipsis :length="26">{{ instance.placementKey }}</ellipsis>
+            <ellipsis :length="50">{{ instance.placementKey }}</ellipsis>
           </div>
         </div>
         <p style="display:none">{{ instance.placementKey + ' ' + instance.name }}</p>
@@ -32,6 +33,7 @@
 <script>
 import { Ellipsis } from '../../components'
 import { instancesSelectList } from '../../api/mediation'
+import { mapState } from 'vuex'
 
 export default {
   name: 'OmInstanceSelect',
@@ -51,6 +53,10 @@ export default {
       type: String,
       default: 'default'
     },
+    allowClear: {
+      type: Boolean,
+      default: true
+    },
     defaultValue: {
       type: Array,
       default () {
@@ -62,8 +68,8 @@ export default {
       default: null
     },
     hb: {
-      type: Number,
-      default: null
+      type: Boolean,
+      default: false
     },
     adnAppId: {
       type: Number,
@@ -72,6 +78,10 @@ export default {
     disabled: {
       type: Boolean,
       default: false
+    },
+    adnIds: {
+      type: Array,
+      default: null
     }
   },
   data () {
@@ -80,6 +90,9 @@ export default {
       initValue: this.defaultValue
     }
   },
+  computed: mapState({
+    searchPlacement: state => state.publisher.searchPlacement
+  }),
   methods: {
     handleChange (value, option) {
       this.$emit('change', value)
@@ -92,18 +105,33 @@ export default {
       const { searchApp: pubAppId } = this.$store.state.publisher
       if (!this.data || this.data.length === 0) {
         const params = { pubAppId, placementId: this.placementId }
-        if (this.adnAppId !== null) {
-          params.adNetworkAppId = this.adnAppId
-        }
-        if (this.hb !== null) {
-          params.headBid = this.hb
+        if (this.adnIds && this.adnIds.length) {
+          params.adnIds = this.adnIds.join(',')
         }
         instancesSelectList(params).then(res => {
           if (res.code === 0) {
+            if (this.hb) {
+              res.data = res.data.filter(row => { return !row.headbidding })
+            }
             this.data = res.data
           }
         })
       }
+    },
+    resetOptions () {
+      const { searchApp: pubAppId } = this.$store.state.publisher
+      const params = { pubAppId, placementId: this.placementId }
+      if (this.adnIds && this.adnIds.length) {
+        params.adNetworkIds = this.adnIds.join(',')
+      }
+      instancesSelectList(params).then(res => {
+        if (res.code === 0) {
+          if (this.hb) {
+            res.data = res.data.filter(row => { return !row.headbidding })
+          }
+          this.data = res.data
+        }
+      })
     },
     upload () {
       const { searchApp: pubAppId } = this.$store.state.publisher
@@ -113,6 +141,9 @@ export default {
       }
       instancesSelectList(params).then(res => {
         if (res.code === 0) {
+          if (this.hb) {
+            res.data = res.data.filter(row => { return !row.headbidding })
+          }
           this.data = res.data
         }
       })
@@ -124,6 +155,12 @@ export default {
   watch: {
     hb (val) {
       this.setOptions()
+    },
+    adnIds (val) {
+      this.resetOptions()
+    },
+    searchPlacement (val) {
+      this.resetOptions()
     }
   }
 }

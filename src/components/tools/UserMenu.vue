@@ -81,6 +81,7 @@ export default {
     }
   },
   created () {
+    this.LoadDict()
     this.updateSelectList()
   },
   data () {
@@ -99,7 +100,7 @@ export default {
     click () {
       this.open = true
     },
-    ...mapActions(['Logout', 'GetInfo']),
+    ...mapActions(['Logout', 'GetInfo', 'LoadDict']),
     handleLogout () {
       this.$confirm({
         title: 'Tips',

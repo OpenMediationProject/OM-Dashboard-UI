@@ -1,175 +1,161 @@
 <!-- Mediation list page router '/mediation/mediation/list' -->
 <template>
   <a-form :form="form" :hideRequiredMark="true">
+    <PlacementSelect v-show="searchPlacement" style="margin-left:8px;"/>
     <a-card :bordered="false" style="padding-top:12px;">
-      <PlacementSelect />
-      <a-tabs class="mytabs" :tabBarStyle="{ backgroundColor: '#F7F7F7', marginLeft: '8px', marginTop: '-12px'}" defaultActiveKey="1" @change="callback">
+      <a-tabs class="mytabs" :tabBarStyle="{ backgroundColor: '#F7F7F7', marginLeft: '8px', marginTop: '-12px'}" :active-key="activeKey" :defaultActiveKey="activeKey" @change="tabChange">
         <span slot="tabBarExtraContent">
         </span>
-        <a-tab-pane tab="Waterfall" key="1" style="margin-top: 8px;">
-          <a-row type="flex" justify="start" style="height: 44px;">
-            <a-form-item>
-              <RegionsSelect @change="regoinsSelectedId" size="default" style="margin-top:2px;width:260px;" />
-            </a-form-item>
-            <a-form-item>
-              <span class="table-page-search-submitButtons">
-                <a-button type="primary" style="margin-right:8px;margin-left:8px;" ghost @click="listSearch">Apply</a-button>
-              </span>
-            </a-form-item>
-            <a-form-item style="position:absolute; right:0px;">
-              <span class="table-page-search-submitButtons" >
-                <a-button type="primary" v-action:edit ghost @click="handleEdit()">Add Segment</a-button>
-              </span>
-            </a-form-item>
-          </a-row>
-          <a-spin :spinning="fetching">
-            <div style="background:#FFFFFF;">
-              <a-table
-                class="ant-card-table-default"
-                ref="table"
-                rowKey="id"
-                :dataSource="list"
-                :expandedRowKeys="curExpandedRowKeys"
-                :columns="columns"
-                :scroll="{ y: scroll }"
-                :expandIconAsCell="false"
-                :expandIconColumnIndex="-1"
-                :pagination="false"
-                @change="tableChange"
-              >
-                <span slot="name" slot-scope="text, record">
-                  <span :style="record.status===0 ? 'opacity: 0.3;' : null" >
-                    <om-text :tooltip="true" :text="text"/>
-                  </span>
-                </span>
-                <span slot="autoOpt" slot-scope="text, record">
-                  <span :style="record.status===0 ? 'opacity: 0.3;' : null" >
-                    {{ text === 0? 'Manual':'Auto' }}
-                  </span>
-                </span>
-                <span slot="ruleInstanceSize" slot-scope="text, record">
-                  <span :style="record.status===0 ? 'opacity: 0.3;' : null" >
-                    {{ text }}
-                  </span>
-                </span>
-                <span slot="priority" slot-scope="text, record">
-                  <span :style="record.status > 0 ? null: 'opacity: 0.3;' ">
-                    <editable-cell v-if="record.status > 0 && canEdit" :text="record.priority || '--'" @change="onCellChange(record, 'priority', $event)" />
-                    <span v-else-if="record.status>0 && !canEdit">{{ text }}</span>
-                    <span v-else>{{ '--' }}</span>
-                  </span>
-                </span>
-                <span slot="status" slot-scope="text, record">
-                  <template>
-                    <div v-if="canEdit">
-                      <a herf="#" @click="handleEdit(record)">Edit</a>
-                      <a-divider type="vertical" />
-                      <a herf="#" @click="segmentStatusUpdate(record)">{{ text===0?'Enable' : 'Disable' }}</a>
-                      <a-divider v-if="record.name!=='ALL'" type="vertical" />
-                      <a-popconfirm v-if="record.name!=='ALL'" title="Are you really sure？" okText="Yes" cancelText="No" @confirm="segmentDelete(record)">
-                        <a herf="#">Remove</a>
-                      </a-popconfirm>
-                      <span style="float:right" v-if="!record.expandStatus" @click="handleOpen(record)" ><img src="/assets/down.svg"/></span>
-                      <span style="float:right" v-else @click="handleOpen(record)"><img src="/assets/up.svg"/></span>
+        <a-tab-pane tab="Instances" key="1" ref="instancesTab" style="margin-top: 8px;">
+          <instance-edit @tab2="activeKey = '2'" />
+        </a-tab-pane>
+        <a-tab-pane tab="Waterfall" key="2" style="margin-top: 8px;">
+          <div v-if="!searchPlacement" class="table-page-search-wrapper">
+            <a-alert
+              class="om-card-style"
+              type="info"
+            >
+              <span slot="message" style="text-align: center;width: 100%;">
+                <div style="text-align:center; width:900px;margin-left:15%;margin-top:24px;height: 180px">
+                  <div style="display:inline-block;float:left; margin-right:26px;margin-left:100px;margin-bottom: 32px"><img src="/assets/mediation_tip.svg"/></div>
+                  <div style="text-align:left;line-height:20px;padding-top: 8px">
+                    <h4 style="font-size: 16px;color: #333333">You need Placements!</h4>
+                    <p style="font-size:14px;color: #666666">Placements offer more control of where and how ads are served within your app.<br>AdTiming currently support ad placements for all ad formats, i.e. Rewarded Video,<br>Interstitial, Banner, and Native. In addition, you can now also pace and cap your<br>placements to ensure the ultimate user experience!</p>
+                    <div class="button-add">
+                      <a-button type="primary" v-if="canEdit" style="width: 168px;" @click="addPlacement()">Add Placement</a-button>
                     </div>
-                    <div v-else>
-                      <a herf="#" @click="viewMediation(record)">Details</a>
-                      <span style="float:right" v-if="!record.expandStatus" @click="handleOpen(record)" ><img src="/assets/down.svg"/></span>
-                      <span style="float:right" v-else @click="handleOpen(record)"><img src="/assets/up.svg"/></span>
-                    </div>
-                  </template>
+                  </div>
+                </div>
+              </span>
+            </a-alert>
+          </div>
+          <div v-else>
+            <a-row type="flex" justify="start" style="height: 44px;">
+              <a-form-item>
+                <RegionsSelect @change="regoinsSelectedId" size="default" style="margin-top:2px;width:260px;" />
+              </a-form-item>
+              <a-form-item>
+                <span class="table-page-search-submitButtons">
+                  <a-button type="primary" style="margin-right:8px;margin-left:8px;" ghost @click="listSearch">Apply</a-button>
                 </span>
+              </a-form-item>
+              <a-form-item style="position:absolute; right:0px;">
+                <span class="table-page-search-submitButtons" >
+                  <a v-action:edit v-if="!abt" @click="settings" style="margin-right: 32px;"><img src="/icon/Setting.svg" style="margin-top:-2px;margin-right: 8px;" />Settings</a>
+                  <a-button type="primary" v-action:edit v-if="!abt" ghost @click="handleEdit()">Add Mediation Rule</a-button>
+                </span>
+              </a-form-item>
+            </a-row>
+            <a-spin :spinning="fetching">
+              <div style="background:#FFFFFF;margin-bottom: 16px;">
                 <a-table
-                  :ref="index+'table'"
-                  slot="expandedRowRender"
-                  slot-scope="record, index"
+                  class="ant-card-table-default"
+                  ref="table"
                   rowKey="id"
-                  :columns="record.autoOpt===1 ? innerColumnsHidePri:innerColumns"
-                  :dataSource="record.ruleInstances"
+                  :dataSource="list"
+                  :expandedRowKeys="curExpandedRowKeys"
+                  :columns="columns"
+                  :expandIconAsCell="false"
+                  :expandIconColumnIndex="-1"
                   :pagination="false"
+                  @change="tableChange"
                 >
-                  <span slot="id" slot-scope="text, srecord">
-                    <span :style="srecord.priority >=0 ? null: 'opacity: 0.3;' ">
-                      {{ text }}
+                  <span slot="name" slot-scope="text, record">
+                    <span :style="record.status===0 ? 'opacity: 0.3;' : null" >
+                      <om-text :length="40" :tooltip="true" :text="text"/><img style="margin-left:8px;" v-if="record.abTestModel===1" src="/icon/testb.svg" />
                     </span>
                   </span>
-                  <span slot="className" slot-scope="text, srecord">
-                    <ad-network
-                      :className="text"
-                      :id="srecord.adnId"
-                      :status="srecord.priority >=0 ? 1: 0"
-                    />
+                  <span slot="countries" slot-scope="text">
+                    <a-tooltip>
+                      <span slot="title">
+                        <span v-if="text[0]!=='ALL'">{{ text.length }} Regions <br></span>
+                        {{ text.join(',') }}
+                      </span>
+                      <div style="display: inline-block;" v-for="(o, index) in text" :key="o">
+                        <a-tag v-if="index<2">{{ o }}</a-tag>
+                      </div>
+                      <span v-if="text.length>2">...</span>
+                    </a-tooltip>
                   </span>
-                  <span slot="instanceName" slot-scope="text, srecord">
-                    <span :style="srecord.priority >=0 ? null: 'opacity: 0.3;' ">
-                      {{ text }}
+                  <span slot="autoOpt" slot-scope="text, record">
+                    <span :style="record.status===0 ? 'opacity: 0.3;' : null" >
+                      {{ text === 0? 'Manual':'Auto' }}
                     </span>
                   </span>
-                  <span slot="operation" slot-scope="text, srecord">
+                  <span slot="ruleInstanceSize" slot-scope="text, record">
+                    <span :style="record.status===0 ? 'opacity: 0.3;' : null" >
+                      <a @click="handleOpen(record)">{{ text }}</a>
+                    </span>
+                  </span>
+                  <span slot="priority" slot-scope="text, record">
+                    <span :style="record.status > 0 ? null: 'opacity: 0.3;' ">
+                      <editable-cell v-if="record.status > 0 && canEdit && !abt" :text="record.priority || '--'" @change="onCellChange(record, 'priority', $event)" />
+                      <span v-else-if="record.status>0">{{ text }}</span>
+                      <span v-else>{{ '--' }}</span>
+                    </span>
+                  </span>
+                  <span slot="status" slot-scope="text, record">
                     <template>
-                      <div>
-                        <a herf="#" v-if="canEdit" @click="instanceStatusUpdate(srecord)">{{ srecord.priority >= 0 ?'Disable' : 'Enable' }}</a>
+                      <div v-if="canEdit && !abt">
+                        <a herf="#" @click="handleEdit(record)">Edit</a>
+                        <a-divider type="vertical" />
+                        <a herf="#" @click="handleCopy(record)">Duplicate</a>
+                        <a-divider type="vertical" />
+                        <a herf="#" @click="segmentStatusUpdate(record)">{{ text===0?'Enable' : 'Disable' }}</a>
+                        <a-divider v-if="record.name!=='ALL'" type="vertical" />
+                        <a-popconfirm v-if="record.name!=='ALL'" okText="Yes" cancelText="No" @confirm="segmentDelete(record)">
+                          <span slot="title">{{ $msg('mediation.remove_confirm') }}<br />
+                            {{ $msg('mediation.remove_confirm_ext') }}
+                          </span>
+                          <a herf="#">Remove</a>
+                        </a-popconfirm>
+                        <span style="float:right" v-if="!record.expandStatus" @click="handleOpen(record)" ><img src="/assets/down.svg"/></span>
+                        <span style="float:right" v-else @click="handleOpen(record)"><img src="/assets/up.svg"/></span>
+                      </div>
+                      <div v-else>
+                        <a herf="#" @click="viewMediation(record)">Details</a>
+                        <span style="float:right" v-if="!record.expandStatus" @click="handleOpen(record)" ><img src="/assets/down.svg"/></span>
+                        <span style="float:right" v-else @click="handleOpen(record)"><img src="/assets/up.svg"/></span>
                       </div>
                     </template>
                   </span>
+                  <a-table
+                    :ref="index+'table'"
+                    slot="expandedRowRender"
+                    slot-scope="record, index"
+                    rowKey="id"
+                    :columns="record.autoOpt===1 ? innerColumnsHidePri:innerColumns"
+                    :dataSource="record.ruleInstances"
+                    :pagination="false"
+                  >
+                    <span slot="id" slot-scope="text, srecord">
+                      <span :style="srecord.priority >=0 ? null: 'opacity: 0.3;' ">
+                        {{ text }}
+                      </span>
+                    </span>
+                    <span slot="className" slot-scope="text, srecord">
+                      <ad-network
+                        :className="text"
+                        :id="srecord.adnId"
+                        :status="srecord.priority >=0 ? 1: 0"
+                      />
+                    </span>
+                    <span slot="instanceName" slot-scope="text, srecord">
+                      <span :style="srecord.priority >=0 ? null: 'opacity: 0.3;' ">
+                        {{ text }}
+                      </span>
+                    </span>
+                    <span slot="operation" slot-scope="text, srecord">
+                      <template>
+                        <div>
+                          <a herf="#" v-if="canEdit && !abt" @click="instanceStatusUpdate(srecord)">{{ srecord.priority >= 0 ?'Disable' : 'Enable' }}</a>
+                        </div>
+                      </template>
+                    </span>
+                  </a-table>
                 </a-table>
-              </a-table>
-            </div>
-          </a-spin>
-        </a-tab-pane>
-        <a-tab-pane tab="Settings" class="water-fall" key="2" forceRender style="height:600px;">
-          <a-card class="card-noline" style="height:300px;background:#FFFFFF; margin-top:8px;" title="Waterfall Settings" :bordered="false">
-            <om-form
-              v-if="[0,1].includes(this.placementType)"
-              :form="form"
-              label="Fan out"
-              :edit="canEdit"
-              field="fanOut"
-              :showTip="false" >
-              <a-radio-group :disabled="!canEdit" v-decorator="['fanOut']" :default-value="1">
-                <a-radio :value="1">
-                  ON
-                </a-radio>
-                <a-radio :value="0">
-                  OFF
-                </a-radio>
-              </a-radio-group>
-            </om-form>
-            <om-form :form="form" label="Batch Size" field="batchSize" tip="Batch Size">
-              <a-input-number
-                style="width:100%"
-                ref="iap-min"
-                type="number"
-                :min="1"
-                :max="5"
-                v-decorator="['batchSize', { rules: [{ required: true, message: 'Pool Size can not be empty.'}] }]"/>
-            </om-form>
-            <om-form :form="form" label="Preload Timeout(s)" field="preloadTimeout" tip="Preload Timeout(s)" >
-              <a-input-number
-                style="width:100%"
-                ref="iap-min"
-                type="number"
-                :min="1"
-                :max="120"
-                v-decorator="['preloadTimeout', { rules: [{ required: true, message: 'Pool Size can not be empty.'}] }]"/>
-            </om-form>
-            <om-form :form="form" label="Pool Size" field="inventoryCount" tip="Pool Size">
-              <a-input-number
-                style="width:100%"
-                ref="iap-min"
-                type="number"
-                :min="2"
-                :max="20"
-                v-decorator="['inventoryCount', { rules: [{ required: true, message: 'Pool Size can not be empty.'}] }]"/>
-            </om-form>
-          </a-card>
-          <a-card style="margin-top:8px;background:#FFFFFF" :bordered="false">
-            <span
-              slot="title"
-              style="color: rgba(0, 0, 0, 0.85);font-weight: 500;font-size: 16px;">Audience Segment Automation <a-switch style="margin-left:100px;" disabled checkedChildren="√" unCheckedChildren="X" :defaultChecked="false" /> <span style="font-weight:300">Disable</span></span>
-          </a-card>
-          <div class="button-div">
-            <a-button type="primary" v-action:edit style="bottom: -40px;width: 180px;left: -9.5%;" @click="placementSave">Save</a-button>
+              </div>
+            </a-spin>
           </div>
         </a-tab-pane>
       </a-tabs>
@@ -180,15 +166,15 @@
 <script>
 import { segmentRuleUpdate, segmentRuleDelete, segmentList, rulePriorityUpdate, mediationRuleInstanceUpdate, mediationSegmentRuleInstanceCreate, mediationSegmentRuleInstanceDelete } from '@/api/mediation'
 import RegionsSelect from '@/components/om/RegionsSelect'
-import PlacementSelect from '@/components/om/PlacementSelect'
-import { placementList, placementGet, placementUpdate } from '@/api/publisher'
+import PlacementSelect from './modules/PlcSelect'
+import { placementList } from '@/api/publisher'
 import AdNetwork from '@/components/Mediation/AdNetwork'
 import OmForm from '@/components/OmForm'
 import EditableCell from '@/components/EditableCell'
 import OmText from '@/components/om/Text'
-import pick from 'lodash.pick'
 
 import { mapState } from 'vuex'
+import InstanceEdit from '@/views/publisher/modules/InstanceEdit'
 
 export default {
   name: 'Mediation',
@@ -198,10 +184,12 @@ export default {
     OmForm,
     AdNetwork,
     OmText,
-    EditableCell
+    EditableCell,
+    InstanceEdit
   },
   data () {
     return {
+      activeKey: this.$route.query.type || '1',
       labelCol: { lg: { span: 8 }, sm: { span: 8 } },
       wrapperCol: { lg: { span: 7 }, sm: { span: 7 } },
       form: this.$form.createForm(this),
@@ -209,6 +197,7 @@ export default {
       adNetworkName: this.$route.params.name,
       adTypes: this.$route.params.adTypes,
       canEdit: this.$auth('mediation.edit'),
+      abt: 0,
       curExpandedRowKeys: [],
       scroll: 200,
       currentExpandedStatOpen: false,
@@ -221,31 +210,38 @@ export default {
       regions: [],
       fetching: false,
       sortOrder: '',
+      visible: true,
       columns: [
         {
-          title: 'Segment',
+          title: 'Mediation Rule',
           dataIndex: 'name',
-          width: '20%',
+          width: '25%',
           scopedSlots: { customRender: 'name' }
         },
         {
-          title: 'Optimize Type',
-          dataIndex: 'autoOpt',
+          title: 'Regions',
+          dataIndex: 'countries',
           width: '15%',
+          scopedSlots: { customRender: 'countries' }
+        },
+        {
+          title: 'Optimized Type',
+          dataIndex: 'autoOpt',
+          width: '14%',
           scopedSlots: { customRender: 'autoOpt' }
         },
         {
           title: 'Priority',
           dataIndex: 'priority',
           align: 'center',
-          width: '200px',
+          width: '120px',
           scopedSlots: { customRender: 'priority' }
         },
         {
-          title: 'Active Instances',
+          title: 'Instances',
           dataIndex: 'ruleInstanceSize',
           align: 'center',
-          width: '15%',
+          width: '11%',
           scopedSlots: { customRender: 'ruleInstanceSize' }
         },
         {
@@ -281,11 +277,15 @@ export default {
   },
   computed: mapState({
     searchApp: state => state.publisher.searchApp,
-    searchPlacement: state => state.publisher.searchPlacement
+    searchPlacement: state => state.publisher.searchPlacement,
+    searchPlacementAbt: state => state.publisher.searchPlacementAbt
   }),
   watch: {
     searchPlacement (curVal) {
       this.listSearch()
+    },
+    searchPlacementAbt (curVal) {
+      this.abt = curVal
     },
     data (val) {
       this.list = []
@@ -295,7 +295,7 @@ export default {
     }
   },
   created () {
-    this.scroll = window.innerHeight - 290
+    this.scroll = window.innerHeight - 320
     this.listSearch()
     if (this.searchApp) {
       placementList({ pubAppId: this.searchApp }).then(res => {
@@ -307,25 +307,16 @@ export default {
     }
   },
   methods: {
+    tabChange (val) {
+      if (val === '2') {
+        this.listSearch()
+      }
+      this.activeKey = val
+    },
     onCellChange (record, dataIndex, value) {
       if (record.priority === value) {
         return
       }
-      // const params = []
-      // let hasAdded = false
-      // for (const item of this.data) {
-      //   if (!item.id || item.id === record.id) {
-      //     continue
-      //   }
-      //   if (item.priority === value) {
-      //     hasAdded = true
-      //     params.push(record.id)
-      //   }
-      //   params.push(item.id)
-      // }
-      // if (!hasAdded) {
-      //   params.push(record.id)
-      // }
       rulePriorityUpdate({ ruleId: record.id, priority: value }).then(res => {
         if (res.code === 0) {
           this.listSearch()
@@ -351,6 +342,24 @@ export default {
           }
         })
       }
+    },
+    settings () {
+      this.$router.push({
+        name: 'MediationSettings'
+      })
+    },
+    handleCopy (record) {
+      this.$router.push({
+        name: 'MediationEdit',
+        params: {
+          ruleId: record.id,
+          pubAppId: this.searchApp,
+          placementId: this.searchPlacement
+        },
+        query: {
+          type: 'Duplicate'
+        }
+      })
     },
     handleEdit (record) {
       if (record) {
@@ -422,28 +431,9 @@ export default {
         .then(res => {
           if (res.code === 0) {
             Object.assign(record, { status: record.status === 0 ? 1 : 0 })
-            this.$message.success(`success`)
-          } else {
-            this.$message.error(res.msg)
+            this.$message.success(this.$msg('mediation.update_success'))
           }
         })
-    },
-    placementSave () {
-      const { form: { validateFields } } = this
-      validateFields((err, values) => {
-        if (!err) {
-          values.id = this.searchPlacement
-          placementUpdate(values).then(res => {
-            if (res.code === 0) {
-              this.$message.success(`success`)
-            } else {
-              this.$message.error(`error`)
-            }
-          })
-        }
-      })
-    },
-    callback (value) {
     },
     listSearch () {
       this.fetching = true
@@ -451,8 +441,11 @@ export default {
         this.fetching = false
         return false
       }
-      const params = { pubAppId: this.searchApp, placementId: this.searchPlacement }
+      const params = { pubAppId: this.searchApp, placementId: this.searchPlacement, abTestModel: 0 }
       const countries = [ ...this.regions ]
+      if (countries && Object.keys(countries).length > 0) {
+        params.countries = countries.join(',')
+      }
       if (countries && Object.keys(countries).length > 0) {
         if (countries && countries.indexOf('ALL') > -1) {
           countries.splice(countries.indexOf('ALL'), 1)
@@ -464,19 +457,23 @@ export default {
         .then(res => {
           if (res.code === 0) {
             this.arraySort(res.data)
+            this.abt = this.searchPlacementAbt
+            res.data.forEach(item => {
+              item.ruleInstances = item.ruleInstances.filter(d => d.priority > 0).sort((a, b) => a.priority - b.priority)
+              if (item.countries && item.countries.length) {
+                if (item.countries.indexOf('00') > -1) {
+                  item.countries.splice(item.countries.indexOf('00'), 1)
+                  item.countries.push('ALL')
+                }
+              }
+            })
             this.data = res.data
+            this.currentExpandedStatOpen = false
+            this.curExpandedRowKeys = []
           }
         }).finally(() => {
           this.fetching = false
         })
-      placementGet({ placementId: this.searchPlacement }).then(res => {
-        if (res.code === 0) {
-          this.placementType = res.data.adType
-          this.$nextTick(() => {
-            this.form.setFieldsValue(pick(res.data, ['batchSize', 'preloadTimeout', 'inventoryCount', 'fanOut']))
-          })
-        }
-      })
     },
     segmentStatusUpdate (record) {
       const status = record.status === 1 ? 0 : 1
@@ -484,9 +481,7 @@ export default {
         if (res.code === 0) {
           record.status = status
           this.listSearch()
-          this.$message.success('success')
-        } else {
-          this.$message.error('error')
+          this.$message.success(this.$msg('mediation.update_success'))
         }
       })
     },
@@ -516,6 +511,22 @@ export default {
           return b.status - a.status
         }
       })
+    },
+    addPlacement () {
+      if (this.isnewPlc) {
+        localStorage.removeItem('isnew_plc')
+      }
+      if (this.$route.query.isnew) {
+        this.$router.push({
+          path: '/publisher/placement/add',
+          query: { type: 'Add', isnew: '2' }
+        })
+      } else {
+        this.$router.push({
+          path: '/publisher/placement/add',
+          query: { type: 'Add' }
+        })
+      }
     }
   }
 }
@@ -541,9 +552,6 @@ export default {
 .water-fall >>> .ant-card-head-wrapper {
   margin-left: -8px;
 }
-/* .mytabs >>> .ant-tabs-nav-wrap {
-  margin-left: -8px;
-} */
 .button-div {
   text-align: center;
   bottom: 0;
@@ -551,6 +559,9 @@ export default {
   position: fixed;
   width: 100%;
   height: 100px;
-  /* background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.6) 32.36%, #ffffff 100%); */
+}
+.ant-alert-info {
+  background-color: white;
+  border:none;
 }
 </style>
