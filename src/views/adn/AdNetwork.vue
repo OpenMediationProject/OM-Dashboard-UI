@@ -235,7 +235,7 @@ export default {
       this.curAccountId = v
     },
     authSuccess (accountId) {
-      const record = this.data.find(item => item.id === 1)
+      const record = this.data.find(item => item.id === 2)
       const { form: { validateFields } } = this
       validateFields((err, values) => {
         if (!err) {
