@@ -24,7 +24,7 @@
               v-if="!record.createNew"
               :className="text"
               :id="record.id"
-              :status="record.status===1?1:0"
+              :status="record.status===0 || record.status === 2 ? 0:1"
             />
             <ADNSelect @change="adnChange" :name="'adnId'" style="max-width: 190px;" :defaultValue="record.adnId" v-else/>
           </span>
@@ -50,19 +50,22 @@
                   Exception <img style="margin-top:-2px;" src="/icon/error.svg"/>
                 </a-tooltip>
               </span>
+              <span v-else-if="record.status===-1" style="color: #D5432F;">
+                Verifying
+              </span>
             </span>
           </span>
           <span slot="status" slot-scope="text, record">
             <template>
               <span v-if="canEdit && !record.editStatus">
                 <a @click="handleEdit(record)">Edit</a>
-                <span>
-                  <a herf="#" @click="handleStatusEdit(record)" v-if="text===0 || text=== 2"><a-divider type="vertical" />{{ 'Enable' }}</a>
-                  <a herf="#" @click="handleStatusEdit(record)" v-else><a-divider type="vertical" />{{ 'Disable' }}</a>
+                <span v-if="record.status!==-1">
+                  <a @click="handleStatusEdit(record)" v-if="text===0 || text=== 2"><a-divider type="vertical" />{{ 'Enable' }}</a>
+                  <a @click="handleStatusEdit(record)" v-else><a-divider type="vertical" />{{ 'Disable' }}</a>
                 </span>
-                <a-popconfirm title="Are you really sure？" okText="Yes" cancelText="No" @confirm="remove(record)">
+                <a-popconfirm v-if="record.status!==-1" title="Are you really sure？" okText="Yes" cancelText="No" @confirm="remove(record)">
                   <a-divider type="vertical" />
-                  <a herf="#">Remove</a>
+                  <a>Remove</a>
                 </a-popconfirm>
                 <span>
                   <span style="float:right" v-if="!record.expandStatus" @click="handleOpen(record)" ><img src="/assets/down.svg"/></span>
@@ -70,15 +73,15 @@
                 </span>
               </span>
               <span v-else-if="canEdit && record.editStatus">
-                <a herf="#" @click="saveAccount(record)">Save</a>
+                <a @click="saveAccount(record)">Save</a>
                 <a-divider type="vertical" />
-                <a herf="#" @click="cancel(record)">Cancel</a>
+                <a @click="cancel(record)">Cancel</a>
                 <span style="float:right" v-if="!record.expandStatus" @click="handleOpen(record)" ><img src="/assets/down.svg"/></span>
                 <span style="float:right" v-else @click="handleOpen(record)"><img src="/assets/up.svg"/></span>
               </span>
               <span v-else>
                 <span>
-                  <a herf="#" @click="handleOpen(record)">Details</a>
+                  <a @click="handleOpen(record)">Details</a>
                   <span style="float:right" v-if="!record.expandStatus" @click="handleOpen(record)" ><img src="/assets/down.svg"/></span>
                   <span style="float:right" v-else @click="handleOpen(record)"><img src="/assets/up.svg"/></span>
                 </span>

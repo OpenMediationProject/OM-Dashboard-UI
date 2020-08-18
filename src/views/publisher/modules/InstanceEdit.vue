@@ -62,13 +62,13 @@
           >
             <p slot="expandedRowRender" class="expand-row" slot-scope="record" :rowKey="record.id" style="margin: 0">
               <a-form-item
-                label="Header Bidding"
+                label="In-app Bidding"
                 :colon="false"
                 style="margin-bottom: 0px;"
                 :labelCol="{lg: { span: 8 }, sm: { span: 8 }}"
                 :wrapperCol="{lg: { span: 8 }, sm: { span: 8 } }">
                 <a-checkbox
-                  :disabled="!record.editStatus || !record.createNew"
+                  :disabled="!record.editStatus || !record.createNew || [12,17].includes(record.id) || [12,17].includes(tempAdn)"
                   size="small"
                   v-model="record.hbStatus"
                 />
@@ -137,7 +137,7 @@
                 </a-input-group>
               </a-form-item>
               <a-form-item
-                style="margin-bottom: 0px;"
+                style="margin-bottom: 16px;"
                 label="Device Model"
                 :colon="false"
                 :labelCol="{lg: { span: 8 }, sm: { span: 8 }}"
@@ -201,12 +201,12 @@
                 v-else/>
             </span>
             <span class="row-edit" slot="placementKey" slot-scope="text, record">
-              <span :style="record.status===0 ? 'opacity: 0.3;' : null">
+              <div :style="record.status===0 ? 'opacity: 0.3;' : null">
                 <a-form-item size="small" v-if="record.editStatus && record.adnId!==0">
-                  <a-input :disabled="tempAdn < 0" placeholder="Unit ID" style="margin-top:0px;" v-decorator="[record.id + 'placementKey',{initialValue: record.placementKey, rules: [{validator: checkPlacementKey }]}]"/>
+                  <a-input :disabled="tempAdn < 0" placeholder="Unit ID" style="margin-top:0px;" v-decorator="[record.id+'placementKey',{initialValue: record.placementKey, rules: [{validator: checkPlacementKey }]}]"/>
                 </a-form-item>
                 <span v-else :title="record.id"><ellipsis :length="30" tooltip>{{ text }}</ellipsis></span>
-              </span>
+              </div>
             </span>
             <span class="row-edit" slot="name" slot-scope="text, record">
               <span :style="record.status===0 ? 'opacity: 0.3;' : null">
@@ -222,7 +222,7 @@
                     font-size: 12px;
                     margin-left: 10px;
                     height: 25px;"
-                    ghost>Header bidding</a-button>
+                    ghost>In-app Bidding</a-button>
                   <img v-if="record.abTestModel===1" style="margin-left:8px;" src="/icon/testb.svg" />
                 </span>
               </span>
@@ -373,6 +373,14 @@ export default {
         return
       }
       this.tempAdn = val.id
+      if (this.tempAdn === 17) {
+        const current = this.data.find(row => row.id === this.curExpandedRowKeys[0])
+        current.hbStatus = true
+      } else {
+        const current = this.data.find(row => row.id === this.curExpandedRowKeys[0])
+        current.hbStatus = false
+      }
+      this.accounts = val.accounts
       if (!val.adNetworkAppId) {
         this.currentAdn = val
       } else {

@@ -54,8 +54,10 @@ export default {
     }, [h('div', { class: 'g2chart' })])
   },
   destroyed () {
-    this.chart.destroy()
-    this.chart = null
+    if (this.chart) {
+      this.chart.destroy()
+      this.chart = null
+    }
   },
   methods: {
     getColumnValue (d, x) {

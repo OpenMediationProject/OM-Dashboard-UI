@@ -17,7 +17,7 @@
           @selectedModelType="selectedModelType"
           @selectedGender="selectedGender"
           @selectedContype="selectedContype" />
-        <a-card v-show="headerbidding.length" class="card-noline om-card-style" title="Header Bidding" :bordered="false" style="margin-top:8px;" >
+        <a-card v-show="headerbidding.length" class="card-noline om-card-style" title="In-app Bidding" :bordered="false" style="margin-top:8px;" >
           <a-spin :spinning="fetchingHB">
             <a-table
               style="margin-top: 8px;margin-left: 24px;margin-right: 24px;margin-bottom: 24px;"

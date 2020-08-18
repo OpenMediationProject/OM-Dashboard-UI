@@ -161,7 +161,7 @@
       <!-- MyTarget -->
     </div>
     <div v-else-if="id===17">
-      <!-- ChartboostBid -->
+      <!-- Helium ChartboostBid -->
       <om-form
         :form="form"
         label="App ID"

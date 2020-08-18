@@ -75,8 +75,8 @@
                 <span v-if="record.adNetworkAppId">
                   <a-divider v-if="record.id !== 0" type="vertical" />
                   <span>
-                    <a herf="#" :disabled="curExpandedRowKeys.length>0" @click="handleStatusEdit(record)" v-if="text===0">Enable</a>
-                    <a herf="#" :disabled="curExpandedRowKeys.length>0" @click="handleStatusEdit(record)" v-else>Disable</a>
+                    <a :disabled="curExpandedRowKeys.length>0" @click="handleStatusEdit(record)" v-if="text===0">Enable</a>
+                    <a :disabled="curExpandedRowKeys.length>0" @click="handleStatusEdit(record)" v-else>Disable</a>
                   </span>
                 </span>
                 <span v-if="record.adNetworkAppId && record.id !== 0">
@@ -93,14 +93,16 @@
               </span>
               <span v-else>
                 <span v-if="record.adNetworkAppId">
-                  <a herf="#" @click="handleOpen(record)">Details</a>
-                  <span style="float:right" v-if="!record.expandStatus" @click="handleOpen(record)" ><img src="/assets/down.svg"/></span>
-                  <span style="float:right" v-else @click="handleOpen(record)"><img src="/assets/up.svg"/></span>
+                  <a @click="handleOpen(record)">Details</a>
+                  <span>
+                    <span style="float:right" v-if="!record.expandStatus" @click="handleOpen(record)" ><img src="/assets/down.svg"/></span>
+                    <span style="float:right" v-else @click="handleOpen(record)"><img src="/assets/up.svg"/></span>
+                  </span>
                 </span>
               </span>
             </template>
           </span>
-          <p
+          <div
             slot="expandedRowRender"
             slot-scope="record"
             rowKey="id"
@@ -116,7 +118,7 @@
               @accountType="accountType"
               @accountSelect="accountSelect"
               :record="record.adNetworkApp" />
-          </p>
+          </div>
         </a-table>
       </a-card>
     </a-form>
@@ -239,7 +241,7 @@ export default {
       const { form: { validateFields } } = this
       validateFields((err, values) => {
         if (!err) {
-          if (record.id === 12) {
+          if (record.id === 12 || record.id === 17) {
             values.adnAppKey = values['cb_left'] + '#' + values['cb_right']
           }
           if (record.id === 14) {
@@ -286,13 +288,13 @@ export default {
       const _this = this
       validateFields(async (err, values) => {
         if (!err) {
-          if (record.id === 12 && values['cb_left']) {
+          if ((record.id === 12 || record.id === 17) && values['cb_left']) {
             values.adnAppKey = values['cb_left'].trim() + '#' + values['cb_right'].trim()
           }
           if (record.id === 14 && values['mt_left']) {
             values.adnAppKey = values['mt_left'].trim() + '#' + values['mt_right'].trim()
           }
-          if (_this.accountTab === '2' && ![3, 5].includes(record.id) && !_this.curAccountId) {
+          if (_this.accountTab === '2' && ![3, 6].includes(record.id) && !_this.curAccountId) {
             this.$notification.warning({
               message: 'Error',
               description: 'Please Select An API Key.'
@@ -428,9 +430,9 @@ export default {
               if (item.adNetworkApp && item.adNetworkApp.reportAccountId === 0) {
                 item.adNetworkApp.reportAccountId = null
               }
-              if (item.adNetworkApp && item.adNetworkApp.adnAppKey && (item.id === 12 || item.id === 14)) {
+              if (item.adNetworkApp && item.adNetworkApp.adnAppKey && (item.id === 12 || item.id === 14 || item.id === 17)) {
                 const keys = item.adNetworkApp.adnAppKey.split('#')
-                if (item.id === 12) {
+                if (item.id === 12 || item.id === 17) {
                   if (keys.length === 2) {
                     item.adNetworkApp.cb_left = keys[0]
                     item.adNetworkApp.cb_right = keys[1]

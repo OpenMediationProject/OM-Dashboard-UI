@@ -265,7 +265,7 @@
         :tip="$msg('account.ironsource_secret_key_tip')" />
     </div>
     <div v-else-if="id===17">
-      <!-- ChartboostBid -->
+      <!-- Helium ChartboostBid -->
       <om-form
         :form="form"
         label="User ID"
