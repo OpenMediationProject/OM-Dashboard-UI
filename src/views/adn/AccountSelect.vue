@@ -113,6 +113,7 @@ export default {
       14: { t1: 'Report API SKey', v1: 'adnApiKey', t2: 'Report API Secret', v2: 'userSignature' },
       15: { t1: 'User Name', v1: 'userId', t2: 'Secret Key', v2: 'userSignature' },
       17: { t1: 'User ID', v1: 'userId', t2: 'User Signature', v2: 'userSignature' },
+      18: { t1: 'App Token', v1: 'adnAppToken' },
       30: { t1: 'Publisher ID', v1: 'userId', t2: 'Consumer Key', v2: 'adnApiKey' }
     }
     return {

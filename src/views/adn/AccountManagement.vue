@@ -382,24 +382,6 @@ export default {
             if (item.authKey) {
               item.authKeyUrl = 'http://publisher.adtiming.com/pubdev/report/callback/google/' + item.authKey
             }
-            if (item.adNetworkApp && item.adNetworkApp.adnAppKey && (item.id === 12 || item.id === 14)) {
-              const keys = item.adNetworkApp.adnAppKey.split('#')
-              if (item.id === 12) {
-                if (keys.length === 2) {
-                  item.adNetworkApp.cb_left = keys[0]
-                  item.adNetworkApp.cb_right = keys[1]
-                } else {
-                  item.adNetworkApp.cb_left = keys[0]
-                }
-              } else {
-                if (keys.length === 2) {
-                  item.adNetworkApp.mt_left = keys[0]
-                  item.adNetworkApp.mt_right = keys[1]
-                } else {
-                  item.adNetworkApp.mt_left = keys[0]
-                }
-              }
-            }
           })
           this.data = res.data
           this.arraySort(this.data)

@@ -136,7 +136,7 @@
         :msg="$msg('appsettings.app_id')"
         :tip="$msg('appsettings.mintegral_app_id_tip')"
         :edit="canEdit"
-        field="mt_left"
+        field="cb_left"
       />
       <om-form
         :form="form"
@@ -144,7 +144,7 @@
         :msg="$msg('appsettings.app_key')"
         :tip="$msg('appsettings.mintegral_app_key_tip')"
         :edit="canEdit"
-        field="mt_right"
+        field="cb_right"
       />
     </div>
     <div v-else-if="id===15">
@@ -176,6 +176,20 @@
         :edit="canEdit"
         field="cb_right"
         :tip="$msg('appsettings.chartboost_app_signature_tip')" />
+    </div>
+    <div v-else-if="id===18">
+      <!-- xiaomi -->
+      <om-form
+        :form="form"
+        label="App ID"
+        :msg="$msg('appsettings.app_id')"
+        :edit="canEdit"
+        field="cb_left" />
+      <om-form
+        :form="form"
+        label="App Secret"
+        :edit="canEdit"
+        field="cb_right" />
     </div>
     <div v-else-if="id===30">
       <!-- Fyber -->

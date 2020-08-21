@@ -281,6 +281,15 @@
         field="userSignature"
         :tip="$msg('account.chartboost_user_signature_tip')" />
     </div>
+    <div v-else-if="id===18">
+      <!-- Mint -->
+      <om-form
+        :form="form"
+        label="App Token"
+        msg="App Token can not be empty."
+        :edit="canEdit"
+        field="adnAppToken" />
+    </div>
     <div v-else-if="id===30">
       <!-- Fyber -->
       <om-form

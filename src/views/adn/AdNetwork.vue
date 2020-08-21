@@ -241,12 +241,6 @@ export default {
       const { form: { validateFields } } = this
       validateFields((err, values) => {
         if (!err) {
-          if (record.id === 12 || record.id === 17) {
-            values.adnAppKey = values['cb_left'] + '#' + values['cb_right']
-          }
-          if (record.id === 14) {
-            values.adnAppKey = values['mt_left'] + '#' + values['mt_right']
-          }
           values.adnId = 2
           if (record.id === 2 && !values.adnAppId) {
             values.authType = 1
@@ -288,11 +282,8 @@ export default {
       const _this = this
       validateFields(async (err, values) => {
         if (!err) {
-          if ((record.id === 12 || record.id === 17) && values['cb_left']) {
+          if ([12, 14, 17, 18].includes(record.id) && values['cb_left']) {
             values.adnAppKey = values['cb_left'].trim() + '#' + values['cb_right'].trim()
-          }
-          if (record.id === 14 && values['mt_left']) {
-            values.adnAppKey = values['mt_left'].trim() + '#' + values['mt_right'].trim()
           }
           if (_this.accountTab === '2' && ![3, 6].includes(record.id) && !_this.curAccountId) {
             this.$notification.warning({
@@ -430,21 +421,14 @@ export default {
               if (item.adNetworkApp && item.adNetworkApp.reportAccountId === 0) {
                 item.adNetworkApp.reportAccountId = null
               }
-              if (item.adNetworkApp && item.adNetworkApp.adnAppKey && (item.id === 12 || item.id === 14 || item.id === 17)) {
+              if (item.adNetworkApp && item.adNetworkApp.adnAppKey && [12, 14, 17, 18].includes(item.id)) {
                 const keys = item.adNetworkApp.adnAppKey.split('#')
-                if (item.id === 12 || item.id === 17) {
+                if ([12, 14, 17, 18].includes(item.id)) {
                   if (keys.length === 2) {
                     item.adNetworkApp.cb_left = keys[0]
                     item.adNetworkApp.cb_right = keys[1]
                   } else {
                     item.adNetworkApp.cb_left = keys[0]
-                  }
-                } else {
-                  if (keys.length === 2) {
-                    item.adNetworkApp.mt_left = keys[0]
-                    item.adNetworkApp.mt_right = keys[1]
-                  } else {
-                    item.adNetworkApp.mt_left = keys[0]
                   }
                 }
               }
