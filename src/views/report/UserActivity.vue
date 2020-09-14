@@ -253,6 +253,7 @@ export default {
   },
   methods: {
     appSelect (val) {
+      this.pubAppIds = val
       console.log(val)
     },
     filterDim (...ids) {

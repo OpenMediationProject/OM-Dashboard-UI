@@ -664,22 +664,20 @@ export default {
                 sumData.isReady += row.isReady
                 sumData.isReadyTrue += row.isReadyTrue
               })
-              if (sumData.filled > 0) {
+              if (sumData.request > 0) {
                 sumData.fillRate = sumData.filled / sumData.request
               }
               if (sumData.isReady > 0) {
                 sumData.readyRate = sumData.isReadyTrue / sumData.isReady
               }
-              if (sumData.click > 0) {
-                sumData.ctr = sumData.click / sumData.impr
-              }
               if (sumData.impr > 0) {
+                sumData.ctr = sumData.click / sumData.impr
                 sumData.ecpm = sumData.cost * 1000 / sumData.impr
               }
-              if (sumData.apiFilled > 0) {
+              if (sumData.apiRequest > 0) {
                 sumData.apiFillRate = sumData.apiFilled / sumData.apiRequest
               }
-              if (sumData.sdkClick > 0) {
+              if (sumData.sdkImpr > 0) {
                 sumData.sdkCtr = sumData.sdkClick / sumData.sdkImpr
               }
               if (dimension.length > 0) {
@@ -720,6 +718,7 @@ export default {
       row.videoStart = row[this.metricFields.videoStart] || 0
       row.isReadyTrue = row.isReadyTrue || 0
       row.isReadyFalse = row.isReadyFalse || 0
+      row.cost = row.cost || 0
       row.isReady = 0
       row.readyRate = 0
       row.ecpm = 0
@@ -727,23 +726,21 @@ export default {
       row.fillRate = row.ctr = 0
       row.sdkCtr = 0
       row.apiFillRate = row.sdkCtr = 0
-      if (row.filled > 0) {
+      if (row.request > 0) {
         row.fillRate = row.filled / row.request
       }
-      if (row.apiFilled > 0) {
+      if (row.apiRequest > 0) {
         row.apiFillRate = row.apiFilled / row.apiRequest
       }
-      if (row.click > 0) {
+      if (row.impr > 0) {
         row.ctr = row.click / row.impr
       }
-      if (row.sdkClick > 0) {
-        row.sdkCtr = row.sdkClick / row.sdkImpr
-      }
       if (row.sdkImpr > 0) {
+        row.sdkCtr = row.sdkClick / row.sdkImpr
         row.ecpm = row.cost * 1000 / row.sdkImpr
       }
       row.isReady = row.isReadyTrue + row.isReadyFalse
-      if (row.isReadyTrue > 0) {
+      if (row.isReady > 0) {
         row.readyRate = row.isReadyTrue / row.isReady
       }
       if (!row.country) {
@@ -789,6 +786,7 @@ export default {
       row.videoStart = row[this.metricFields.videoStart] || 0
       row.isReadyTrue = row.isReadyTrue || 0
       row.isReadyFalse = row.isReadyFalse || 0
+      row.cost = row.cost || 0
       row.isReady = 0
       row.readyRate = 0
       row.ecpm = 0
@@ -796,23 +794,21 @@ export default {
       row.fillRate = row.ctr = 0
       row.sdkCtr = 0
       row.apiFillRate = row.sdkCtr = 0
-      if (row.filled > 0) {
+      if (row.request > 0) {
         row.fillRate = row.filled / row.request
       }
-      if (row.apiFilled > 0) {
+      if (row.apiRequest > 0) {
         row.apiFillRate = row.apiFilled / row.apiRequest
       }
-      if (row.click > 0) {
+      if (row.impr > 0) {
         row.ctr = row.click / row.impr
       }
-      if (row.sdkClick > 0) {
-        row.sdkCtr = row.sdkClick / row.sdkImpr
-      }
       if (row.sdkImpr > 0) {
+        row.sdkCtr = row.sdkClick / row.sdkImpr
         row.ecpm = row.cost * 1000 / row.sdkImpr
       }
       row.isReady = row.isReadyTrue + row.isReadyFalse
-      if (row.isReadyTrue > 0) {
+      if (row.isReady > 0) {
         row.readyRate = row.isReadyTrue / row.isReady
       }
       if (!row.country) {
