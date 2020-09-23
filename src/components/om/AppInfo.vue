@@ -76,5 +76,6 @@ export default {
   .info-title {
     color:#333333;font-size: 14px;
     display: inline-block;vertical-align: middle;margin-left: 7px;
+    line-height: 1.2;
   }
 </style>

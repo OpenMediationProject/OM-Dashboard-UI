@@ -114,48 +114,47 @@ export default {
     },
     buildChart () {
       const chartData = this.buildChartData(this.data || [], this.xColumn, this.groupBy, this.yColumn)
-      if (this.chart) {
-        this.chart.changeData(chartData)
-        this.chart.repaint()
-      } else {
-        const axisCommon = {
-          title: { visible: false },
-          label: { style: { fontSize: 14, fill: '#BDBDBD' } },
-          grid: { style: { stroke: '#F5F5F5' } },
-          tickLine: { style: { stroke: '#BDBDBD' } },
-          line: { style: { stroke: '#EEEEEE' } }
-        }
-        const opts = {
-          data: chartData,
-          forceFit: true,
-          smooth: true,
-          xField: 'x',
-          yField: 'y',
-          // point: { //显示数据点
-          //   visible: true
-          // },
-          xAxis: { tickCount: this.xTickCount, ...axisCommon },
-          yAxis: {
-            formatter: v => numerify(v, this.yFormat),
-            label: { style: { fontSize: 14, fill: '#BDBDBD' } }
-          },
-          meta: {
-            y: { alias: this.yAlias || this.title || 'Value' }
-          },
-          legend: { marker: 'circle', offsetX: 0 },
-          padding: [40, 46, 30, 70]
-        }
-        if (this.groupBy) {
-          opts['seriesField'] = 'g'
-        }
-        for (const prop of ['height', 'legend', 'padding']) {
-          if (this[prop]) {
-            opts[prop] = this[prop]
-          }
-        }
-        this.chart = new Line(this.$el.querySelector('.g2chart'), opts)
-        this.chart.render()
+      const axisCommon = {
+        title: { visible: false },
+        label: { style: { fontSize: 14, fill: '#BDBDBD' } },
+        grid: { style: { stroke: '#F5F5F5' } },
+        tickLine: { style: { stroke: '#BDBDBD' } },
+        line: { style: { stroke: '#EEEEEE' } }
       }
+      const opts = {
+        data: chartData,
+        forceFit: true,
+        smooth: true,
+        xField: 'x',
+        yField: 'y',
+        // point: { //显示数据点
+        //   visible: true
+        // },
+        xAxis: { tickCount: this.xTickCount, ...axisCommon },
+        yAxis: {
+          formatter: v => numerify(v, this.yFormat),
+          label: { style: { fontSize: 14, fill: '#BDBDBD' } }
+        },
+        meta: {
+          y: { alias: this.yAlias || this.title || 'Value' }
+        },
+        legend: { marker: 'circle', offsetX: 0 },
+        padding: [40, 46, 30, 70]
+      }
+      if (this.groupBy) {
+        opts['seriesField'] = 'g'
+      }
+      for (const prop of ['height', 'legend', 'padding']) {
+        if (this[prop]) {
+          opts[prop] = this[prop]
+        }
+      }
+      if (this.chart) {
+        this.chart.destroy()
+        this.chart = null
+      }
+      this.chart = new Line(this.$el.querySelector('.g2chart'), opts)
+      this.chart.render()
     }
   }
 }

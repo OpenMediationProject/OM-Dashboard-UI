@@ -52,7 +52,7 @@
         <a-card class="card-noline om-card-style" :bordered="false" title="Waterfall" style="margin-top:8px;" >
           <a-row type="flex" justify="start" style="height: 44px;">
             <om-ad-network-select :pubAppId="this.appId" @change="adnChange" size="default" style="margin-left:24px; display:inline-block; margin-right:8px;"/>
-            <OmInstanceSelect :adnIds="adnIds" :hb="true" :allowClear="true" modelName="instanceId" :placementId="this.placementId" />
+            <OmInstanceSelect :adnIds="adnIds" :allowClear="true" modelName="instanceId" :placementId="this.placementId" />
             <a-form-item>
               <a-select style="width:200px;margin-left: 8px;" @change="hourChange" v-decorator="['hourBefore', {initialValue: 24}]" :allowClear="false" >
                 <span slot="suffixIcon"><img src="/icon/Clock.svg"></span>
@@ -349,7 +349,7 @@ export default {
               } else {
                 row.ecpmGrowth = '--'
               }
-              if (row.headbidding) {
+              if (row.hbStatus) {
                 if (!row.priority) {
                   row.priority = 0
                 }

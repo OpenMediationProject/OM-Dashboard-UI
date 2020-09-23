@@ -6,11 +6,7 @@
         <ellipsis :length="26" tooltip>{{ searchPlacementName }}</ellipsis>
       </div>
       <div style="color:#999999;font-size: 12px;">
-        <span v-if="searchPlacementType===0">Banner</span>
-        <span v-if="searchPlacementType===1">Native</span>
-        <span v-if="searchPlacementType===2">Rewarded Video</span>
-        <span v-if="searchPlacementType===3">Interstitial</span>
-        <span v-if="searchPlacementType===4">Splash</span>
+        <span>{{ GLOBAL.placementTypeMap[searchPlacementType].title }}</span>
         <a-divider type="vertical" />
         <span style="margin-left:-2px;">{{ searchPlacement }}</span>
       </div>

@@ -1,17 +1,13 @@
 <!-- Show placement info props: id（placement_id）, name(placement_name), type(placement_type) -->
 <template>
   <div :style="status?null:'opacity: 0.3;'">
-    <div style="display: inline-block;">
+    <div style="display: inline-block;vertical-align: middle;line-height: 1.2;">
       <div class="plc-title">
         <ellipsis :length="20" tooltip>{{ name }}</ellipsis>
       </div>
       <div class="plc-type">
         <span v-if="!copyId">
-          <span v-if="type===0">Banner</span>
-          <span v-if="type===1">Native</span>
-          <span v-if="type===2">Rewarded Video</span>
-          <span v-if="type===3">Interstitial</span>
-          <span v-if="type===4">Splash</span>
+          <span>{{ GLOBAL.placementTypeMap[type].title }}</span>
           <a-divider type="vertical" />
           <span style="margin-left:-2px;">{{ id }}</span>
         </span>

@@ -734,10 +734,10 @@ export default {
       }
       if (row.impr > 0) {
         row.ctr = row.click / row.impr
+        row.ecpm = row.cost * 1000 / row.impr
       }
       if (row.sdkImpr > 0) {
         row.sdkCtr = row.sdkClick / row.sdkImpr
-        row.ecpm = row.cost * 1000 / row.sdkImpr
       }
       row.isReady = row.isReadyTrue + row.isReadyFalse
       if (row.isReady > 0) {
@@ -802,10 +802,10 @@ export default {
       }
       if (row.impr > 0) {
         row.ctr = row.click / row.impr
+        row.ecpm = row.cost * 1000 / row.impr
       }
       if (row.sdkImpr > 0) {
         row.sdkCtr = row.sdkClick / row.sdkImpr
-        row.ecpm = row.cost * 1000 / row.sdkImpr
       }
       row.isReady = row.isReadyTrue + row.isReadyFalse
       if (row.isReady > 0) {

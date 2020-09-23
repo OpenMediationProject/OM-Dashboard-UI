@@ -6,11 +6,7 @@
         <ellipsis :length="40" tooltip>{{ name }}</ellipsis><img v-if="abt===1" style="margin-left:4px;margin-right:4px;" src="/icon/TA.svg"/><img v-if="abt===1" src="/icon/TB.svg"/>
       </div>
       <div class="plc-type">
-        <span v-if="type===0">Banner</span>
-        <span v-if="type===1">Native</span>
-        <span v-if="type===2">Rewarded Video</span>
-        <span v-if="type===3">Interstitial</span>
-        <span v-if="type===4">Splash</span>
+        <span>{{ GLOBAL.placementTypeMap[type].title }}</span>
         <a-divider type="vertical" />
         <span style="margin-left:-2px;">{{ id }}</span>
       </div>

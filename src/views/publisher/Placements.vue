@@ -55,7 +55,7 @@
           />
         </span>
         <span slot="adType" slot-scope="text, record">
-          <a-tag :style="record.status===0 ? 'opacity: 0.3;' : null">{{ text | typeFilter }}</a-tag>
+          <a-tag :style="record.status===0 ? 'opacity: 0.3;' : null">{{ GLOBAL.placementTypeMap[text].title }}</a-tag>
         </span>
         <span slot="scenes" slot-scope="text, record">
           <span :style="record.status===0 ? 'opacity: 0.3;' : null">
@@ -93,29 +93,6 @@ import { Ellipsis, OmAlert } from '@/components'
 import { placementList, placementUpdate } from '@/api/publisher'
 import OmPlacementInfo from '@/components/om/PlacementInfo'
 import { mapState } from 'vuex'
-
-const adTypeMap = {
-  0: {
-    adType: 0,
-    text: 'Banner'
-  },
-  1: {
-    adType: 0,
-    text: 'Native'
-  },
-  2: {
-    adType: 0,
-    text: 'Rewarded Video'
-  },
-  3: {
-    adType: 0,
-    text: 'Interstitial'
-  },
-  4: {
-    adType: 0,
-    text: 'Splash'
-  }
-}
 
 export default {
   name: 'TableList',
@@ -195,17 +172,11 @@ export default {
     }
   },
   computed: mapState({
-    visible: state => state.publisher.searchAppVisible,
     searchApp: state => state.publisher.searchApp
   }),
   watch: {
     searchApp (curVal) {
       this.searchTable()
-    }
-  },
-  filters: {
-    typeFilter (type) {
-      return adTypeMap[type].text
     }
   },
   methods: {
@@ -248,7 +219,7 @@ export default {
         .then(res => {
           this.arraySort(res.data)
           res.data.forEach(item => {
-            item.typeStr = adTypeMap[item.adType].text
+            item.typeStr = this.GLOBAL.placementTypeMap[item.adType].title
           })
           this.data = res.data
         }).finally(() => {

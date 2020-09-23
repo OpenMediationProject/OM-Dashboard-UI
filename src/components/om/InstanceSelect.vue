@@ -67,10 +67,6 @@ export default {
       type: Number,
       default: null
     },
-    hb: {
-      type: Boolean,
-      default: false
-    },
     adnAppId: {
       type: Number,
       default: null
@@ -110,9 +106,6 @@ export default {
         }
         instancesSelectList(params).then(res => {
           if (res.code === 0) {
-            if (this.hb) {
-              res.data = res.data.filter(row => { return !row.headbidding })
-            }
             this.data = res.data
           }
         })
@@ -126,9 +119,6 @@ export default {
       }
       instancesSelectList(params).then(res => {
         if (res.code === 0) {
-          if (this.hb) {
-            res.data = res.data.filter(row => { return !row.headbidding })
-          }
           this.data = res.data
         }
       })
@@ -141,9 +131,6 @@ export default {
       }
       instancesSelectList(params).then(res => {
         if (res.code === 0) {
-          if (this.hb) {
-            res.data = res.data.filter(row => { return !row.headbidding })
-          }
           this.data = res.data
         }
       })
@@ -153,9 +140,6 @@ export default {
     this.setOptions()
   },
   watch: {
-    hb (val) {
-      this.setOptions()
-    },
     adnIds (val) {
       this.resetOptions()
     },
