@@ -60,7 +60,7 @@
             :data="chartData"
             :height="248"
             x-column="day"
-            y-column="winPrice"
+            y-column="revenue"
             y-format="$0a[.]00"
             :group-by="chartGroupViewDim" />
         </a-col>
@@ -227,12 +227,12 @@ export default {
       defaultPlacements: [],
       defaultAdns: [],
       dimension: ['day'],
-      metric: ['impr', 'winPrice', 'ecpm']
+      metric: ['impr', 'revenue', 'ecpm']
     }
     let lastCondition = localStorage.getItem('condition-i-' + this.$store.state.publisher.currentOrgId)
     if (lastCondition) {
       lastCondition = JSON.parse(lastCondition)
-      const { pubAppId = [], placementId = [], country = [], adnId = [], dimension = ['day'], metric = ['impr', 'winPrice', 'ecpm'] } = { ...lastCondition }
+      const { pubAppId = [], placementId = [], country = [], adnId = [], dimension = ['day'], metric = ['impr', 'revenue', 'ecpm'] } = { ...lastCondition }
       def.defaultApps = pubAppId
       def.defaultPlacements = placementId
       def.defaultRegions = country
@@ -261,7 +261,8 @@ export default {
         win: 'bidWin',
         winRate: 'winRate',
         impr: 'impr',
-        winPrice: 'bidWinPrice'
+        winPrice: 'bidWinPrice',
+        revenue: 'revenue'
       },
       supportedMetrics: {
         bidRequest: { title: 'Bid Requests', format: '0,0' },
@@ -270,7 +271,8 @@ export default {
         win: { title: 'Win', format: '0,0' },
         winRate: { title: 'Win rate', format: '0.00 %' },
         impr: { title: 'Impressions', format: '0,0' },
-        winPrice: { title: 'Revenue', format: '$ 0,0.00' },
+        // winPrice: { title: 'Revenue', format: '$ 0,0.00' },
+        revenue: { title: 'Revenue', format: '$ 0,0.00' },
         ecpm: { title: 'eCPM', format: '$ 0,0.00' }
       },
       dimList4Chart: this.filterDim('pubAppId', 'country', 'adnId'),
@@ -284,7 +286,7 @@ export default {
       requestshow: true,
       adnshow: true,
       current: 1,
-      allMetrics: ['bidRequest', 'bidResponse', 'bidRate', 'win', 'winRate', 'impr', 'winPrice', 'ecpm'],
+      allMetrics: ['bidRequest', 'bidResponse', 'bidRate', 'win', 'winRate', 'impr', 'revenue', 'ecpm'],
       table: {
         loading: false,
         metric: def.metric,
@@ -420,6 +422,9 @@ export default {
       })
       metric.forEach(name => {
         const metric = this.supportedMetrics[name]
+        if (!metric) {
+          return
+        }
         if (!metric.format) {
           metric.format = '0,0'
         }
@@ -465,7 +470,7 @@ export default {
                 sumData.winPrice += row.winPrice
               })
               if (sumData.impr > 0) {
-                sumData.ecpm = sumData.winPrice * 1000 / sumData.impr
+                sumData.ecpm = sumData.winPrice / sumData.impr
               }
               if (sumData.bidRequest > 0) {
                 sumData.bidRate = sumData.bidResponse / sumData.bidRequest
@@ -506,9 +511,10 @@ export default {
       row.winRate = 0
       row.impr = row[this.metricFields.impr] || 0
       row.winPrice = row[this.metricFields.winPrice] || 0
+      row.revenue = (row.winPrice / 1000) || 0
       row.ecpm = 0
       if (row.impr > 0) {
-        row.ecpm = row.winPrice * 1000 / row.impr
+        row.ecpm = row.winPrice / row.impr
       }
       if (row.bidResponse) {
         row.winRate = row.win / row.bidResponse

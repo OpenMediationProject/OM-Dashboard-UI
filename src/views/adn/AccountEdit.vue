@@ -74,40 +74,6 @@
         </span>
         <img @click="googleApiInit" v-else style="cursor: pointer;margin-bottom:16px;" src="/icon/sign-google.svg"/>
       </span>
-      <span v-if="aType===0">
-        <om-form :form="form" label="Currency">
-          <CurrencySelect default-value="USD" :edit="canEdit" :adnId="record" />
-        </om-form>
-        <om-form
-          label="Publisher ID"
-          :defaultValue="record.userId"
-          :fill="false"
-          :edit="false"
-          field="userId"
-          :tip="$msg('account.admob_user_id_tip')" />
-        <om-form
-          label="Client ID"
-          :defaultValue="record.adnApiKey"
-          :fill="false"
-          :edit="false"
-          field="adnApiKey"
-          :tip="$msg('account.admob_client_id_tip')" />
-        <om-form
-          label="Client JSON"
-          :fill="false"
-          :defaultValue="record.adnAppToken"
-          :edit="false"
-          field="adnAppToken"
-          :tip="$msg('account.admob_client_json_tip')" />
-        <om-form
-          label="Authorized redirect URIs"
-          :defaultValue="record.authKeyUrl"
-          :fill="false"
-          :edit="false"
-          field="authKeyUrl"
-          :tip="$msg('account.admob_auth_url_tip')" />
-        <img style="opacity: 0.3;" src="/icon/sign-google.svg"/>
-      </span>
     </div>
     <div v-else-if="id===4">
       <!-- UnityAds -->
@@ -390,7 +356,13 @@ export default {
         this.record.authType = e.target.value
         const params = Object.assign(that.record, this.temp)
         setTimeout(function () {
-          that.form.setFieldsValue({ adnAppId: params.adnAppId, adnApiKey: params.adnApiKey, userSignature: params.userSignature, adnAppToken: params.adnAppToken, userId: params.userId, authKeyUrl: params.authKeyUrl })
+          that.form.setFieldsValue({
+            adnAppId: params.adnAppId,
+            adnApiKey: params.adnApiKey,
+            userSignature: params.userSignature,
+            adnAppToken: params.adnAppToken,
+            userId: params.userId
+          })
         }, 1)
       }
     },

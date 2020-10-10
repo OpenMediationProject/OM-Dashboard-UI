@@ -41,7 +41,7 @@
               </a-form-item>
               <a-form-item style="position:absolute; right:0px;">
                 <span class="table-page-search-submitButtons" >
-                  <a v-action:edit v-if="!abt" @click="settings" style="margin-right: 32px;"><img src="/icon/Setting.svg" style="margin-top:-2px;margin-right: 8px;" />Settings</a>
+                  <a v-if="!abt" @click="settings" style="margin-right: 32px;"><img src="/icon/Setting.svg" style="margin-top:-2px;margin-right: 8px;" />Settings</a>
                   <a-button type="primary" v-action:edit v-if="!abt" ghost @click="handleEdit()">Add Mediation Rule</a-button>
                 </span>
               </a-form-item>

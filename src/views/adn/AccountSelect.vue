@@ -16,12 +16,12 @@
               <img style="position: absolute;" src="/icon/account_line.svg">
               <div style="padding-left:16px;"><span style="color: #333333">Currency</span> {{ item.currency }}</div>
               <div class="account-apps" style="text-align: left;padding-left: 14px;">
-                <img v-for="(vv, i) in item.appIcons" :src="vv?cdnURL(vv):''" :style="i>1?'display: none;': null" :key="vv"/>
+                <img v-for="(vv, i) in item.appIcons" :src="vv?vv:''" :style="i>1?'display: none;': null" :key="vv"/>
                 <a-tooltip placement="bottom">
                   <span v-if="item.appIcons.length>2" class="icon-size" >+{{ item.appIcons.length-2 }}</span>
                   <div slot="title" class="account-apps">
                     Apps<br>
-                    <img v-for="(vv) in item.appIcons" :src="vv?cdnURL(vv):''" :key="vv"/>
+                    <img v-for="(vv) in item.appIcons" :src="vv?vv:''" :key="vv"/>
                   </div>
                 </a-tooltip>
                 <span v-if="!item.appIcons">--</span>
@@ -45,12 +45,16 @@
               <img style="position: absolute;" src="/icon/account_line.svg">
               <div style="padding-left:16px;"><span style="color: #333333">Currency</span> {{ item.currency }}</div>
               <div class="account-apps" style="text-align: left;padding-left: 14px;">
-                <img v-for="(vv, ind) in item.appIcons" :src="vv?cdnURL(vv):''" :style="ind>1?'display: none;': null" :key="vv"/>
+                <img
+                  v-for="(vv, ind) in item.appIcons"
+                  :src="vv?vv:''"
+                  :style="ind>1?'display: none;': null"
+                  :key="vv"/>
                 <a-tooltip placement="bottom">
-                  <span v-if="item.appIcons.length>2" class="icon-size" >+{{ item.appIcons.length-2 }}</span>
+                  <span v-if="item.appIcons.length>2" class="icon-size">+{{ item.appIcons.length-2 }}</span>
                   <div slot="title" class="account-apps">
                     Apps<br>
-                    <img v-for="(vv) in item.appIcons" :src="vv?cdnURL(vv):''" :key="vv"/>
+                    <img v-for="(vv) in item.appIcons" :src="vv?vv:''" :key="vv"/>
                   </div>
                 </a-tooltip>
                 <span v-if="!item.appIcons">--</span>
@@ -142,17 +146,6 @@ export default {
         path: '/adn/account',
         query: { id: this.curAccountId }
       })
-    },
-    cdnURL: function (v) {
-      if (!v) {
-        return v
-      }
-      if (v.search('http') === 0) {
-        v = '//img.adtiming.com/fetch/' + v
-      } else if (v.search('//') === 0) {
-        v = '//img.adtiming.com/fetch/http:' + v
-      }
-      return v
     }
   }
 }

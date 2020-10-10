@@ -1,9 +1,8 @@
 <template>
   <div class="footer">
     <div class="links">
-      <a href="">©2020 AdTiming</a>
-      <a href="https://www.adtiming.com/privacy-policy.php">Privacy Policy</a>
-      <a href="https://www.adtiming.com/terms-conditions.php">Terms & Conditions</a>
+      <a href="">Privacy Policy</a>
+      <a href="">Terms & Conditions</a>
     </div>
   </div>
 </template>

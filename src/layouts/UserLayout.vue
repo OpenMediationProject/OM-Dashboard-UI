@@ -12,16 +12,6 @@
       </div>
 
       <route-view></route-view>
-
-      <div class="footer">
-        <div class="links">
-          <a href="https://www.adtiming.com/privacy-policy.php">Privacy Policy</a>
-          <a href="https://www.adtiming.com/terms-conditions.php">Terms & Conditions</a>
-        </div>
-        <div class="copyright">
-          ©2020 AdTiming
-        </div>
-      </div>
     </div>
   </div>
 </template>

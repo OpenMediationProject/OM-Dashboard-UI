@@ -15,7 +15,7 @@
           :pagination="false"
         >
           <span slot="appIcons" class="row-edit" slot-scope="text,record" :style="record.status===0 || record.status === 2 ? 'opacity: 0.3;' : null">
-            <img style="width: 20px;margin: 2px;" v-for="(vv) in text" :src="vv?cdnURL(vv):''" :key="vv"/>
+            <img style="width: 20px;margin: 2px;" v-for="(vv) in text" :src="vv" :key="vv"/>
             <span v-if="!text.length || text[0]===''">--</span>
           </span>
           <span slot="className" class="row-edit" slot-scope="text, record">
@@ -194,17 +194,6 @@ export default {
     adnChange (val) {
       this.currentAdn = val.id
     },
-    cdnURL: function (v) {
-      if (!v) {
-        return v
-      }
-      if (v.search('http') === 0) {
-        v = '//img.adtiming.com/fetch/' + v
-      } else if (v.search('//') === 0) {
-        v = '//img.adtiming.com/fetch/http:' + v
-      }
-      return v
-    },
     inputLength (value) {
       let len = 0
       for (let i = 0; i < value.length; i++) {
@@ -379,9 +368,6 @@ export default {
           res.data.forEach(item => {
             item.editStatus = false
             item.expandStatus = false
-            if (item.authKey) {
-              item.authKeyUrl = 'http://publisher.adtiming.com/pubdev/report/callback/google/' + item.authKey
-            }
           })
           this.data = res.data
           this.arraySort(this.data)

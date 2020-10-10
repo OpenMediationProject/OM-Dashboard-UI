@@ -773,62 +773,7 @@ export default {
         this.metricFields.request = 'waterfallRequest'
         this.metricFields.filled = 'waterfallFilled'
       }
-      row.request = row[this.metricFields.request] || 0
-      row.filled = row[this.metricFields.filled] || 0
-      row.click = row[this.metricFields.click] || 0
-      row.impr = row[this.metricFields.impr] || 0
-      row.apiRequest = row[this.metricFields.apiRequest] || 0
-      row.apiFilled = row[this.metricFields.apiFilled] || 0
-      row.sdkClick = row[this.metricFields.sdkClick] || 0
-      row.sdkImpr = row[this.metricFields.sdkImpr] || 0
-      row.videoCompletion = row[this.metricFields.videoCompletion] || 0
-      row.videoStart = row[this.metricFields.videoStart] || 0
-      row.videoStart = row[this.metricFields.videoStart] || 0
-      row.isReadyTrue = row.isReadyTrue || 0
-      row.isReadyFalse = row.isReadyFalse || 0
-      row.cost = row.cost || 0
-      row.isReady = 0
-      row.readyRate = 0
-      row.ecpm = 0
-      row.ctr = 0
-      row.fillRate = row.ctr = 0
-      row.sdkCtr = 0
-      row.apiFillRate = row.sdkCtr = 0
-      if (row.request > 0) {
-        row.fillRate = row.filled / row.request
-      }
-      if (row.apiRequest > 0) {
-        row.apiFillRate = row.apiFilled / row.apiRequest
-      }
-      if (row.impr > 0) {
-        row.ctr = row.click / row.impr
-        row.ecpm = row.cost * 1000 / row.impr
-      }
-      if (row.sdkImpr > 0) {
-        row.sdkCtr = row.sdkClick / row.sdkImpr
-      }
-      row.isReady = row.isReadyTrue + row.isReadyFalse
-      if (row.isReady > 0) {
-        row.readyRate = row.isReadyTrue / row.isReady
-      }
-      if (!row.country) {
-        row.country = '(Empty)'
-      }
-      if (!row.placementName) {
-        row.placementName = '(Empty)'
-      }
-      if (!row.pubAppName) {
-        row.pubAppName = '(Empty)'
-      }
-      if (!row.adnName) {
-        row.adnName = '(Empty)'
-      }
-      if (!row.instanceName) {
-        row.instanceName = '(Empty)'
-      }
-      if (!row.sceneName) {
-        row.sceneName = '(Empty)'
-      }
+      this.mapMetrics(row)
       return row
     },
     handleDownload () {
