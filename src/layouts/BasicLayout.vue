@@ -6,7 +6,7 @@
       v-if="isSideMenu()"
       style="position: fixed;"
       mode="inline"
-      :menus="menus"
+      :menus="mainMenu.find(item => item.path === '/').children"
       :theme="navTheme"
       :collapsed="false"
       :collapsible="true"
@@ -16,7 +16,7 @@
       v-else
       style="position: fixed;"
       mode="inline"
-      :menus="menus"
+      :menus="mainMenu.find(item => item.path === '/').children"
       :theme="navTheme"
       :collapsed="false"
       :collapsible="true"
@@ -25,7 +25,7 @@
     <global-header
       style="position: fixed;width: 100%;z-index:1000"
       :mode="layoutMode"
-      :menus="menus"
+      :menus="mainMenu.find(item => item.path === '/').children"
       :theme="navTheme"
       :collapsed="false"
       :device="device"

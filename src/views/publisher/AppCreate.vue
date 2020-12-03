@@ -1,5 +1,6 @@
 <template>
   <a-card class="app-create" :bordered="false" :style="style">
+    <OmPageAction :confirm="false" :canEdit="true" />
     <div class="content" style="height:100%">
       <div style="text-align: center;" v-show="currentTab === 0">
         <div class="addapp-title">Have you published your app on Google Play or the App Store?</div>
@@ -90,13 +91,15 @@ import { createApp, searchAppFromStore } from '@/api/publisher'
 import OmAppInfo from '@/components/om/AppInfo'
 import OmForm from '@/components/OmForm'
 import AdtTip from '@/components/AdtTip'
+import OmPageAction from '@/components/OmPageAction'
 
 export default {
   name: 'AppCreate',
   components: {
     OmAppInfo,
     OmForm,
-    AdtTip
+    AdtTip,
+    OmPageAction
   },
   created () {
     this.style = 'height:' + (window.innerHeight - 140) + 'px; padding: 32px;margin-top:0;'

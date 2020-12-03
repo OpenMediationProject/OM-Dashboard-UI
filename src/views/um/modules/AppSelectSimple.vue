@@ -10,14 +10,13 @@
       v-decorator="[name]">
       <a-select-option v-for="appInfo in appList" :key="appInfo.id">
         <div class="selected-app-small">
-          <img style="width:24px;height:24px;" :src="appInfo.icon? appInfo.icon: appInfo.plat===0?'/iOS-40.svg':'/Android-40.svg'">
+          <img style="width:24px;height:24px;" :src="appInfo.icon? appInfo.icon: GLOBAL.platIcon(appInfo.plat)">
           <div style="display: inline-block;vertical-align: middle;margin-left: 8px;">
             <div style="color:#333333;font-size: 12px;line-height: 14px;">
               <ellipsis :length="26">{{ appInfo.appName }}</ellipsis>
             </div>
             <div style="color:#999999;font-size: 10px;line-height: 14px;">
-              <img class="plat-icon" v-if="appInfo.plat===1" src="/Android-40.svg"/>
-              <img class="plat-icon" v-else src="/iOS-40.svg"/>
+              <img class="plat-icon" :src="GLOBAL.platIcon(appInfo.plat)"/>
               <ellipsis :length="30">{{ appInfo.appId }}</ellipsis>
             </div>
           </div>

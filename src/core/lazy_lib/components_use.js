@@ -40,7 +40,10 @@ import {
   message,
   notification,
   TreeSelect,
-  Statistic
+  Statistic,
+  Anchor,
+  Affix,
+  FormModel
 } from 'ant-design-vue'
 
 Vue.use(ConfigProvider)
@@ -82,6 +85,9 @@ Vue.use(Popconfirm)
 Vue.use(notification)
 Vue.use(TreeSelect)
 Vue.use(Statistic)
+Vue.use(Anchor)
+Vue.use(Affix)
+Vue.use(FormModel)
 
 Vue.prototype.$confirm = Modal.confirm
 Vue.prototype.$message = message

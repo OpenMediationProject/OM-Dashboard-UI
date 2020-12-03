@@ -4,6 +4,14 @@
       <UserActivity/>
       <div style="height:16px; width:100%"></div>
     </a-tab-pane>
+    <a-tab-pane tab="Lifetime Value" :key="2">
+      <LTV/>
+      <div style="height:16px; width:100%"></div>
+    </a-tab-pane>
+    <a-tab-pane tab="Retention" :key="3">
+      <Retention/>
+      <div style="height:16px; width:100%"></div>
+    </a-tab-pane>
   </a-tabs>
 </template>
 
@@ -11,6 +19,8 @@
 import Performance from './Performance'
 import ReportBuilder from './ReportBuilder'
 import UserActivity from './UserActivity'
+import LTV from './LTV'
+import Retention from './Retention'
 import { mapState } from 'vuex'
 import AddApp from '@/views/guidance/AddApp'
 
@@ -20,6 +30,8 @@ export default {
     Performance,
     ReportBuilder,
     UserActivity,
+    LTV,
+    Retention,
     AddApp
   },
   data () {

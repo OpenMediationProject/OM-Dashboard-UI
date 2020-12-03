@@ -1,38 +1,19 @@
 <!-- AdNetwork select component  the props defaultValue is the default checked  -->
 <template>
-  <a-form-item>
-    <a-select
-      v-if="initValue>=0"
-      showSearch
-      :style="{ width: width }"
-      placeholder="Ad Network"
-      :size="size"
-      :disabled="disabled"
-      optionLabelProp="title"
-      v-decorator="[name, {initialValue: initValue, rules: [{ required: true, message: this.$msg('instance.adn_empty') }]}]"
-      @change="handleChange">
-      <a-select-option v-for="adn in optionList" :key="adn.id" :disabled="!adn.adNetworkAppId" :title="adn.className">
-        <div class="selected-app-small">
-          <a-badge :status="adn.adNetworkAppId ? 'success':'default'" /><img style="height:24px;" :src="'/logo/'+adn.className + '.svg'">
-        </div>
-      </a-select-option>
-    </a-select>
-    <a-select
-      v-else
-      :style="{ width: width }"
-      placeholder="Ad Network"
-      :size="size"
-      :disabled="disabled"
-      optionLabelProp="title"
-      v-decorator="[name, {rules: [{ required: true, message: this.$msg('instance.adn_empty') }]}]"
-      @change="handleChange">
-      <a-select-option v-for="adn in optionList" :key="adn.id" :disabled="!adn.adNetworkAppId" :title="adn.className">
-        <div class="selected-app-small">
-          <a-badge :status="adn.adNetworkAppId ? 'success':'default'" /><img style="height:24px;" :src="'/logo/'+adn.className + '.svg'">
-        </div>
-      </a-select-option>
-    </a-select>
-  </a-form-item>
+  <a-select
+    :style="{ width: width }"
+    placeholder="Ad Network"
+    :size="size"
+    :disabled="disabled"
+    optionLabelProp="title"
+    v-decorator="[name, {rules: [{ required: true, message: this.$msg('instance.adn_empty') }]}]"
+    @change="handleChange">
+    <a-select-option v-for="adn in optionList" :key="adn.id" :disabled="!adn.adNetworkAppId" :title="adn.className">
+      <div class="selected-app-small">
+        <a-badge :status="adn.adNetworkAppId ? 'success':'default'" /><img style="height:24px;" :src="'/logo/'+adn.className + '.svg'">
+      </div>
+    </a-select-option>
+  </a-select>
 </template>
 
 <script>
@@ -82,7 +63,7 @@ export default {
           params.placementId = this.placementId
         }
         const res = await adNetworkSelectList(params)
-        this.optionList = res.data
+        this.optionList = res.data.filter(row => row.id !== 19)
       } catch (e) {
         console.log('get adn list error', e)
       }

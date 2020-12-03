@@ -18,6 +18,7 @@ import './permission' // permission control
 import './utils/filter' // global filter
 import './components/global.less'
 import global from './global'
+import i18n from '../lang/index'
 
 Vue.config.productionTip = false
 Vue.prototype.GLOBAL = global
@@ -28,6 +29,7 @@ Vue.use(VueAxios)
 new Vue({
   router,
   store,
+  i18n,
   created: bootstrap,
   render: h => h(App)
 }).$mount('#app')

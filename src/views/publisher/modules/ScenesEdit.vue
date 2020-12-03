@@ -1,6 +1,6 @@
 <!-- Placement Scenes edit -->
 <template>
-  <a-form :form="form" :hideRequiredMark="true">
+  <a-form class="plcedit" :form="form" :hideRequiredMark="true">
     <a-row v-if="canEdit" type="flex" justify="start" style="height: 44px;margin-top:-8px">
       <a-form-item v-action:edit style="position:absolute; right:0;">
         <span class="table-page-search-submitButtons" >
@@ -15,7 +15,6 @@
       rowKey="id"
       fixed="true"
       :dataSource="data"
-      :scroll="{ y: scroll }"
       :expandedRowKeys="curExpandedRowKeys"
       :columns="columns"
       :expandIconAsCell="false"
@@ -48,8 +47,8 @@
         </a-form-item>
       </p>
       <span slot="frequencyCap" slot-scope="text, record">
-        <span :style="record.status===0 ? 'opacity: 0.3;' : null" v-if="record.frequencyCap===0">
-          <a-icon style="margin-tottom:5px;" class="expand-icon" @click="handleExpand(record)" :type="record.expandStatus ? 'minus':'plus'" /> All
+        <span :style="record.status===0 || record.editStatus ? 'opacity: 0.3;' : null" v-if="record.frequencyCap===0">
+          <a-icon style="margin-tottom:5px;" class="expand-icon" @click="record.editStatus? null:handleExpand(record)" :type="record.expandStatus ? 'minus':'plus'" /> All
         </span>
         <span v-else>
           <div :style="record.status===0 ? 'opacity: 0.3;' : null">
@@ -152,6 +151,7 @@ export default {
       const that = this
       validateFields((err, values) => {
         if (!err) {
+          this.$emit('change')
           const item = { ...record }
           item.name = values[record.id + 'name']
           item.frequencyCap = values[record.id + 'frequencyCap']
@@ -210,6 +210,7 @@ export default {
     handelSceneStatusUpdate (record) {
       record = Object.assign(record, { status: record.status === 0 ? 1 : 0 })
       this.$message.success(this.$msg('placement.scene_status'))
+      this.$emit('change')
       this.arraySort(this.data)
     },
     handleAddSence () {

@@ -10,6 +10,7 @@ import PageHeaderPlacement from './PageHeaderPlacement'
 import OmPlacement from './Placement'
 import OmPlacementInfo from './PlacementInfo'
 import OmPlacementSelect from './PlacementSelect'
+import PromoteAppSelect from './PromoteAppSelect'
 
 export {
   OmRegionsSelect,
@@ -22,5 +23,6 @@ export {
   PageHeaderPlacement,
   OmPlacement,
   OmPlacementInfo,
-  OmPlacementSelect
+  OmPlacementSelect,
+  PromoteAppSelect
 }

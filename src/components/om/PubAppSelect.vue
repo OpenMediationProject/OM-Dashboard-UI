@@ -11,7 +11,6 @@
       :maxTagTextLength="10"
       :showArrow="false"
       :maxTagCount="1"
-      :maxTagPlaceholder="(h,vm) => '+' + (vm.value.length - 1)"
       optionLabelProp="title"
       v-decorator="[name, {initialValue: initValue}]"
       :filterOption="filterOption"
@@ -20,14 +19,13 @@
       <a-select-option v-for="o in appList" :key="o.id" :title="o.appName">
         <p style="display:none;">{{ o.appName + '-' + o.id + '-' + o.appId }}</p>
         <div class="selected-app-small">
-          <img style="width:24px;height:24px;" :src="o.icon || (o.plat===0?'/iOS-40.svg':'/Android-40.svg')">
+          <img style="width:24px;height:24px;" :src="o.icon || GLOBAL.platIcon(o.plat)">
           <div style="display: inline-block;vertical-align: middle;margin-left: 8px;">
             <div style="color:#333333;font-size: 12px;line-height: 14px;">
               <ellipsis :length="26" tooltip>{{ o.appName }}</ellipsis>
             </div>
             <div style="color:#999999;font-size: 10px;line-height: 14px;">
-              <img class="plat-icon" v-if="o.plat===1" src="/Android-40.svg"/>
-              <img class="plat-icon" v-else src="/iOS-40.svg"/>
+              <img class="plat-icon" :src="GLOBAL.platIcon(o.plat)"/>
               <ellipsis :length="36" tooltip>{{ o.appId }}</ellipsis>
             </div>
           </div>

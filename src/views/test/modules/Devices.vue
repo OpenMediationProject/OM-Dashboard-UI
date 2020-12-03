@@ -1,24 +1,23 @@
 <template>
   <div>
     <a-form :form="form">
-      <a-row v-action:edit type="flex" justify="start" style="height: 50px;margin-top: 7px;margin-bottom: 5px;">
+      <a-row v-action:edit type="flex" justify="start" style="height: 50px;margin-top: -32px;margin-bottom: 5px;">
         <a-form-item style="position:absolute; right:16px;" >
           <span class="table-page-search-submitButtons">
             <a-button type="primary" size="default" @click="addDevice()">Add Device</a-button>
           </span>
         </a-form-item>
       </a-row>
-      <div style="background-color:#ffffff">
+      <div style="background-color:#ffffff;margin-bottom: 16px;">
         <a-table
           ref="table"
           class="ant-card-table-default"
           rowKey="id"
           fixed="true"
           :dataSource="data"
-          :scroll="{ y: scroll }"
           :columns="columns"
           @change="tableChange"
-          :pagination="{current:current, hideOnSinglePage:true, showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} items`, change: (val) => this.current = current}"
+          :pagination="{pageSize: 8, current:current, hideOnSinglePage:true, showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} items`, change: (val) => this.current = current}"
         >
           <span v-action:edit slot="status" slot-scope="text, record">
             <template>

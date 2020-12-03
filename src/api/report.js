@@ -5,6 +5,10 @@ import { axios, JsonHeader } from '@/utils/request'
 const api = {
   reportList: '/report/list',
   inAppList: '/report/list/in_app',
+  reportRetention: '/report/retention',
+  reportRetentionChart: '/report/retention/chart',
+  reportLtv: '/report/ltv',
+  reportLtvChart: '/report/ltv/chart',
   dashboardHeadRevenues: '/report/dashboard/head/revenues',
   dashboardRegionRevenues: '/report/dashboard/regions/revenues',
   reportBuilders: '/report/builders',
@@ -20,6 +24,74 @@ export function getReportList (params) {
     url: api.reportList,
     method: 'POST',
     headers: JsonHeader,
+    data: params
+  })
+}
+export function reportLtvChart (data) {
+  const params = new URLSearchParams()
+  Object.keys(data).forEach(function (key) {
+    if (data[key] instanceof Array) {
+      data[key].forEach(v => {
+        params.append(key, v)
+      })
+    } else {
+      params.append(key, data[key])
+    }
+  })
+  return axios({
+    url: api.reportLtvChart,
+    method: 'post',
+    data: params
+  })
+}
+export function reportRetentionChart (data) {
+  const params = new URLSearchParams()
+  Object.keys(data).forEach(function (key) {
+    if (data[key] instanceof Array) {
+      data[key].forEach(v => {
+        params.append(key, v)
+      })
+    } else {
+      params.append(key, data[key])
+    }
+  })
+  return axios({
+    url: api.reportRetentionChart,
+    method: 'post',
+    data: params
+  })
+}
+export function reportRetention (data) {
+  const params = new URLSearchParams()
+  Object.keys(data).forEach(function (key) {
+    if (data[key] instanceof Array) {
+      data[key].forEach(v => {
+        params.append(key, v)
+      })
+    } else {
+      params.append(key, data[key])
+    }
+  })
+  return axios({
+    url: api.reportRetention,
+    method: 'post',
+    data: params
+  })
+}
+export function reportLtv (data) {
+  const params = new URLSearchParams()
+  Object.keys(data).forEach(function (key) {
+    if (data[key] instanceof Array) {
+      data[key].forEach(v => {
+        params.append(key, v)
+      })
+    } else {
+      params.append(key, data[key])
+    }
+  })
+  return axios({
+    url: api.reportLtv,
+    method: 'post',
     data: params
   })
 }

@@ -2,6 +2,7 @@
 <template>
   <div>
     <a-form layout="inline" :form="form" >
+      <om-report-date-picker @ok="handleApply"/>
       <om-pub-app-select :defaultValue="def.defaultApps" @change="appSelect" width="240px"/>
       <a-form-item>
         <om-regions-select :defaultSelected="def.defaultRegions" :maxTagCount="1" :ignoreApp="true" @change="countryChange" style="width: 154px"/>
@@ -11,7 +12,6 @@
       <a-form-item>
         <a-button ghost @click="handleApply" type="primary" style="width: 84px;">Apply</a-button>
       </a-form-item>
-      <om-report-date-picker @ok="handleApply"/>
     </a-form>
 
     <div style="background-color: white; margin-top: 8px; padding: 16px">
@@ -557,7 +557,7 @@ export default {
           return row[col.dataIndex]
         }).join(',')
       }).join('\n')
-      const blob = new Blob([new Uint8Array([0xef, 0xbb, 0xbf]), header + '\n' + data], { type: 'text/csv,charset=UTF-8' })
+      const blob = new Blob([new Uint8Array([0xef, 0xbb, 0xbf]), header + '\n' + data], { type: 'text/csv;charset=UTF-8' })
       const link = document.createElement('a')
       link.href = URL.createObjectURL(blob)
       link.download = 'download.csv'

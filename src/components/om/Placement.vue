@@ -6,7 +6,7 @@
         {{ name }}
       </div>
       <div style="color:#999999;font-size: 12px;">
-        <span>{{ GLOBAL.placementTypeMap[type].title }}</span>
+        <span>{{ GLOBAL.typeInfo(type).title }}</span>
         <a-divider type="vertical" /> {{ id }}
       </div>
     </div>

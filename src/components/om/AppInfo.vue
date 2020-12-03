@@ -1,14 +1,13 @@
 <!-- App Info component props icon, plat(0 iOS, 1 Android), appId, appName  -->
 <template>
   <div class="selected-app" :style="status?null:'opacity: 0.3;'">
-    <img style="width:32px;height:32px;" :src="icon? icon: plat === 0? '/iOS-40.svg':'/Android-40.svg'">
+    <img style="width:32px;height:32px;" :src="icon? icon: GLOBAL.platIcon(plat)">
     <div class="info-title">
       <div>
         <ellipsis :style="{color:this.titleColor}" :length="25" :tooltip="this.showtip">{{ appName }}</ellipsis>
       </div>
       <div style="color:#999999;font-size: 10px;margin-top: 4px;">
-        <img class="plat-icon" v-if="plat===1" src="/assets/Android.svg"/>
-        <img class="plat-icon" v-else src="/assets/iOS.svg"/>
+        <img class="plat-icon" :src="GLOBAL.platIcon(plat)"/>
         <ellipsis :length="28" :tooltip="this.showtip">{{ appId }}</ellipsis>
       </div>
     </div>

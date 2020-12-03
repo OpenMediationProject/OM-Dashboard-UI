@@ -50,7 +50,7 @@ export default {
       placementSelectList({ pubAppId: pubAppId })
         .then(res => {
           if (res.code === 0 && res.data.length) {
-            that.plcList = res.data
+            that.plcList = res.data.filter(row => row.adType !== 5)
             const localPlacement = localStorage.getItem('searchPlacement')
             if (localPlacement) {
               const target = res.data.find(item => item.id === parseInt(localPlacement))

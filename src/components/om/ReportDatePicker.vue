@@ -1,9 +1,8 @@
 <template>
-  <div style="display: inline;float: right;margin-top: -1px;">
-    <div style="position: absolute;font-size: 12px;color: #999999;margin-top: -13px;right:0;">All reports and dates are in UTC</div>
+  <div class="ant-row ant-form-item" style="margin-top: -1px;margin-right: 8px;">
+    <!--    <div style="position: absolute;font-size: 12px;color: #999999;margin-top: -13px;right:0;">All reports and dates are in UTC</div>-->
     <a-form-item style="margin-right: 0">
       <a-range-picker
-        showTime
         @ok="onOk"
         class="om-date-picker"
         :allowClear="false"

@@ -8,7 +8,7 @@
     :trigger="null">
     <s-menu
       :collapsed="collapsed"
-      :menu="menus"
+      :ms="ms"
       :theme="theme"
       :mode="mode"
       :useUnity="useUnity"
@@ -31,7 +31,13 @@ export default {
   }),
   data () {
     return {
-      id: 1
+      id: 1,
+      ms: this.menus
+    }
+  },
+  watch: {
+    menus (v) {
+      this.ms = v
     }
   },
   props: {

@@ -7,7 +7,7 @@ const { Item, SubMenu } = Menu
 export default {
   name: 'SMenu',
   props: {
-    menu: {
+    ms: {
       type: Array,
       required: true
     },
@@ -37,7 +37,8 @@ export default {
       selectedKeys: [],
       cachedOpenKeys: [],
       open: false,
-      subMenuVisible: false
+      subMenuVisible: true,
+      menu: this.ms
     }
   },
   computed: {
@@ -61,24 +62,24 @@ export default {
     },
     $route: function () {
       this.updateMenu()
+    },
+    ms (v) {
+      this.menu = v
+      this.updateMenu()
     }
   },
   methods: {
     // select menu item
     onOpenChange (openKeys) {
-      if (this.mode === 'horizontal') {
-        this.openKeys = openKeys
-        return
-      }
-      if (this.open === true) {
-        return
-      }
-      if ((openKeys.includes('/publisher') && openKeys.includes('/report/main')) || (openKeys.includes('/publisher') && !openKeys.includes('/report'))) {
+      const latestOpenKey = openKeys.find(key => this.openKeys.indexOf(key) === -1)
+      if ((!latestOpenKey || latestOpenKey === '/publisher') && ((openKeys.includes('/publisher') && (openKeys.includes('/report/main') || openKeys.includes('/campaign'))) ||
+        (openKeys.includes('/publisher') && (!openKeys.includes('/report') && !openKeys.includes('/campaign'))))) {
         this.open = true
+        this.subMenuVisible = false
       } else {
         this.open = false
+        this.subMenuVisible = true
       }
-      const latestOpenKey = openKeys.find(key => this.openKeys.indexOf(key) === -1)
       if (this.rootSubmenuKeys.indexOf(latestOpenKey) === -1) {
         this.openKeys = openKeys
       } else {
@@ -145,11 +146,11 @@ export default {
           item.meta = Object.assign(item.meta, { hidden: true })
         })
       }
-      if (menu.meta.title === 'Apps') {
+      if (menu.meta.apps) {
         return (
           <AppMenuSelect style="width: 256px;margin-top:8px;" { ...{ on: { appChange: this.appChange } } } collapsed={this.collapsed} openSelect={this.open}></AppMenuSelect>
         )
-      } else if (menu.meta.title === 'Ad Network') {
+      } else if (menu.meta.adn) {
         if (this.useUnity) {
           return (
             <Item {...{ key: menu.path }}>
@@ -186,7 +187,7 @@ export default {
       if (!menu.hideChildrenInMenu) {
         menu.children.forEach(item => itemArr.push(this.renderItem(item)))
       }
-      if (menu.meta.title === 'Apps') {
+      if (menu.meta.apps) {
         return (
           <SubMenu class={this.subMenuVisible ? 'show-sub' : 'hide-sub'} {...{ key: menu.path }}>
             <span slot="title">

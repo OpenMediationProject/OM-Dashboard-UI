@@ -18,6 +18,8 @@
               <a-select-option value="3">Interstitial</a-select-option>
               <a-select-option value="1">Native</a-select-option>
               <a-select-option value="0">Banner</a-select-option>
+              <a-select-option value="4">Splash</a-select-option>
+              <a-select-option value="5">Cross Promote</a-select-option>
             </a-select>
           </a-form-item>
           <a-form-item>
@@ -55,7 +57,7 @@
           />
         </span>
         <span slot="adType" slot-scope="text, record">
-          <a-tag :style="record.status===0 ? 'opacity: 0.3;' : null">{{ GLOBAL.placementTypeMap[text].title }}</a-tag>
+          <a-tag :style="record.status===0 ? 'opacity: 0.3;' : null">{{ GLOBAL.typeInfo(text).title }}</a-tag>
         </span>
         <span slot="scenes" slot-scope="text, record">
           <span :style="record.status===0 ? 'opacity: 0.3;' : null">
@@ -64,7 +66,8 @@
           </span>
         </span>
         <span slot="instanceSize" slot-scope="text, record">
-          <span :style="record.status===0 ? 'opacity: 0.3;' : null"><a @click="editInstance(record.id)">{{ record.instanceSize.length || '0' }}</a></span>
+          <span v-if="record.adType!==5" :style="record.status===0 ? 'opacity: 0.3;' : null"><a @click="editInstance(record.id)">{{ record.instanceSize.length || '0' }}</a></span>
+          <span v-else>{{ record.instanceSize.length || '0' }}</span>
         </span>
         <span slot="status" slot-scope="text, record">
           <span>
@@ -72,10 +75,12 @@
               <a @click="handleUpdate(record)">Edit</a>
               <a-divider type="vertical" />
               <a herf="#" @click="handleEdit(record)">{{ text===0?'Enable' : 'Disable' }}</a>
-              <a-divider type="vertical" v-if="record.status" />
-              <a herf="#" v-if="record.status" @click="editInstance(record.id)">Instances</a>
-              <a-divider v-if="record.status" type="vertical" />
-              <a herf="#" v-if="record.status" @click="editMediation(record.id)">Mediation</a>
+              <span v-if="record.adType !==5">
+                <a-divider type="vertical" v-if="record.status" />
+                <a herf="#" v-if="record.status" @click="editInstance(record.id)">Instances</a>
+                <a-divider v-if="record.status" type="vertical" />
+                <a herf="#" v-if="record.status" @click="editMediation(record.id)">Mediation</a>
+              </span>
             </span>
             <span v-else>
               <a @click="viewPlacement(record)">Details</a>
@@ -219,7 +224,7 @@ export default {
         .then(res => {
           this.arraySort(res.data)
           res.data.forEach(item => {
-            item.typeStr = this.GLOBAL.placementTypeMap[item.adType].title
+            item.typeStr = this.GLOBAL.typeInfo(item.adType).title
           })
           this.data = res.data
         }).finally(() => {

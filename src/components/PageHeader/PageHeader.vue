@@ -7,12 +7,12 @@
             <img v-if="logo" :src="logo" class="logo"/>
             <h1 v-if="title" class="title">
               <span v-if="this.$route.query.type==='Details'">{{ title + ' ' + this.$route.query.type || '' }}</span>
-              <span v-else>{{ this.$route.query.type || '' + ' ' + title }}</span>
+              <span v-else>{{ (this.$route.query.type || '') }} {{ title }}</span>
             </h1>
             <!-- <page-header-placement /> -->
             <div class="action">
               <slot name="action">
-                <a v-if="$route.meta.hidden" @click="goPage($route.meta.parent)"><img src="/icon/close.svg" /></a>
+                <!--                <a v-if="$route.meta.hidden" @click="goPage($route.meta.parent)"><img src="/icon/close.svg" /></a>-->
               </slot>
             </div>
           </div>
@@ -74,10 +74,12 @@ export default {
 <style lang="less" scoped>
   .blue-tip {
     display: inline-block;
-    width: calc(100vw - 256px);
-    margin-left: -16px;
+    position: fixed;
+    top:0;
+    z-index: 2;
+    height: 64px;
+    width: 100vw;
     padding-top: 16px;
-    margin-top: 48px !important;
     background: #5F9CF1;
   }
   .page-header {

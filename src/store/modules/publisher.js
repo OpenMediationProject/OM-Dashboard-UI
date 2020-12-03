@@ -7,7 +7,9 @@ const publisher = {
     searchPlacementType: localStorage.getItem('searchPlacementType') || 0,
     searchPlacementAbt: localStorage.getItem('searchPlacementAbt') || 0,
     updateList: '',
-    useUnity: false
+    useUnity: false,
+    apps: [],
+    placements: []
   },
 
   mutations: {
@@ -41,6 +43,12 @@ const publisher = {
     },
     SET_USEUNITY: (state, val) => {
       state.useUnity = val
+    },
+    UPDATEAPPS: (state, val) => {
+      state.apps = val
+    },
+    UPDATEPLACEMENTS: (state, val) => {
+      state.placements = val
     }
   }
 }

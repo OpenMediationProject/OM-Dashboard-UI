@@ -1,33 +1,34 @@
 <!-- Instances tab -->
 <template>
   <div>
-    <a-form :form="form" :hideRequiredMark="true">
-      <div v-if="!searchPlacement" class="table-page-search-wrapper">
-        <div class="table-page-search-wrapper">
-          <a-alert
-            class="om-card-style"
-            type="info"
-          >
-            <span slot="message" style="text-align: center;width: 100%;">
-              <div style="text-align:center; width:900px;margin-left:15%;margin-top:24px;height: 180px">
-                <div style="display:inline-block;float:left; margin-right:26px;margin-left:100px;margin-bottom: 32px"><img src="/assets/mediation_tip.svg"/></div>
-                <div style="text-align:left;line-height:20px;padding-top: 8px">
-                  <h4 style="font-size: 16px;color: #333333">You need Placements!</h4>
-                  <p style="font-size:14px;color: #666666">Placements offer more control of where and how ads are served within your app.<br>AdTiming currently support ad placements for all ad formats, i.e. Rewarded Video,<br>Interstitial, Banner, and Native. In addition, you can now also pace and cap your<br>placements to ensure the ultimate user experience!</p>
-                  <div class="button-add">
-                    <a-button type="primary" v-if="canEdit" style="width: 168px;" @click="addPlacement()">Add Placement</a-button>
-                  </div>
+    <div v-if="!searchPlacement" class="table-page-search-wrapper">
+      <div class="table-page-search-wrapper">
+        <a-alert
+          class="om-card-style"
+          type="info"
+        >
+          <span slot="message" style="text-align: center;width: 100%;">
+            <div style="text-align:center; width:900px;margin-left:15%;margin-top:24px;height: 180px">
+              <div style="display:inline-block;float:left; margin-right:26px;margin-left:100px;margin-bottom: 32px"><img src="/assets/mediation_tip.svg"/></div>
+              <div style="text-align:left;line-height:20px;padding-top: 8px">
+                <h4 style="font-size: 16px;color: #333333">You need Placements!</h4>
+                <p style="font-size:14px;color: #666666">Placements offer more control of where and how ads are served within your app.<br>AdTiming currently support ad placements for all ad formats, i.e. Rewarded Video,<br>Interstitial, Banner, and Native. In addition, you can now also pace and cap your<br>placements to ensure the ultimate user experience!</p>
+                <div class="button-add">
+                  <a-button type="primary" v-if="canEdit" style="width: 168px;" @click="addPlacement()">Add Placement</a-button>
                 </div>
               </div>
-            </span>
-          </a-alert>
-        </div>
+            </div>
+          </span>
+        </a-alert>
       </div>
-      <div v-else>
-        <om-alert v-if="showAlert && canEdit" @click="alertClick" :message="alertMessage"></om-alert>
-        <div class="adnedit">
+    </div>
+    <div v-else>
+      <om-alert v-if="showAlert && canEdit" @click="alertClick" :message="alertMessage"></om-alert>
+      <div class="adnedit">
+        <a-form :form="form" :hideRequiredMark="true">
           <a-row type="flex" justify="start" style="height: 44px;">
             <om-ad-network-select
+              name="insAdnId"
               :showArrow="false"
               :pubAppId="parseInt(searchApp)"
               mode="none"
@@ -46,6 +47,8 @@
               </span>
             </a-form-item>
           </a-row>
+        </a-form>
+        <a-form-model ref="instanceForm" :model="instanceInfo" :rules="rules" :hideRequiredMark="true">
           <a-table
             style="margin-left:8px;margin-right:8px;margin-bottom:24px;background-color: white"
             class="ant-card-table-default-noshadow"
@@ -53,32 +56,36 @@
             rowKey="id"
             :dataSource="data"
             :loading="loading"
-            :scroll="{ y: scroll }"
             :expandedRowKeys="curExpandedRowKeys"
             :columns="columns"
+            :rowClassName="(record)=>{
+              if (curExpandedRowKeys.length && record.id === curExpandedRowKeys[0]){
+                return 'om-edit-row'
+              } else {
+                return 'normal'
+              }
+            }"
             :expandIconAsCell="false"
             :expandIconColumnIndex="-1"
             :pagination="false"
           >
-            <p slot="expandedRowRender" class="expand-row" slot-scope="record" :rowKey="record.id" style="margin: 0">
-              <a-form-item
+            <div slot="expandedRowRender" class="expand-row" slot-scope="record" :rowKey="record.id" style="margin: 0">
+              <om-form-model
                 label="In-app Bidding"
                 :colon="false"
-                style="margin-bottom: 0px;"
-                :labelCol="{lg: { span: 8 }, sm: { span: 8 }}"
-                :wrapperCol="{lg: { span: 8 }, sm: { span: 8 } }">
+                :fill="false"
+                style="margin-bottom: 0;">
                 <a-checkbox
                   :disabled="!record.editStatus || !record.createNew || [12,17].includes(record.id) || [12,17].includes(tempAdn)"
                   size="small"
-                  v-model="record.hbStatus"
+                  v-model="instanceInfo.hbStatus"
                 />
-              </a-form-item>
-              <a-form-item
+              </om-form-model>
+              <om-form-model
                 label="Frequency Cap"
                 :colon="false"
-                style="margin-bottom: 0px;"
-                :labelCol="{lg: { span: 8 }, sm: { span: 8 }}"
-                :wrapperCol="{lg: { span: 8 }, sm: { span: 8 } }">
+                :fill="false"
+                style="margin-bottom: 0;">
                 Limit to <a-input-number
                   type="number"
                   size="small"
@@ -86,7 +93,7 @@
                   :disabled="!record.editStatus"
                   :max="9999"
                   style="width:66px;"
-                  v-decorator="['frequencyCap',{initialValue: record.frequencyCap}]"/> impressions per
+                  v-model="instanceInfo.frequencyCap"/> impressions per
                 <a-input-number
                   type="number"
                   size="small"
@@ -94,14 +101,13 @@
                   :min="1"
                   :max="24"
                   style="width:50px;"
-                  v-decorator="['frequencyUnit',{initialValue: record.frequencyUnit}]"/> hour(s)
-              </a-form-item>
-              <a-form-item
-                style="margin-bottom: 0px;"
+                  v-model="instanceInfo.frequencyUnit"/> hour(s)
+              </om-form-model>
+              <om-form-model
+                style="margin-bottom: 0;"
                 label="Pacing"
-                :colon="false"
-                :labelCol="{lg: { span: 8 }, sm: { span: 8 }}"
-                :wrapperCol="{lg: { span: 8 }, sm: { span: 8 } }">
+                :fill="false"
+                :colon="false">
                 Show a maximun ad 1ad per <a-input-number
                   type="number"
                   :disabled="!record.editStatus"
@@ -109,16 +115,15 @@
                   :min="0"
                   :max="1440"
                   style="width:66px;"
-                  v-decorator="['frequencyInterval',{initialValue: record.frequencyInterval}]"/> minute(s)
-              </a-form-item>
-              <a-form-item
-                style="margin-bottom: 0px;"
+                  v-model="instanceInfo.frequencyInterval"/> minute(s)
+              </om-form-model>
+              <om-form-model
+                style="margin-bottom: 0;"
                 label="Device Brand"
-                :colon="false"
-                :labelCol="{lg: { span: 8 }, sm: { span: 8 }}"
-                :wrapperCol="{lg: { span: 8 }, sm: { span: 8 } }">
+                :fill="false"
+                :colon="false">
                 <a-input-group compact style="margin-top:6px;">
-                  <a-select :disabled="!record.editStatus" v-decorator="['brandType',{initialValue: record.brandType || 'include'}]" style="width: 100px" >
+                  <a-select :disabled="!record.editStatus" v-model="instanceInfo.brandType" style="width: 100px" >
                     <a-select-option value="include">include</a-select-option>
                     <a-select-option value="exclude">exclude</a-select-option>
                   </a-select>
@@ -129,21 +134,20 @@
                     @change="handleChange"
                     :filterOption="false"
                     :notFoundContent="fetching ? undefined : null"
-                    v-decorator="['brandList',{initialValue: record.brandList}]"
+                    v-model="instanceInfo.brandList"
                     mode="multiple">
                     <a-spin v-if="fetching" slot="notFoundContent" size="small" />
                     <a-select-option v-for="d in deviceData" :key="d.value">{{ d.text }}</a-select-option>
                   </a-select>
                 </a-input-group>
-              </a-form-item>
-              <a-form-item
+              </om-form-model>
+              <om-form-model
                 style="margin-bottom: 16px;"
                 label="Device Model"
                 :colon="false"
-                :labelCol="{lg: { span: 8 }, sm: { span: 8 }}"
-                :wrapperCol="{lg: { span: 8 }, sm: { span: 8 } }">
+                :fill="false">
                 <a-input-group compact style="margin-top:6px;">
-                  <a-select :disabled="!record.editStatus" v-decorator="['modelType',{initialValue: record.modelType || 'include'}]" style="width: 100px" >
+                  <a-select :disabled="!record.editStatus" v-model="instanceInfo.modelType" style="width: 100px" >
                     <a-select-option value="include">include</a-select-option>
                     <a-select-option value="exclude">exclude</a-select-option>
                   </a-select>
@@ -154,32 +158,30 @@
                     @change="handleChange"
                     :filterOption="false"
                     :notFoundContent="fetching ? undefined : null"
-                    v-decorator="['modelList',{initialValue: record.modelList}]"
+                    v-model="instanceInfo.modelList"
                     mode="multiple">
                     <a-spin v-if="fetching" slot="notFoundContent" size="small" />
                     <a-select-option v-for="d in deviceData" :key="d.value">{{ d.text }}</a-select-option>
                   </a-select>
                 </a-input-group>
-              </a-form-item>
-            </p>
+              </om-form-model>
+            </div>
             <span slot="status" slot-scope="text, record">
               <template>
                 <div v-if="record.editStatus">
-                  <a herf="#" @click="handleInstanceSave(record)">Save</a>
+                  <a @click="handleInstanceSave(record)">Save</a>
                   <a-divider type="vertical" />
-                  <a herf="#" @click="handleInstanceCancel(record)">Cancel</a>
-                  <span style="float:right" v-if="!record.expandStatus" @click="handleOpen(record)" ><img src="/assets/down.svg"/></span>
-                  <span style="float:right" v-else @click="handleOpen(record)"><img src="/assets/up.svg"/></span>
+                  <a @click="handleInstanceCancel(record)">Cancel</a>
                 </div>
                 <div v-else-if="canEdit && !abt">
-                  <a herf="#" @click="handleEdit(record)">Edit</a>
+                  <a @click="handleEdit(record)">Edit</a>
                   <a-divider type="vertical" />
-                  <a herf="#" @click="handelInstanceStatusUpdate(record)">{{ text===0?'Enable' : 'Disable' }}</a>
+                  <a @click="handelInstanceStatusUpdate(record)">{{ text===0?'Enable' : 'Disable' }}</a>
                   <span style="float:right" v-if="!record.expandStatus" @click="handleOpen(record)" ><img src="/assets/down.svg"/></span>
                   <span style="float:right" v-else @click="handleOpen(record)"><img src="/assets/up.svg"/></span>
                 </div>
                 <div v-else>
-                  <a herf="#" @click="handleOpen(record)">Details</a>
+                  <a @click="handleOpen(record)">Details</a>
                   <span style="float:right" v-if="!record.expandStatus" @click="handleOpen(record)" ><img src="/assets/down.svg"/></span>
                   <span style="float:right" v-else @click="handleOpen(record)"><img src="/assets/up.svg"/></span>
                 </div>
@@ -193,26 +195,23 @@
                 :id="record.adnId"
                 :status="record.status"
               />
-              <ADNSelect
-                @change="adnChange"
-                :placementId="searchPlacement"
-                :name="record.id+'adnId'"
-                :defaultValue="record.adnId"
-                v-else/>
+              <a-form-model-item prop="adnId" v-else>
+                <ADNSelect @change="adnChange" :placementId="searchPlacement" />
+              </a-form-model-item>
             </span>
             <span class="row-edit" slot="placementKey" slot-scope="text, record">
               <div :style="record.status===0 ? 'opacity: 0.3;' : null">
-                <a-form-item size="small" v-if="record.editStatus && record.adnId!==0">
-                  <a-input :disabled="tempAdn < 0" placeholder="Unit ID" style="margin-top:0px;" v-decorator="[record.id+'placementKey',{initialValue: record.placementKey, rules: [{validator: checkPlacementKey }]}]"/>
-                </a-form-item>
+                <a-form-model-item prop="placementKey" size="small" v-if="record.editStatus && ![0, 19].includes(record.adnId)">
+                  <a-input :disabled="tempAdn < 0" placeholder="Unit ID" style="margin-top:0;" v-model="instanceInfo.placementKey" />
+                </a-form-model-item>
                 <span v-else :title="record.id"><ellipsis :length="30" tooltip>{{ text }}</ellipsis></span>
               </div>
             </span>
             <span class="row-edit" slot="name" slot-scope="text, record">
               <span :style="record.status===0 ? 'opacity: 0.3;' : null">
-                <a-form-item size="small" v-if="record.editStatus">
-                  <a-input placeholder="Instance name" :max-length="40" style="margin-top:0px;" v-decorator="['name',{initialValue: record.name, rules: [{ required: true, message: name_empty }]}]"/>
-                </a-form-item>
+                <a-form-model-item prop="name" size="small" v-if="record.editStatus">
+                  <a-input placeholder="Instance name" :max-length="40" style="margin-top:0;" v-model="instanceInfo.name"/>
+                </a-form-model-item>
                 <span v-else class="hb-bottom">
                   <om-text :text="text" />
                   <a-button
@@ -228,16 +227,23 @@
               </span>
             </span>
           </a-table>
-        </div>
+        </a-form-model>
       </div>
-    </a-form>
+    </div>
   </div>
 </template>
 
 <script>
-import { getInstance, instancesUpdate, instancesCreate, instancesStatusUpdate, adNetworkInstancesList, instancesSelectList } from '@/api/mediation'
+import {
+  adNetworkInstancesList,
+  getInstance,
+  instancesCreate,
+  instancesSelectList,
+  instancesStatusUpdate,
+  instancesUpdate
+} from '@/api/mediation'
 import Placement from '@/components/om/Placement'
-import { modelSearch, brandSearch } from '@/api/publisher'
+import { brandSearch, modelSearch } from '@/api/publisher'
 import OmInstanceSelect from '@/components/om/InstanceSelect'
 import { Ellipsis, OmAlert } from '@/components'
 import OmText from '@/components/om/Text'
@@ -245,6 +251,7 @@ import AdNetwork from '@/components/Mediation/AdNetwork'
 import ADNSelect from './ADNSelect'
 import { mapState } from 'vuex'
 import OmAdNetworkSelect from '@/components/om/AdNetworkSelect'
+import OmFormModel from '@/components/OmFormModel'
 
 export default {
   name: 'InstanceEdit',
@@ -256,7 +263,8 @@ export default {
     AdNetwork,
     ADNSelect,
     OmAdNetworkSelect,
-    OmAlert
+    OmAlert,
+    OmFormModel
   },
   computed: mapState({
     searchApp: state => state.publisher.searchApp,
@@ -264,6 +272,38 @@ export default {
     searchPlacementAbt: state => state.publisher.searchPlacementAbt
   }),
   data () {
+    const checkPlacementKey = (rule, value, callback) => {
+      if (!value) {
+        callback(new Error(this.$msg('instance.unit_id_empty')))
+        return false
+      }
+      const id = this.instanceInfo.id
+      let flag = true
+      this.data.forEach(ins => {
+        if (ins.placementKey === value && ins.id === id && !ins.createNew) {
+          callback()
+          flag = false
+        }
+      })
+      if (!flag) {
+        return
+      }
+      getInstance({ placementKey: value, pubAppId: this.pubAppId, adnId: this.tempAdn }).then(res => {
+        if (res.data && res.data.length) {
+          callback(new Error(this.$msg('instance.placement_key_exits')))
+        } else {
+          callback()
+        }
+      })
+    }
+    const adnIdValidate = (rule, value, callback) => {
+      if (!this.instanceInfo.adnId || this.instanceInfo.adnId < 0) {
+        callback(new Error(this.$msg('instance.adn_empty')))
+        return false
+      } else {
+        callback()
+      }
+    }
     const isnewPlc = parseInt(localStorage.getItem('isnew_plc')) || 0
     const canEdit = this.$auth('adn.edit') && this.$route.query.type !== 'Details'
     const columns = [
@@ -296,15 +336,32 @@ export default {
       columns.pop()
     }
     return {
+      instanceInfo: {
+        adnId: undefined,
+        name: '',
+        placementKey: '',
+        brandList: [],
+        brandType: 'include',
+        modelList: [],
+        modelType: 'include'
+      },
+      rules: {
+        name: [
+          { required: true, message: this.$msg('instance.name_empty'), trigger: 'change' }
+        ],
+        adnId: [
+          { validator: adnIdValidate, trigger: 'change' }
+        ],
+        placementKey: [
+          { validator: checkPlacementKey, trigger: 'change' }
+        ]
+      },
       alertMessage: {
         title: 'Everything is ready.',
         content: 'Next steps：Setup a Mediation Rule to Monitize',
         button: 'Setup Mediation Rule'
       },
       showAlert: false,
-      name_empty: this.$msg('instance.name_empty'),
-      labelCol: { lg: { span: 8 }, sm: { span: 8 } },
-      wrapperCol: { lg: { span: 7 }, sm: { span: 7 } },
       form: this.$form.createForm(this),
       searchOption: {},
       currentAdn: null,
@@ -373,6 +430,7 @@ export default {
         return
       }
       this.tempAdn = val.id
+      this.instanceInfo.adnId = val.id
       if (this.tempAdn === 17) {
         const current = this.data.find(row => row.id === this.curExpandedRowKeys[0])
         current.hbStatus = true
@@ -390,6 +448,7 @@ export default {
       }
     },
     handleOpen (record) {
+      const that = this
       this.currentAdnAppId = null
       this.currentExpandedStatOpen = !this.currentExpandedStatOpen
       if (this.curExpandedRowKeys.length > 0) {
@@ -410,12 +469,18 @@ export default {
           })
           this.tempAdn = record.adnId
           record.expandStatus = true
-          this.curExpandedRowKeys.push(record.id)
+          setTimeout(function () {
+            that.curExpandedRowKeys.push(record.id)
+            if (record.adNetworkAppId) {
+              this.instanceInfo = JSON.parse(JSON.stringify(record))
+            }
+          }, 1)
         }
       } else {
         this.tempAdn = record.adnId
         record.expandStatus = true
         this.curExpandedRowKeys.push(record.id)
+        this.instanceInfo = JSON.parse(JSON.stringify(record))
       }
     },
     handleEdit (record) {
@@ -424,52 +489,18 @@ export default {
         this.handleOpen(record)
       }
     },
-    checkPlacementKey (rule, value, callback) {
-      const _this = this
-      if (!value) {
-        callback(new Error(_this.$msg('instance.unit_id_empty')))
-        return false
-      }
-      const id = parseInt(rule.field.replace('placementKey', ''))
-      let flag = true
-      this.data.forEach(ins => {
-        if (ins.placementKey === value && ins.id === id && !ins.createNew) {
-          callback()
-          flag = false
-        }
-      })
-      if (!flag) {
-        return
-      }
-      getInstance({ placementKey: value, pubAppId: this.pubAppId, adnId: this.tempAdn }).then(res => {
-        if (res.data && res.data.length) {
-          callback(new Error(_this.$msg('instance.placement_key_exits')))
-        } else {
-          callback()
-        }
-      })
-    },
     handleInstanceSave (record) {
-      const { form: { validateFields } } = this
-      const that = this
-      validateFields(async (err, values) => {
-        if (!err) {
-          const item = { ...record }
-          item.name = values['name']
-          item.adnId = values[item.id + 'adnId']
-          item.placementKey = values[item.id + 'placementKey'] && values[item.id + 'placementKey'].trim()
-          item.frequencyCap = values['frequencyCap']
-          item.frequencyInterval = values['frequencyInterval']
-          item.frequencyUnit = values['frequencyUnit']
-          item.brandWhitelist = values['brandType'] === 'include' && values['brandList'] ? values['brandList'].join('\n') : ''
-          item.brandBlacklist = values['brandType'] === 'exclude' && values['brandList'] ? values['brandList'].join('\n') : ''
-          item.modelWhitelist = values['modelType'] === 'include' && values['modelList'] ? values['modelList'].join('\n') : ''
-          item.modelBlacklist = values['modelType'] === 'exclude' && values['modelList'] ? values['modelList'].join('\n') : ''
-          item.hbStatus = record.hbStatus ? 1 : 0
-          values.adnId = item.adnId
-          values.pubAppId = that.$store.state.publisher.searchApp
+      this.$refs.instanceForm.validate((b) => {
+        if (b) {
+          const item = { ...this.instanceInfo }
+          item.placementKey = item.placementKey && item.placementKey.trim()
+          item.brandWhitelist = item['brandType'] === 'include' && item['brandList'] ? item['brandList'].join('\n') : ''
+          item.brandBlacklist = item['brandType'] === 'exclude' && item['brandList'] ? item['brandList'].join('\n') : ''
+          item.modelWhitelist = item['modelType'] === 'include' && item['modelList'] ? item['modelList'].join('\n') : ''
+          item.modelBlacklist = item['modelType'] === 'exclude' && item['modelList'] ? item['modelList'].join('\n') : ''
+          item.hbStatus = item.hbStatus ? 1 : 0
+          item.pubAppId = this.searchApp
           if (record.createNew) {
-            item.pubAppId = values.pubAppId
             item.adnAppId = this.currentAdnAppId
             instancesCreate(item).then(res => {
               if (res.code === 0) {
@@ -570,11 +601,10 @@ export default {
         if (fetchId !== this.lastFetchId) {
           return
         }
-        const data = Object.keys(res.data).map(key => ({
+        this.deviceData = Object.keys(res.data).map(key => ({
           text: `${key}`,
           value: key
         }))
-        this.deviceData = data
         this.fetching = false
       })
     },
@@ -587,19 +617,18 @@ export default {
         if (fetchId !== this.lastFetchId) {
           return
         }
-        const data = Object.keys(res.data).map(key => ({
+        this.deviceData = Object.keys(res.data).map(key => ({
           text: `${key}`,
           value: key
         }))
-        this.deviceData = data
         this.fetching = false
       })
     },
     listSearch () {
       this.loading = true
       const params = { pubAppId: this.pubAppId, placementId: this.searchPlacement }
-      if (this.form.getFieldValue(['adnId'])) {
-        params.adNetworkId = this.form.getFieldValue(['adnId']).nId
+      if (this.form.getFieldValue(['insAdnId'])) {
+        params.adNetworkId = this.form.getFieldValue(['insAdnId']).sAdnId
       }
       adNetworkInstancesList(Object.assign(params, this.form.getFieldsValue(['instanceId'])))
         .then(res => {

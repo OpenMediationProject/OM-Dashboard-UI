@@ -1,5 +1,6 @@
 <template>
   <div class="adnedit">
+    <OmPageAction :confirm="false" :canEdit="true"/>
     <a-form :form="form" :hideRequiredMark="true">
       <a-card :bordered="false" class="ant-card-table-default">
         <a-table
@@ -120,6 +121,7 @@ import AdNetwork from '@/components/Mediation/AdNetwork'
 import AccountEdit from './AccountEdit'
 import ADNSelect from './ADNSelect'
 import CurrencySelect from '@/components/om/CurrencySelect'
+import OmPageAction from '@/components/OmPageAction'
 
 import { mapState } from 'vuex'
 
@@ -129,7 +131,8 @@ export default {
     AdNetwork,
     AccountEdit,
     ADNSelect,
-    CurrencySelect
+    CurrencySelect,
+    OmPageAction
   },
   data () {
     return {

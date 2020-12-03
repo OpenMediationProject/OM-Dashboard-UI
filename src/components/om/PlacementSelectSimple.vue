@@ -9,7 +9,6 @@
       :disabled="disabled"
       :maxTagCount="1"
       :maxTagTextLength="7"
-      :maxTagPlaceholder="(h,vm) => '+' + (vm.value.length - 1)"
       allowClear
       :showArrow="false"
       optionLabelProp="title"

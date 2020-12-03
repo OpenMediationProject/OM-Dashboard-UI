@@ -2,14 +2,15 @@
 <template>
   <div>
     <a-form layout="inline" :form="form" >
+      <om-report-date-picker @ok="handleApply"/>
       <om-pub-app-select :defaultValue="def.defaultApps" @change="appSelect"/>
       <a-form-item>
         <om-regions-select :defaultSelected="def.defaultRegions" @change="countryChange" :ignoreApp="true" style="width: 220px"/>
       </a-form-item>
+      <om-placement-select-simple :pubAppIds="pubAppIds" :defaultValue="def.defaultPlacements" @change="placementSelect" :form="form" width="225px"/>
       <a-form-item>
         <a-button ghost @click="handleApply" type="primary" style="width: 84px;">Apply</a-button>
       </a-form-item>
-      <om-report-date-picker @ok="handleApply"/>
     </a-form>
 
     <div style="background-color: white; margin-top: 8px; padding: 16px">
@@ -20,7 +21,11 @@
             {{ chartGroupBreakdown }} <a-icon type="down" />
           </a>
           <a-menu slot="overlay">
-            <a-menu-item v-for="s in dimList4Chart" :key="s.id" :title="s.title">
+            <a-menu-item
+              v-for="s in dimList4Chart"
+              :key="s.id"
+              :title="s.title"
+              v-if="['pubAppId','country'].includes(s.id) || (['placementId'].includes(s.id) && placementAllow)|| (['adnId'].includes(s.id) && adnAllow) || (['instanceId'].includes(s.id) && instanceAllow)" >
               <a href="javascript:;" @click="handleDim4ChartChange(s)">{{ s.title }}</a>
             </a-menu-item>
           </a-menu>
@@ -154,9 +159,9 @@
 
 <script>
 import { Ellipsis } from '../../components'
-import { OmRegionsSelect, OmReportDatePicker, OmPubAppSelect } from '../../components/om'
+import { OmRegionsSelect, OmReportDatePicker, OmPubAppSelect, OmPlacementSelectSimple } from '../../components/om'
 import OmReportChart from './ChartCardG2.js'
-import { getReportList } from '../../api/report'
+import { getReportList } from '@/api/report'
 import { generateUUID } from 'ant-design-vue/lib/vc-select/util'
 import numerify from 'numerify'
 import numerifyCurrency from 'numerify/lib/plugins/currency.es'
@@ -168,7 +173,10 @@ numerify.register('percent', numerifyPercent)
 const supportedDimensions = {
   day: 'Day',
   country: 'Regions',
-  pubAppId: 'Apps'
+  pubAppId: 'Apps',
+  placementId: 'Placements',
+  adnId: 'Ad Network',
+  instanceId: 'Instances'
 }
 
 const dimColumnMapper = {
@@ -185,12 +193,14 @@ export default {
     OmReportChart,
     OmReportDatePicker,
     OmRegionsSelect,
-    Ellipsis
+    Ellipsis,
+    OmPlacementSelectSimple
   },
   data () {
     const def = {
       defaultApps: [],
       defaultRegions: [],
+      defaultPlacements: [],
       dimension: ['day'],
       metric: ['dau', 'deu']
     }
@@ -199,6 +209,7 @@ export default {
       lastCondition = JSON.parse(lastCondition)
       const { pubAppId = [], country = [], dimension = ['day'], metric = ['dau', 'deu'] } = { ...lastCondition }
       def.defaultApps = pubAppId
+      this.appSelect(pubAppId)
       def.defaultRegions = country
       def.dimension = dimension
       def.metric = metric
@@ -212,6 +223,10 @@ export default {
       form: this.$form.createForm(this),
       regions: def.defaultRegions || [],
       country: [],
+      placementAllow: false,
+      adnAllow: false,
+      instanceAllow: false,
+      placementIds: [],
       supportedMetrics: {
         dau: { title: 'DAU' },
         arpDau: { title: 'ARPDAU', format: '$0.[0000]' },
@@ -221,11 +236,12 @@ export default {
         imprDeu: { title: 'Impressions / DEU', format: '0.00' },
         engagementRate: { title: 'Engagement Rate', format: '0.00 %' }
       },
-      dimList4Chart: this.filterDim('pubAppId', 'country'),
-      dimList4Table: this.filterDim('day', 'country', 'pubAppId'),
+      dimList4Chart: this.filterDim('pubAppId', 'country', 'placementId', 'adnId', 'instanceId'),
+      dimList4Table: this.filterDim('day', 'country', 'pubAppId', 'placementId', 'adnId', 'instanceId'),
       loading: false,
       chartGroupBy: 'pubAppId',
       chartData: [],
+      pubAppIds: def.defaultApps,
       sorter: null,
       table: {
         loading: false,
@@ -248,13 +264,55 @@ export default {
     }
   },
   mounted () {
+    if (this.pubAppIds && this.pubAppIds.length === 1) {
+      if ((this.placementIds && this.placementIds.length === 1) || !this.placementIds || !this.placementIds.length) {
+        this.adnAllow = true
+      }
+      this.placementAllow = true
+    }
+    if (this.placementIds && this.placementIds.length === 1) {
+      this.instanceAllow = true
+    }
     this.reloadChart()
     this.reloadTable('dimension')
   },
   methods: {
     appSelect (val) {
       this.pubAppIds = val
-      console.log(val)
+      if (val.length === 1) {
+        if ((this.placementIds && this.placementIds.length === 1) || !this.placementIds || !this.placementIds.length) {
+          this.adnAllow = true
+        }
+        this.placementAllow = true
+      } else {
+        this.adnAllow = false
+        this.placementAllow = false
+        if (this.chartGroupBy === 'placementId') {
+          this.chartGroupBy = 'pubAppId'
+          this.reloadChart()
+        }
+      }
+    },
+    placementSelect (val) {
+      this.placementIds = val
+      if (val.length === 1) {
+        this.instanceAllow = true
+        if (this.pubAppIds && this.pubAppIds.length === 1) {
+          this.adnAllow = true
+        }
+      } else if (val.length === 0) {
+        this.instanceAllow = false
+        if (this.pubAppIds && this.pubAppIds.length === 1) {
+          this.adnAllow = true
+        }
+      } else {
+        this.instanceAllow = false
+        this.adnAllow = false
+        if (this.chartGroupBy === 'instanceId') {
+          this.chartGroupBy = 'pubAppId'
+          this.reloadChart()
+        }
+      }
     },
     filterDim (...ids) {
       return ids.map(id => {
@@ -404,6 +462,15 @@ export default {
       if (!row.pubAppName) {
         row.pubAppName = '(Empty)'
       }
+      if (!row.placementName) {
+        row.placementName = '(Empty)'
+      }
+      if (!row.instanceName) {
+        row.instanceName = '(Empty)'
+      }
+      if (!row.adnName) {
+        row.adnName = '(Empty)'
+      }
       return row
     },
     tableChange (pagination, filters, sorter) {
@@ -427,7 +494,7 @@ export default {
           return row[col.dataIndex]
         }).join(',')
       }).join('\n')
-      const blob = new Blob([new Uint8Array([0xef, 0xbb, 0xbf]), header + '\n' + data], { type: 'text/csv,charset=UTF-8' })
+      const blob = new Blob([new Uint8Array([0xef, 0xbb, 0xbf]), header + '\n' + data], { type: 'text/csv;charset=UTF-8' })
       const link = document.createElement('a')
       link.href = URL.createObjectURL(blob)
       link.download = 'download.csv'

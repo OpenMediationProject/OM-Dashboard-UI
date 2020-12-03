@@ -7,7 +7,7 @@
       </div>
       <div class="plc-type">
         <span v-if="!copyId">
-          <span>{{ GLOBAL.placementTypeMap[type].title }}</span>
+          <span>{{ GLOBAL.typeInfo(type).title }}</span>
           <a-divider type="vertical" />
           <span style="margin-left:-2px;">{{ id }}</span>
         </span>

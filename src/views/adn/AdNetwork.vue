@@ -71,15 +71,15 @@
           <span slot="status" slot-scope="text, record">
             <template>
               <span v-if="canEdit && !record.editStatus">
-                <a v-if="record.id !== 0" :disabled="curExpandedRowKeys.length>0" @click="handleEdit(record)">Edit</a>
-                <span v-if="record.adNetworkAppId">
-                  <a-divider v-if="record.id !== 0" type="vertical" />
+                <a v-if="record.id!== 19" :disabled="curExpandedRowKeys.length>0" @click="handleEdit(record)">Edit</a>
+                <span v-if="record.adNetworkAppId || record.id === 19">
+                  <a-divider v-if="record.id !== 19" type="vertical" />
                   <span>
                     <a :disabled="curExpandedRowKeys.length>0" @click="handleStatusEdit(record)" v-if="text===0">Enable</a>
                     <a :disabled="curExpandedRowKeys.length>0" @click="handleStatusEdit(record)" v-else>Disable</a>
                   </span>
                 </span>
-                <span v-if="record.adNetworkAppId && record.id !== 0">
+                <span v-if="record.adNetworkAppId && record.id !== 19">
                   <span style="float:right" v-if="!record.expandStatus" @click="handleOpen(record)" ><img src="/assets/down.svg"/></span>
                   <span style="float:right" v-else @click="handleOpen(record)"><img src="/assets/up.svg"/></span>
                 </span>
@@ -398,7 +398,7 @@ export default {
       }
     },
     handleStatusEdit (record) {
-      adNetworkAppStatusUpdate({ status: record.status === 0 ? 1 : 0, adNetworkAppId: record.adNetworkAppId })
+      adNetworkAppStatusUpdate({ status: record.status === 0 ? 1 : 0, adNetworkAppId: record.adNetworkAppId, adnId: record.id, pubAppId: this.searchApp })
         .then(res => {
           if (res.code === 0) {
             Object.assign(record, { status: record.status === 0 ? 1 : 0 })

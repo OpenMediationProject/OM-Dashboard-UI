@@ -6,7 +6,7 @@
         <ellipsis :length="40" tooltip>{{ name }}</ellipsis><img v-if="abt===1" style="margin-left:4px;margin-right:4px;" src="/icon/TA.svg"/><img v-if="abt===1" src="/icon/TB.svg"/>
       </div>
       <div class="plc-type">
-        <span>{{ GLOBAL.placementTypeMap[type].title }}</span>
+        <span>{{ GLOBAL.typeInfo(type).title }}</span>
         <a-divider type="vertical" />
         <span style="margin-left:-2px;">{{ id }}</span>
       </div>
