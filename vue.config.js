@@ -39,6 +39,13 @@ const vueConfig = {
   },
 
   chainWebpack: (config) => {
+    config.module
+      .rule('i18n')
+      .resourceQuery(/blockType=i18n/)
+      .type('javascript/auto')
+      .use('i18n')
+      .loader('@kazupon/vue-i18n-loader')
+      .end()
     config.resolve.alias
       .set('@$', resolve('src'))
 
@@ -84,7 +91,8 @@ const vueConfig = {
     // If you want to turn on the proxy, please remove the mockjs /src/main.jsL11
     proxy: {
       '/api': {
-        target: 'http://127.0.0.1:19013',
+        target: 'http://192.168.2.7:19013',
+        // target: 'http://localhost:19013',
         ws: false,
         changeOrigin: true
       }
