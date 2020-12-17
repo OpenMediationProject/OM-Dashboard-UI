@@ -111,8 +111,14 @@
             </span>
           </a-table>
         </om-form-model>
-        <om-form-model field="clickUrl" label="Tracking URL">
-          <a-input :max-length="1000" :disabled="campaignId>0" placeholder="Https://" v-model="form.clickUrl" />
+        <om-form-model v-show="false" :fill="false" field="clickUrl" label="Landing Page">
+          <a-input v-model="form.clickUrl" disabled/>
+        </om-form-model>
+        <om-form-model field="clickTkUrls" label="Click Tracking URL">
+          <a-input :max-length="1000" :disabled="campaignId>0" placeholder="Https://" v-model="form.clickTkUrls" />
+        </om-form-model>
+        <om-form-model field="imprTkUrls" label="Impr. Tracking URL">
+          <a-input :max-length="1000" :disabled="campaignId>0" placeholder="Https://" v-model="form.imprTkUrls" />
         </om-form-model>
         <om-form-model label="Schedule" :wrapper-col="{ lg: { span: 9 }, sm: { span: 9 } }">
           <div style="display: inline-block;">
@@ -509,6 +515,8 @@ export default {
         plcAppId: undefined,
         placementId: undefined,
         clickUrl: '',
+        clickTkUrls: '',
+        imprTkUrls: '',
         startTime: moment().format('YYYY-MM-DD HH:mm:ss'),
         endTime: moment().add(1, 'years').format('YYYY-MM-DD HH:mm:ss'),
         imprCap: 0,
@@ -540,7 +548,11 @@ export default {
           plcAppId: [
             { required: true, message: 'App can not be empty', trigger: 'change' }
           ],
-          clickUrl: [
+          imprTkUrls: [
+            { required: true, message: 'Tracking URL can not be empty', trigger: 'change' },
+            { pattern: /^(?=^.{3,255}$)(http(s)?:\/\/)?[a-zA-Z0-9.-]{1,250}(?:\.[a-zA-Z]{2,})+.*$/, message: 'Illegal URL', trigger: 'change' }
+          ],
+          clickTkUrls: [
             { required: true, message: 'Tracking URL can not be empty', trigger: 'change' },
             { pattern: /^(?=^.{3,255}$)(http(s)?:\/\/)?[a-zA-Z0-9.-]{1,250}(?:\.[a-zA-Z]{2,})+.*$/, message: 'Illegal URL', trigger: 'change' }
           ],
@@ -642,6 +654,7 @@ export default {
         const res = await searchAppFromStore({ appId: id })
         if (res.code === 0 && res.data) {
           this.promote = res.data
+          this.form.clickUrl = res.data.previewUrl || ''
         }
       } catch (e) {
         this.$message.error(this.$msg('pubapp.app_not_found'))
@@ -843,6 +856,8 @@ export default {
       params.platform = this.promote.plat
       params.appName = this.promote.appName
       params.clickUrl = this.form.clickUrl
+      params.clickTkUrls = this.form.clickTkUrls
+      params.imprTkUrls = this.form.imprTkUrls
       params.imprCap = this.form.imprCap
       if (typeof this.form.startTime === 'string') {
         params.startTime = moment(this.form.startTime).valueOf()

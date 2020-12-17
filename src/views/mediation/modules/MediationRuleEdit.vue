@@ -24,8 +24,8 @@
           <om-form-model label="Channel" field="channel" :fill="false">
             <a-input-group style="width:100%" compact>
               <a-select v-model="mediationRuleInfo.channelBow">
-                <a-select-option :value="0">include</a-select-option>
-                <a-select-option :value="1">exclude</a-select-option>
+                <a-select-option :value="1">include</a-select-option>
+                <a-select-option :value="0">exclude</a-select-option>
               </a-select>
               <a-select allowClear v-model="mediationRuleInfo.channel" mode="tags" style="width: 73%">
               </a-select>

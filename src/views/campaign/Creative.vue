@@ -85,14 +85,14 @@
                 </om-form>
                 <om-form
                   type="warp"
-                  v-if="[0, 2, 3].includes(creative.type)"
+                  v-if="[0, 1, 2, 3].includes(creative.type)"
                   label="Title"
                   field="title">
                   <a-input :max-length="200" :disabled="creative.id!==null" v-model="creative.title" placeholder="Title" />
                 </om-form>
                 <om-form
                   type="warp"
-                  v-if="[0, 1].includes(creative.type)"
+                  v-if="[0, 1, 2].includes(creative.type)"
                   label="Description"
                   field="descn">
                   <a-input :max-length="200" :disabled="creative.id!==null" v-model="creative.descn" placeholder="Description" />
@@ -613,6 +613,7 @@ export default {
         }
         tempVideo.src = blobUrl
       }
+      return false
     },
     assetBoxOnplaying (e) {
       const video = e.currentTarget
