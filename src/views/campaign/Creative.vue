@@ -11,7 +11,7 @@
           <a-tag style="color:#999999;padding: 4px 8px;" v-if="needAdd[2]">Video</a-tag>
           <a-tag style="color:#999999;padding: 4px 8px;" v-if="needAdd[0]">Banner</a-tag>
           <a-tag style="color:#999999;padding: 4px 8px;" v-if="needAdd[1]">Native</a-tag>
-          <a-tag style="color:#999999;padding: 4px 8px;" v-if="needAdd[3]">Cross Promote</a-tag>
+          <a-tag style="color:#999999;padding: 4px 8px;" v-if="needAdd[3]">Promote Card</a-tag>
         </div>
       </div>
       <div
@@ -174,7 +174,7 @@
                   style="color: #E5E7EA;text-align: left;font-size: 12px;vertical-align: middle;margin-left: 0;margin-top: 0;position: absolute;top: 60%;left: 50%;-webkit-transform: translate(-50%, -50%);transform: translate(-50%, -50%);">
                   File Format: png/jpg/gif<br>
                   Max File Size: 2M<br>
-                  <span v-if="box.title && box.title.length > 4">Ratio: {{ box.title.substring(3, box.title.length) }}</span>
+                  <span v-if="box.title && box.title.length > 4">Ratio(w:h): {{ box.title.substring(3, box.title.length) }}</span>
                 </div>
               </div>
             </div>
@@ -307,7 +307,7 @@ export default {
       2: { templateId: 1, title: 'Video' },
       0: { templateId: 3, title: 'Banner' },
       1: { templateId: 4, title: 'Native' },
-      3: { templateId: 5, title: 'Cross Promote' }
+      3: { templateId: 5, title: 'Promote Card' }
     }
     const mboxes = [{ title: 'video', type: 2, m: {}, key: 0 }]
     for (let i = 1; i < 5; ++i) { mboxes.push({ title: 'img', key: i, type: 0, m: {} }) }
@@ -325,7 +325,7 @@ export default {
       list: this.data,
       showPreview: false,
       campaignId: this.campaign || '',
-      types: 'Banner,Native,Video,Cross Promote'.split(','),
+      types: 'Banner,Native,Video,Promote Card'.split(','),
       svg: {
         image: 'M30 26H2c-1.103 0-2-.897-2-2V2C0 .897.897 0 2 0h28c1.103 0 2 .897 2 2v22c0 1.103-.897 2-2 2zM2 15.773V2h28l-.002 17.584-6.291-6.291a1 1 0 0 0-1.332-.074l-4.301 3.441-7.367-7.367a1 1 0 0 0-1.371-.041L2 15.772zm0 2.676V24h27.997v-1.589l-7.071-7.071-4.301 3.441a.999.999 0 0 1-1.332-.074L9.96 11.374 2 18.449zM25.002 9A2.002 2.002 0 0 1 23 7.002C23 5.898 23.898 5 25.002 5a2 2 0 0 1 0 4z'
       },
@@ -432,7 +432,7 @@ export default {
     },
     addAd () {
       if (!this.appInfo || !this.appInfo.appId) {
-        this.$message.error('Please select promote app first.')
+        this.$message.error('Please set promote app or Webpage URL first.')
         return false
       } else {
         this.creative = { type: 2, name: '', title: '', id: null, status: 1 }
@@ -473,10 +473,9 @@ export default {
         m: {}
       }
       const boxd = { disabled: !0, title: 'disabled', m: {} }
-      const end = 2
+      const end = o.carousel ? 5 : 2
       if (o.h > 0) {
-        const maxCd = this.gcd(o.w, o.h)
-        boxo.title = 'img ' + (o.w / maxCd) + ':' + (o.h / maxCd)
+        boxo.title = 'img ' + o.w + ':' + o.h
       }
       for (let i = 1; i < this.middleBoxes.length; i++) {
         Object.assign(this.middleBoxes[i], i < end ? boxo : boxd)
@@ -726,9 +725,9 @@ export default {
       this.template_options.forEach(t => {
         if (t.id === mainId) { mainTemplate = t } else if (t.id === endCardId) { endCardTemplate = t }
       })
-      if (mainTemplate) prewInfo.resources.push('//img.adtiming.com' + mainTemplate.url)
+      if (mainTemplate) prewInfo.resources.push(mainTemplate.url)
       if (this.creative.type === 2 && endCardTemplate) {
-        prewInfo.resources.push('//img.adtiming.com' + endCardTemplate.url)
+        prewInfo.resources.push(endCardTemplate.url)
       }
       if (this.creative.type === 0) { // Banner
         Object.assign(prewInfo, { w: mainTemplate.w * 2, h: mainTemplate.h * 2 })

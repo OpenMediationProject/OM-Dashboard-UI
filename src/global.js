@@ -50,7 +50,13 @@ const adnIconMap = {
 }
 const global = {
   platIcon: (plat) => {
-    return plat === 0 ? '/iOS-40.svg' : '/Android-40.svg'
+    if (plat === 0) {
+      return '/iOS-40.svg'
+    } else if (plat === 1) {
+      return '/Android-40.svg'
+    } else if (plat === 2) {
+      return '/link.svg'
+    }
   },
   typeInfo: (type) => {
     if (!placementTypeMap[type]) {

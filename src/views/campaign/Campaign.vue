@@ -58,8 +58,8 @@
         {{ customFormat(text, '$ 0,0.00') }}
       </span>
 
-      <span slot="Impr"><tip tip="" title="Impr"></tip></span>
-      <span slot="Click"><tip tip="" title="Click"></tip></span>
+      <span slot="Impr"><tip tip="" title="Impressions"></tip></span>
+      <span slot="Click"><tip tip="" title="Clicks"></tip></span>
       <span slot="CTR"><tip tip="" title="CTR"></tip></span>
       <span slot="CVR"><tip tip="" title="CVR"></tip></span>
       <span slot="Cost"><tip tip="" title="Cost"></tip></span>
@@ -93,7 +93,7 @@ export default {
   },
   data () {
     return {
-      loading: false,
+      loading: true,
       data: [],
       sortOrder: '',
       columns: [
@@ -122,8 +122,8 @@ export default {
           scopedSlots: { customRender: 'startTime' }
         },
         {
-          t: 'Impr',
-          width: 120,
+          t: 'Imprs',
+          width: 150,
           align: 'right',
           dataIndex: 'impr',
           slots: { title: 'Impr' },
@@ -133,7 +133,7 @@ export default {
           })
         },
         {
-          t: 'Click',
+          t: 'Clicks',
           width: 120,
           align: 'right',
           dataIndex: 'click',
@@ -233,6 +233,8 @@ export default {
         })
         this.arraySort(res.data)
         this.data = res.data
+      }).finally(() => {
+        this.loading = false
       })
     },
     formatDate (date) {

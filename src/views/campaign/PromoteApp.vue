@@ -1,6 +1,6 @@
 <template>
   <div class="selected-app-small">
-    <img :style="{width:iconSize,height:iconSize}" :src="appInfo.icon? appInfo.icon: GLOBAL.platIcon(appInfo.plat)">
+    <img :style="{width:iconSize,height:iconSize}" :src="appInfo.icon? cdnURL(appInfo.icon): GLOBAL.platIcon(appInfo.plat)">
     <div style="display: inline-block;vertical-align: middle;margin-left: 8px;">
       <div class="title" :style="{fontSize: titleFontSize}">
         <ellipsis :length="26" tooltip>{{ appInfo.appName }}</ellipsis>
@@ -41,6 +41,9 @@ export default {
     appId (v) {
       this.app_id = v
       this.load(v)
+    },
+    app (v) {
+      this.appInfo = v
     }
   },
   computed: mapState({
@@ -63,6 +66,17 @@ export default {
       if (res.code === 0 && res.data) {
         this.appInfo = res.data
       }
+    },
+    cdnURL: function (v) {
+      if (!v) {
+        return v
+      }
+      if (v.search('http') === 0) {
+        v = '//img.adtiming.com/fetch/' + v
+      } else if (v.search('//') === 0) {
+        v = '//img.adtiming.com/fetch/http:' + v
+      }
+      return v
     }
   },
   created () {

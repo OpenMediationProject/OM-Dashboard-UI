@@ -25,40 +25,64 @@
             <a-select-option :value="1">Direct Sold</a-select-option>
           </a-select>
         </om-form-model>
-        <om-form-model field="appid" v-if="!campaignId" label="Promote App">
-          <a-form-model-item
-            v-if="!promote.appId"
-            :colon="false"
-            prop="storeUrl">
-            <a-input v-model="form.storeUrl" placeholder="Search by app ID, or input store URL" style="width: 338px;margin-right: 8px;" /><a-button type="primary" :loading="searching" ghost @click="appsearch(form.storeUrl)">Search</a-button>
-          </a-form-model-item>
-          <a-form-model-item
-            v-else
-            :colon="false"
-            prop="selectapp">
+        <om-form-model field="none" label="Promote Type">
+          <a-select v-model="form.promoteType" :disabled="!!campaignId">
+            <a-select-option :value="0">Store App</a-select-option>
+            <a-select-option :value="1">Webpage</a-select-option>
+          </a-select>
+        </om-form-model>
+        <span v-if="form.promoteType === 0">
+          <om-form-model field="appid" v-if="!campaignId" label="Promote App">
+            <a-form-model-item
+              v-if="!promote.appId"
+              :colon="false"
+              prop="storeUrl">
+              <a-input v-model="form.storeUrl" placeholder="Search by app ID, or input store URL" style="width: 338px;margin-right: 8px;" /><a-button type="primary" :loading="searching" ghost @click="appsearch(form.storeUrl)">Search</a-button>
+            </a-form-model-item>
+            <a-form-model-item
+              v-else
+              :colon="false"
+              prop="selectapp">
+              <div style="width: 409px;height: 48px;padding: 4px 8px; background-color:white;border: 1px solid rgb(216, 216, 216);border-radius: 4px;">
+                <PromoteApp style="width: 260px;display: inline-block;" :app="promote"/>
+                <img
+                  @click="()=>{promote={appId: null}
+                               form.storeUrl=''}"
+                  src="/icon/Button-Delete.svg"
+                  style="float:right;margin-left: 8px;margin-top: 8px;">
+              <!--              <img @click="promote=storeapp" src="/icon/submit.svg" style="float:right;margin-top: 8px;">-->
+              </div>
+            </a-form-model-item>
+          </om-form-model>
+          <om-form-model field="appid" v-else label="Promote App">
             <div style="width: 409px;height: 48px;padding: 4px 8px; background-color:white;border: 1px solid rgb(216, 216, 216);border-radius: 4px;">
               <PromoteApp style="width: 260px;display: inline-block;" :app="promote"/>
-              <img
-                @click="()=>{promote={appId: null}
-                             form.storeUrl=''}"
-                src="/icon/Button-Delete.svg"
-                style="float:right;margin-left: 8px;margin-top: 8px;">
-              <!--              <img @click="promote=storeapp" src="/icon/submit.svg" style="float:right;margin-top: 8px;">-->
             </div>
-          </a-form-model-item>
-        </om-form-model>
-        <om-form-model field="appid" v-else label="Promote App">
-          <div style="width: 409px;height: 48px;padding: 4px 8px; background-color:white;border: 1px solid rgb(216, 216, 216);border-radius: 4px;">
-            <PromoteApp style="width: 260px;display: inline-block;" :app="promote"/>
-          </div>
-        </om-form-model>
-        <om-form-model :wrapper-col="{ lg: { span: 12 }, sm: { span: 12 } }" label="Target Placements" field="placementTargetingList">
+          </om-form-model>
+        </span>
+        <span v-else>
+          <om-form-model field="plat" label="Platform">
+            <a-select v-model="form.platform">
+              <a-select-option :value="0">iOS</a-select-option>
+              <a-select-option :value="1">Android</a-select-option>
+            </a-select>
+          </om-form-model>
+          <om-form-model field="clickUrl" label="Promote Webpage URL">
+            <a-input :max-length="1000" :disabled="campaignId>0" placeholder="Https://" v-model="form.clickUrl" />
+          </om-form-model>
+          <om-form-model field="openType" label="Open Webpage with">
+            <a-select v-model="form.openType">
+              <a-select-option :value="1">In-app WebView</a-select-option>
+              <a-select-option :value="2">Phone Browser</a-select-option>
+            </a-select>
+          </om-form-model>
+        </span>
+        <om-form-model v-if="form.promoteType===1 || (form.promoteType===0 && promote.plat >= 0)" :wrapper-col="{ lg: { span: 12 }, sm: { span: 12 } }" label="Target Placements" field="placementTargetingList">
           <a-button type="dashed" ghost style="width: 100%; height: 48px;" :disabled="form.placementTargetingList.filter(r=>r.editStatus).length>0" @click="form.placementTargetingList.unshift({pubAppId: undefined, type: 2, placementId: undefined, editStatus: true, value: undefined, id: Math.random()})">+ Add Target Placement</a-button>
           <a-table
             v-if="form.placementTargetingList.length"
             rowKey="id"
-            style="margin-top: 8px;margin-bottom: 8px;"
-            class="om-card-style"
+            style="margin-top: 8px;margin-bottom: 8px;border: 1px solid #D8D8D8;"
             :dataSource="form.placementTargetingList"
             ref="table"
             size="default"
@@ -68,6 +92,7 @@
               <span v-if="record.editStatus">
                 <a-form-model-item ref="plcAppId" prop="plcAppId" :colon="false">
                   <om-pub-app-select
+                    :plat="form.platform"
                     @change="(v)=>{
                       record.pubAppId = v
                       form.plcAppId = v
@@ -111,14 +136,11 @@
             </span>
           </a-table>
         </om-form-model>
-        <om-form-model v-show="false" :fill="false" field="clickUrl" label="Landing Page">
-          <a-input v-model="form.clickUrl" disabled/>
+        <om-form-model field="clickTkUrls" :fill="false" label="Click Tracking URL">
+          <a-input :max-length="1000" placeholder="Https://" v-model="form.clickTkUrls" />
         </om-form-model>
-        <om-form-model field="clickTkUrls" label="Click Tracking URL">
-          <a-input :max-length="1000" :disabled="campaignId>0" placeholder="Https://" v-model="form.clickTkUrls" />
-        </om-form-model>
-        <om-form-model field="imprTkUrls" label="Impr. Tracking URL">
-          <a-input :max-length="1000" :disabled="campaignId>0" placeholder="Https://" v-model="form.imprTkUrls" />
+        <om-form-model field="imprTkUrls" :fill="false" label="Impr. Tracking URL">
+          <a-input :max-length="1000" placeholder="Https://" v-model="form.imprTkUrls" />
         </om-form-model>
         <om-form-model label="Schedule" :wrapper-col="{ lg: { span: 9 }, sm: { span: 9 } }">
           <div style="display: inline-block;">
@@ -138,11 +160,11 @@
               placeholder="End Date" /></a-form-model-item>
           </div>
         </om-form-model>
-        <!--        <om-form-model :fill="false" field="imprCap" label="Frequency Capping">-->
+        <!--        <om-form-model :fill="false" field="dailyCap" label="Frequency Capping">-->
         <!--          Limit to <a-input-number-->
         <!--            :min="0"-->
         <!--            :max="2147483647"-->
-        <!--            v-model="form.imprCap"-->
+        <!--            v-model="form.dailyCap"-->
         <!--            style="width:100px;"/> impr. per Day on this Campaign-->
         <!--        </om-form-model>-->
         <!--        <om-form-model :fill="false" field="imprFreq" label="">-->
@@ -174,12 +196,12 @@
         </om-form-model>
         <om-form-model label="Device Types" field="deviceType">
           <a-select placeholder="Device Types" v-model="form.deviceType" mode="multiple" style="width: 100%;">
-            <a-select-option :value="0">Phone</a-select-option>
-            <a-select-option :value="1">Pad</a-select-option>
-            <a-select-option :value="2">TV</a-select-option>
+            <a-select-option :value="1">Phone</a-select-option>
+            <a-select-option :value="2">Pad</a-select-option>
+            <a-select-option :value="4">TV</a-select-option>
           </a-select>
         </om-form-model>
-        <om-form-model v-if="promote.appId" label="OS Versions" field="osvmin">
+        <om-form-model v-if="promote.appId && form.promoteType===0" label="OS Versions" field="osvmin">
           <OsVersion
             :plat="promote.plat"
             @change="(v)=>{form.osvmin=v}"
@@ -228,8 +250,7 @@
           <a-table
             v-if="form.bidPriceList.length"
             rowKey="id"
-            style="margin-top: 8px;margin-bottom: 8px;"
-            class="om-card-style"
+            style="margin-top: 8px;margin-bottom: 8px;border: 1px solid #D8D8D8;"
             :dataSource="form.bidPriceList"
             ref="table"
             size="default"
@@ -268,7 +289,7 @@
         </om-form-model>
       </a-form-model>
     </div>
-    <div id="ads" class="conf-box">
+    <div id="ads" class="conf-box" style="margin-bottom:100px;">
       <a-form-model ref="adsForm" :model="form" :rules="rules.ads" :hideRequiredMark="true">
         <a-form-model-item prop="creatives" :colon="false">
           <div class="conf-title">Ads</div>
@@ -293,13 +314,13 @@ import OmPageAction from '@/components/OmPageAction'
 import Creative from './Creative'
 import OmFormModel from '@/components/OmFormModel'
 import RegionsSelect from '@/components/om/RegionsSelect'
-import OmRegionsSelect from '@/components/om/RegionSelect'
 import OmPlacementSelect from './PlacementSelect'
 import OmPubAppSelect from './AppSelect'
+import OmRegionsSelect from '@/views/company/RegionsSelect'
 import AppInfo from './AppInfo'
 import PlacementInfo from './PlacementInfo'
 import { getCampaign, campaignUpdate, campaignCreate } from '@/api/campaign'
-import { searchAppFromStore } from '@/api/publisher'
+import { searchAppFromStore } from '../../api/publisher'
 import PromoteApp from './PromoteApp'
 import OsVersion from './OsVersion'
 import moment from 'moment'
@@ -308,6 +329,7 @@ import { mapState } from 'vuex'
 export default {
   name: 'CampaignEdit',
   components: {
+    OmRegionsSelect,
     OmPageAction,
     Creative,
     OmFormModel,
@@ -317,15 +339,19 @@ export default {
     AppInfo,
     PlacementInfo,
     PromoteApp,
-    OsVersion,
-    OmRegionsSelect
+    OsVersion
   },
   created () {
     if (this.campaignId) {
       getCampaign({ campaignId: this.campaignId }).then(res => {
+        if (res.data.openType) {
+          this.form.promoteType = 1
+          this.form.openType = res.data.openType
+        }
         searchAppFromStore({ appId: res.data.appId }).then(rv => {
           if (rv.code === 0 && rv.data) {
             this.promote = rv.data
+            this.form.platform = res.data.platform
           }
           if (res.data.placementTargetingList.length) {
             res.data.placementTargetingList.forEach(row => {
@@ -336,6 +362,7 @@ export default {
             this.form.globalPricing = 1
           }
           if (res.data.targetingList.length) {
+            this.form.deviceType = []
             res.data.targetingList.forEach(row => {
               if (row.type === 17) {
                 if (this.form.regions && this.form.regions[0] === 'ALL') {
@@ -353,12 +380,7 @@ export default {
                 }
               } else if (row.type === 10) {
                 if (row.content) {
-                  const dt = []
-                  const mt = parseInt(row.content)
-                  for (var x = 0; x < 3; ++x) {
-                    if ((mt & (1 << x)) === (1 << x)) dt.push(x)
-                  }
-                  this.form.deviceType = dt
+                  this.form.deviceType.push(parseInt(row.content))
                 }
               } else if (row.type === 15) {
                 // [x.x,)
@@ -431,7 +453,7 @@ export default {
     }
     const validateStoreUrl = (rule, value, callback) => {
       if (!value) {
-        callback(new Error('Pleash input store URL'))
+        callback(new Error('Please input store URL'))
       } else {
         const appId = this.getAppId(value)
         if (appId) {
@@ -465,9 +487,9 @@ export default {
             needAdd[0] = typeMap[0]
           } else if (t === 1) {
             needAdd[1] = typeMap[1]
-          } else if (t === 2 || t === 4) {
+          } else if (t === 2 || t === 3) {
             needAdd[2] = typeMap[2]
-          } else if (t === 9) {
+          } else if (t === 5) {
             needAdd[3] = typeMap[3]
           }
         })
@@ -509,8 +531,11 @@ export default {
       form: {
         name: '',
         regions: ['ALL'],
-        deviceType: [0, 1, 2],
+        deviceType: [1, 2, 4],
         type: 0,
+        promoteType: 0,
+        platform: 0,
+        openType: 0,
         placementTargetingList: [],
         plcAppId: undefined,
         placementId: undefined,
@@ -519,7 +544,7 @@ export default {
         imprTkUrls: '',
         startTime: moment().format('YYYY-MM-DD HH:mm:ss'),
         endTime: moment().add(1, 'years').format('YYYY-MM-DD HH:mm:ss'),
-        imprCap: 0,
+        dailyCap: 0,
         conType: [0, 1, 2, 3],
         globalPricing: 0,
         osvmax: undefined,
@@ -529,7 +554,7 @@ export default {
         creativeList: [],
         storeUrl: '',
         country: undefined,
-        imprFreq: 1
+        imprFreq: 0
       },
       rules: {
         basic: {
@@ -548,12 +573,14 @@ export default {
           plcAppId: [
             { required: true, message: 'App can not be empty', trigger: 'change' }
           ],
+          clickUrl: [
+            { required: true, message: 'URL can not be empty', trigger: 'change' },
+            { pattern: /^(?=^.{3,255}$)(http(s)?:\/\/)?[a-zA-Z0-9.-]{1,250}(?:\.[a-zA-Z]{2,})+.*$/, message: 'Illegal URL', trigger: 'change' }
+          ],
           imprTkUrls: [
-            { required: true, message: 'Tracking URL can not be empty', trigger: 'change' },
             { pattern: /^(?=^.{3,255}$)(http(s)?:\/\/)?[a-zA-Z0-9.-]{1,250}(?:\.[a-zA-Z]{2,})+.*$/, message: 'Illegal URL', trigger: 'change' }
           ],
           clickTkUrls: [
-            { required: true, message: 'Tracking URL can not be empty', trigger: 'change' },
             { pattern: /^(?=^.{3,255}$)(http(s)?:\/\/)?[a-zA-Z0-9.-]{1,250}(?:\.[a-zA-Z]{2,})+.*$/, message: 'Illegal URL', trigger: 'change' }
           ],
           startTime: [
@@ -654,6 +681,7 @@ export default {
         const res = await searchAppFromStore({ appId: id })
         if (res.code === 0 && res.data) {
           this.promote = res.data
+          this.form.platform = res.data.platform
           this.form.clickUrl = res.data.previewUrl || ''
         }
       } catch (e) {
@@ -702,8 +730,17 @@ export default {
       let tag = true
       try {
         _this.$refs.basicForm.validate((b) => {
+          if (_this.form.promoteType === 1 && !_this.form.openType) {
+            _this.form.openType = 1
+          } else if (_this.form.promoteType === 0) {
+            _this.form.openType = 0
+          }
           if (b) {
             _this.anchors.basic.icon = '/icon/checked.svg'
+            if (_this.form.promoteType === 1 && _this.form.clickUrl) {
+              const u = new URL(_this.form.clickUrl)
+              this.promote = { appName: u.host, name: u.host, appId: _this.form.clickUrl, icon: '/Web-icon.svg', plat: 2 }
+            }
           } else {
             tag = false
             _this.anchors.basic.icon = '/icon/check.svg'
@@ -792,7 +829,7 @@ export default {
       //   this.fieldsChaned = true
       // } else if (et !== old.startTime) {
       //   this.fieldsChaned = true
-      } else if (old.imprCap !== cam.imprCap) {
+      } else if (old.dailyCap !== cam.dailyCap) {
         this.fieldsChaned = true
       } else if (old.imprFreq !== cam.imprFreq) {
         this.fieldsChaned = true
@@ -813,8 +850,6 @@ export default {
       }
       let ct = 0
       for (const i in this.form.conType) { ct |= (1 << this.form.conType[i]) }
-      let dt = 0
-      for (const i in this.form.deviceType) { dt |= (1 << this.form.deviceType[i]) }
       this.form.appId = this.promote.appId
       if (this.form.globalPricing === 0) {
         this.form.bidPriceList = []
@@ -841,24 +876,27 @@ export default {
         targetings.push(country)
       })
       targetings.push({ campaignId: this.campaignId, type: 12, content: ct })
-      targetings.push({ campaignId: this.campaignId, type: 10, content: dt })
-      let osv = '[' + this.form.osvmin + ','
-      if (this.form.osvmax === this.maxv) {
-        osv = osv + ')'
-      } else {
-        osv = osv + this.form.osvmax + ']'
+      if (this.form.osvmin && this.form.osvmax) {
+        let osv = '[' + this.form.osvmin + ','
+        if (this.form.osvmax === this.maxv) {
+          osv = osv + ')'
+        } else {
+          osv = osv + this.form.osvmax + ']'
+        }
+        targetings.push({ campaignId: this.campaignId, type: 15, content: osv })
       }
-      targetings.push({ campaignId: this.campaignId, type: 15, content: osv })
+      for (const i in this.form.deviceType) { targetings.push({ campaignId: this.campaignId, type: 10, content: this.form.deviceType[i] }) }
       params.targetingList = targetings
       params.name = this.form.name
       params.type = this.form.type
       params.appId = this.form.appId
-      params.platform = this.promote.plat
+      params.platform = this.form.platform
       params.appName = this.promote.appName
       params.clickUrl = this.form.clickUrl
       params.clickTkUrls = this.form.clickTkUrls
       params.imprTkUrls = this.form.imprTkUrls
-      params.imprCap = this.form.imprCap
+      params.dailyCap = this.form.dailyCap
+      params.imprFreq = this.form.imprFreq
       if (typeof this.form.startTime === 'string') {
         params.startTime = moment(this.form.startTime).valueOf()
       } else {
@@ -876,6 +914,10 @@ export default {
       params.lastmodify = moment().valueOf()
       params.price = 0.00
       params.creativeList = this.form.creativeList
+      params.openType = this.form.openType
+      if (this.form.promoteType === 1) {
+        params.promoteApp = this.promote
+      }
       if (this.campaignId) {
         campaignUpdate(params).then(res => {
           this.$router.push('/campaign/list')
@@ -910,7 +952,7 @@ export default {
     }
   }
   .campaign-tag {
-    padding:3px 8px;border: #1A7DF1 1px solid; background-color: white; height: 32px;color: #1A7DF1;margin-bottom: 8px;
+    padding:3px 4px;border: #1A7DF1 1px solid; background-color: white; height: 32px;color: #1A7DF1;margin-bottom: 8px;
   }
   .campaign-anchor >>> .ant-anchor-ink {
     display: none;

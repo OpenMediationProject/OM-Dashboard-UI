@@ -324,7 +324,7 @@ export default {
                 }
                 return 0
               })
-              const sumData = { impr: 0, click: 0, installs: 0, cost: 0, cpi: 0, crv: 0, ctr: 0, cpm: 0 }
+              const sumData = { impr: 0, click: 0, installs: 0, cost: 0, cpi: 0, cvr: 0, ctr: 0, cpm: 0 }
               this.table.data.forEach(row => {
                 sumData.impr += row.impr
                 sumData.click += row.click

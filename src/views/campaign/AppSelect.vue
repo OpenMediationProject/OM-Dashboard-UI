@@ -20,7 +20,7 @@
 </template>
 
 <script>
-import { appSelectList } from '@/api/publisher'
+import { appSelectList } from '../../api/publisher'
 import AppInfo from './AppInfo'
 
 export default {
@@ -57,6 +57,10 @@ export default {
     clear: {
       type: Boolean,
       default: true
+    },
+    plat: {
+      type: Number,
+      default: -1
     }
   },
   components: {
@@ -65,6 +69,13 @@ export default {
   watch: {
     defaultValue (v) {
       this.initValue = v
+    },
+    plat (v) {
+      if (v > -1 && v !== 2) {
+        this.appList = this.appList.filter(row => {
+          return row.plat === v
+        })
+      }
     }
   },
   data () {
@@ -84,7 +95,13 @@ export default {
   async created () {
     try {
       const res = await appSelectList()
-      this.appList = res.data
+      if (this.plat > -1 && this.plat !== 2) {
+        this.appList = res.data.filter(row => {
+          return row.plat === this.plat
+        })
+      } else {
+        this.appList = res.data
+      }
     } catch (e) {
       console.log('pubAppSelectList error', e)
     }
