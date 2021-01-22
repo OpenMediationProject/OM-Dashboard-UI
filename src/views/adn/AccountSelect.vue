@@ -4,7 +4,7 @@
     <a-row v-for="(item, index) in options" :key="item.id">
       <a-col :span="4"></a-col>
       <a-col :span="16" style="text-align: center;">
-        <div @click="change(item.id)" v-if="![4,9,11,12,13,14,15,17,30].includes(id)" class="account-info-box" :style="edit? 'cursor: pointer;': 'opacity: 0.5;'">
+        <div @click="change(item.id)" v-if="![4,6,9,11,12,13,14,15,17,30].includes(id)" class="account-info-box" :style="edit? 'cursor: pointer;': 'opacity: 0.5;'">
           <a-row :gutter="8" style="text-align: left">
             <a-col :span="18">
               <div class="account-title">{{ accountMap[id].t1 }}</div>
@@ -108,6 +108,7 @@ export default {
       2: { t1: 'Publisher ID', v1: 'userId' },
       4: { t1: 'Monetization Stats API key', v1: 'adnApiKey', t2: 'Organization core ID', v2: 'userId' },
       5: { t1: 'Reporting API Key', v1: 'adnApiKey' },
+      6: { t1: 'Member ID', v1: 'userId', t2: 'Secret', v2: 'userSignature' },
       7: { t1: 'Read-Only API Key', v1: 'adnAppToken' },
       8: { t1: 'Report Key', v1: 'adnApiKey' },
       9: { t1: 'API Key', v1: 'adnAppId', t2: 'Inventory Report ID', v2: 'adnApiKey' },

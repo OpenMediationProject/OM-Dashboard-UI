@@ -229,7 +229,7 @@ export default {
           if (record.id === 14 && values['mt_left']) {
             values.adnAppKey = values['mt_left'].trim() + '#' + values['mt_right'].trim()
           }
-          if (!values.reportAccountId && ![1, 3, 6].includes(record.id)) {
+          if (!values.reportAccountId && ![1, 3].includes(record.id)) {
             values.adnId = record.id
             if (record.id === 2 && !values.adnAppId) {
               values.authType = 1

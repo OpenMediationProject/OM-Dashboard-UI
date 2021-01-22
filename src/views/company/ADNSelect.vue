@@ -83,7 +83,7 @@ export default {
             item.className = 'Pangle'
           }
         })
-        this.optionList = res.data.filter(item => { return ![3, 6].includes(item.id) })
+        this.optionList = res.data.filter(item => { return ![3].includes(item.id) })
       } catch (e) {
         console.log('get adn list error', e)
       }

@@ -201,7 +201,7 @@
         field="adnAppKey"
       />
     </div>
-    <div v-if="![ 3, 6 ].includes(id)">
+    <div v-if="![ 3 ].includes(id)">
       <a-tabs @change="changeAccountType" :default-active-key="activeKey" size="small" :tabBarGutter="8" type="card">
         <span slot="tabBarExtraContent">
           <img style="margin-right:4px;" src="/assets/Vector.svg"> Ad Network API key

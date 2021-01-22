@@ -103,6 +103,22 @@
         field="adnApiKey"
         :tip="$msg('account.vungle_reporting_api_key_tip')" />
     </div>
+    <div v-else-if="id===6">
+      <!-- TencentAds -->
+      <om-form
+        :form="form"
+        label="Member ID"
+        msg="Member ID can not be empty."
+        :edit="canEdit"
+        field="userId" />
+      <om-form
+        :form="form"
+        label="Secret"
+        :fill="false"
+        :edit="canEdit"
+        field="userSignature"
+        tip="Please contact your Tencent Ads AM to get your secret." />
+    </div>
     <div v-else-if="id===7">
       <!-- AdColony -->
       <om-form

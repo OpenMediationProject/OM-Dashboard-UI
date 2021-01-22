@@ -41,7 +41,7 @@
         <a-select-option :key="14">Last 7 days vs Previous 7 days</a-select-option>
         <a-select-option :key="56">Last 28 days vs Previous 28 days</a-select-option>
       </a-select>
-
+      <a style="padding-right: 16px;float: right;" @click="visible=true"><img src="/icon/csv.svg" style="padding-right: 4px;">Export to CSV</a>
       <a-row :gutter="16">
         <a-col :span="12">
           <a-spin :spinning="bottom.loading" class="ds-bottom-card">
@@ -131,6 +131,9 @@
         </a-col>
       </a-row>
     </div>
+    <a-form :form="form">
+      <CsvModal :form="form" :visible="visible" @change="(v)=>visible=v"/>
+    </a-form>
   </div>
 </template>
 
@@ -143,6 +146,7 @@ import OmChartRing from './ChartRing.js'
 import OmDsBottomChart from './BottomChart'
 import { mapState } from 'vuex'
 import numerify from 'numerify'
+import CsvModal from './CsvModal'
 import numerifyCurrency from 'numerify/lib/plugins/currency.es'
 
 numerify.register('currency', numerifyCurrency)
@@ -153,6 +157,7 @@ export default {
     PageView,
     OmChartLine,
     OmChartRing,
+    CsvModal,
     OmDsBottomChart
   },
   data () {
@@ -162,6 +167,7 @@ export default {
       middleLoading: false,
       headRevenueData: {},
       middleLineData: [],
+      form: this.$form.createForm(this),
       middlePieData: [],
       bottom: {
         loading: false,
@@ -169,7 +175,8 @@ export default {
         chartData: [],
         sumData: {},
         metrics
-      }
+      },
+      visible: false
     }
   },
   computed: mapState({

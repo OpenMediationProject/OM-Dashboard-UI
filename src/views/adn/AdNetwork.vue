@@ -285,7 +285,7 @@ export default {
           if ([12, 14, 17, 18].includes(record.id) && values['cb_left']) {
             values.adnAppKey = values['cb_left'].trim() + '#' + values['cb_right'].trim()
           }
-          if (_this.accountTab === '2' && ![3, 6].includes(record.id) && !_this.curAccountId) {
+          if (_this.accountTab === '2' && ![3].includes(record.id) && !_this.curAccountId) {
             this.$notification.warning({
               message: 'Error',
               description: 'Please Select An API Key.'
@@ -295,7 +295,7 @@ export default {
           if (_this.accountTab === '2') {
             values.reportAccountId = _this.curAccountId
           }
-          if (!values.reportAccountId && ![3, 6].includes(record.id)) {
+          if (!values.reportAccountId && ![3].includes(record.id)) {
             values.adnId = record.id
             if (record.id === 2 && !values.adnAppId) {
               values.authType = 1

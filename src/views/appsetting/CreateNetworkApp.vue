@@ -62,7 +62,7 @@
       <!-- Fyber -->
       <om-form :form="form" label="App ID" :edit="canEdit" field="adnAppKey" :showTip="false" />
     </div>
-    <div v-if="![ 3, 6 ].includes(id)">
+    <div v-if="![ 3 ].includes(id)">
       <div v-if="!account">
         <om-form :form="form" label="Ad Network Account" :edit="canEdit" field="reportAccountId" :showTip="false">
           <a-form-item>

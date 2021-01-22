@@ -61,20 +61,23 @@
           </om-form-model>
         </span>
         <span v-else>
-          <om-form-model field="plat" label="Platform">
-            <a-select v-model="form.platform">
-              <a-select-option :value="0">iOS</a-select-option>
-              <a-select-option :value="1">Android</a-select-option>
-            </a-select>
-          </om-form-model>
           <om-form-model field="clickUrl" label="Promote Webpage URL">
-            <a-input :max-length="1000" :disabled="campaignId>0" placeholder="Https://" v-model="form.clickUrl" />
+            <img src="/Web-icon.svg" />
+            <a-input style="width: 80%;margin-left: 8px;" :max-length="1000" :disabled="campaignId>0" placeholder="Https://" v-model="form.clickUrl" >
+              <img src="/link.svg" slot="prefix" />
+            </a-input>
           </om-form-model>
           <om-form-model field="openType" label="Open Webpage with">
             <a-select v-model="form.openType">
               <a-select-option :value="1">In-app WebView</a-select-option>
               <a-select-option :value="2">Phone Browser</a-select-option>
             </a-select>
+          </om-form-model>
+          <om-form-model field="plat" label="Target Platform">
+            <a-radio-group v-model="form.platform">
+              <a-radio :value="0">iOS</a-radio>
+              <a-radio :value="1">Android</a-radio>
+            </a-radio-group>
           </om-form-model>
         </span>
         <om-form-model v-if="form.promoteType===1 || (form.promoteType===0 && promote.plat >= 0)" :wrapper-col="{ lg: { span: 12 }, sm: { span: 12 } }" label="Target Placements" field="placementTargetingList">
