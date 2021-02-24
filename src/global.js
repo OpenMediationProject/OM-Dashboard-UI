@@ -26,28 +26,6 @@ const placementTypeMap = {
   },
   5: { icon: '/icon/plc/cross.svg', title: 'Cross Promote', descn: 'Shows ads for your other apps, encouraging users to try them out.' }
 }
-const adnIconMap = {
-  1: { icon: '/logo/Adtiming.svg' },
-  2: { icon: '/logo/Admob.svg' },
-  3: { icon: '/logo/Facebook.svg' },
-  4: { icon: '/logo/Unity.svg' },
-  5: { icon: '/logo/Vungle.svg' },
-  6: { icon: '/logo/TencentAd.svg' },
-  7: { icon: '/logo/AdColony.svg' },
-  8: { icon: '/logo/AppLovin.svg' },
-  9: { icon: '/logo/Mopub.svg' },
-  10: { icon: '/logo/GoogleAd.svg' },
-  11: { icon: '/logo/Tapjoy.svg' },
-  12: { icon: '/logo/Chartboost.svg' },
-  13: { icon: '/logo/TikTok.svg' },
-  14: { icon: '/logo/Mintegral.svg' },
-  15: { icon: '/logo/IronSource.svg' },
-  16: { icon: '/logo/MyTarget.svg' },
-  17: { icon: '/logo/ChartboostBid.svg' },
-  18: { icon: '/logo/Mint.svg' },
-  19: { icon: '/logo/cross.svg' },
-  30: { icon: '/logo/Fyber.svg' }
-}
 const global = {
   platIcon: (plat) => {
     if (plat === 0) {
@@ -63,12 +41,6 @@ const global = {
       return { icon: '', title: 'Not Found' }
     }
     return placementTypeMap[type]
-  },
-  getAdnIconById: (id) => {
-    if (!adnIconMap[id]) {
-      return { icon: '' }
-    }
-    return adnIconMap[id]
   }
 }
 
