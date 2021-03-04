@@ -79,7 +79,7 @@ export default {
           }
 
           .logo {
-            height: 44px;
+            line-height: 44px;
             vertical-align: top;
             margin-right: 16px;
             border-style: none;

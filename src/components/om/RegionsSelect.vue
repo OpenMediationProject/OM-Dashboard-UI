@@ -4,7 +4,7 @@
     showSearch
     :value="value"
     :dropdownStyle="{ maxHeight: '300px', overflow: 'auto' }"
-    placeholder="Regions"
+    placeholder="Region"
     allowClear
     :size="size"
     :disabled="disabled"

@@ -10,6 +10,39 @@
       <om-placement-select-simple :pubAppIds="pubAppIds" :defaultValue="def.defaultPlacements" :form="form" width="225px"/>
       <om-ad-network-select v-if="this.adnshow" :defaultValue="def.defaultAdns" width="185px"/>
       <a-form-item>
+        <a-select
+          mode="tags"
+          v-decorator="['appVersion']"
+          :allowClear="true"
+          :tokenSeparators="[';']"
+          placeholder="App Version"
+          style="width:200px" />
+      </a-form-item>
+      <a-form-item>
+        <a-select
+          mode="tags"
+          v-decorator="['sdkVersion']"
+          :allowClear="true"
+          :tokenSeparators="[';']"
+          placeholder="SDK Version"
+          style="width:200px" />
+      </a-form-item>
+      <a-form-item>
+        <a-input-group compact>
+          <a-input
+            style="width: 100px; border-right: 0; pointer-events: none; background-color: #fff"
+            placeholder="OS Version"
+            disabled/>
+          <a-input v-model="osvmin" style="width: 100px; text-align: center" placeholder="Minimum" />
+          <a-input
+            style="width: 30px; border-left: 0; pointer-events: none; background-color: #fff"
+            placeholder="~"
+            disabled
+          />
+          <a-input v-model="osvmax" style="width: 100px; text-align: center; border-left: 0" placeholder="Maximum" />
+        </a-input-group>
+      </a-form-item>
+      <a-form-item>
         <a-button ghost @click="handleApply" type="primary" style="width: 84px;">Apply</a-button>
       </a-form-item>
     </a-form>
@@ -254,6 +287,8 @@ export default {
       regions: def.defaultRegions || [],
       country: [],
       pubAppIds: pubids,
+      osvmin: undefined,
+      osvmax: undefined,
       metricFields: {
         bidRequest: 'bidReq',
         bidResponse: 'bidResp',
@@ -371,6 +406,9 @@ export default {
         ps.country.splice(ps.country.indexOf('ALL'), 1)
         ps.country.push('00')
       }
+      if (this.osvmin || this.osvmax) {
+        ps.osVersion = `[${[this.osvmin, this.osvmax].join(',')}]`
+      }
       ps.type = ['lr']
       ps.dimension = ['day', this.chartGroupBy]
       return ps
@@ -384,7 +422,7 @@ export default {
             this.chartData = res.data.map(this.mapMetrics).sort((a, b) => (b.winPrice || 0) - a.winPrice || 0)
           }
         })
-        .finally(_ => {
+        .finally(() => {
           this.loading = false
         })
     },
@@ -392,14 +430,13 @@ export default {
       this.current = 1
       const { metric } = this.table
       const dimension = this.dimension
-      const _this = this
       if (metric.length === 0) {
         this.table.columns = []
         this.table.data = []
         return
       }
       const ps = this.buildBaseParams()
-      const { pubAppId, placementId, country, adnId } = { ...ps }
+      const { pubAppId, placementId, country, adnId } = ps
       ps.dimension = dimension
       ps.metric = metric
       const cond = { pubAppId, placementId, country, adnId, dimension, metric }
@@ -481,23 +518,19 @@ export default {
               if (dimension.length > 0) {
                 sumData[dimColumnMapper[dimension[dimension.length - 1]]] = 'Total'
               }
-              _this.table.sum = sumData
+              this.table.sum = sumData
 
-              setTimeout(function () {
-                const dom = _this.$vnode.elm.querySelectorAll('.ant-table-body')[0]
+              setTimeout(() => {
+                const dom = this.$vnode.elm.querySelectorAll('.ant-table-body')[0]
                 if (dom) {
-                  dom.addEventListener(
-                    'scroll',
-                    () => {
-                      _this.$vnode.elm.querySelectorAll('.ant-table-body')[1].scrollLeft = dom.scrollLeft
-                    },
-                    true
-                  )
+                  dom.addEventListener('scroll', () => {
+                    this.$vnode.elm.querySelectorAll('.ant-table-body')[1].scrollLeft = dom.scrollLeft
+                  }, true)
                 }
               }, 500)
             }
           })
-          .finally(_ => {
+          .finally(() => {
             this.table.loading = false
           })
       }

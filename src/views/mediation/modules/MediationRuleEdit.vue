@@ -36,7 +36,16 @@
             v-else
             src="/assets/lineDown.svg"></a-divider>
           <span v-show="visible">
-            <om-form-model label="Frequency" field="frequency" :fill="false" :tip="$msg('mediation.frequency_tip')">
+            <om-form-model label="App Versions" field="appvExp" :fill="false" :tip="this.$msg('mediation.appv_exp_tip')" >
+              <a-input placeholder="e.g: [1.0,)" style="width:100%" v-model="mediationRuleInfo.appvExp"/>
+            </om-form-model>
+            <om-form-model label="OS Versions" field="osvExp" :fill="false" :tip="this.$msg('mediation.osv_exp_tip')" >
+              <a-input placeholder="e.g: (4.4,8];[10,)" style="width:100%" v-model="mediationRuleInfo.osvExp"/>
+            </om-form-model>
+            <om-form-model label="SDK Versions" field="sdkvExp" :fill="false" :tip="this.$msg('mediation.sdkv_exp_tip')" >
+              <a-input placeholder="e.g: [2.0,)" style="width:100%" v-model="mediationRuleInfo.sdkvExp"/>
+            </om-form-model>
+            <om-form-model label="Frequency" field="frequency" :fill="false" :tip="this.$msg('mediation.frequency_tip')">
               <a-input-number
                 ref="iap-min"
                 style="width:100%"
@@ -74,7 +83,7 @@
                   placeholder="Maximum"/>
               </a-input-group>
             </om-form-model>
-            <om-form-model label="Gender" field="gender" :tip="$msg('mediation.gender_tip')" :fill="false">
+            <om-form-model label="Gender" field="gender" :tip="this.$msg('mediation.gender_tip')" :fill="false">
               <a-checkbox-group v-model="mediationRuleInfo.gender">
                 <a-checkbox :value="0">Male</a-checkbox>
                 <a-checkbox :value="1">Female</a-checkbox>
@@ -171,6 +180,53 @@
                   <a-select-option v-for="d in deviceModelData" :key="d.value">{{ d.text }}</a-select-option>
                 </a-select>
               </a-input-group>
+            </om-form-model>
+            <om-form-model label="Custom Tags" :fill="false" field="customParams">
+              <a-table
+                v-if="customList.length"
+                rowKey="id"
+                style="margin-top: 8px;margin-bottom: 8px;border: 1px solid #D8D8D8;width: 740px"
+                :dataSource="customList"
+                ref="table"
+                size="default"
+                :pagination="false"
+                :columns="customColumn">
+                <span slot="name" slot-scope="text, record">
+                  <a-input placeholder="Enter name" v-model="record.name" />
+                </span>
+                <span slot="type" slot-scope="text, record">
+                  <a-select v-model="record.type" @change="record.value=''" placeholder="Select">
+                    <a-select-option :value="0">String</a-select-option>
+                    <a-select-option :value="1">Integer</a-select-option>
+                    <a-select-option :value="2">Float</a-select-option>
+                  </a-select>
+                </span>
+                <span slot="operator" slot-scope="text, record">
+                  <a-select v-model="record.operator" placeholder="Select">
+                    <a-select-option value=">">Greater than</a-select-option>
+                    <a-select-option value=">=">Greater or equal to</a-select-option>
+                    <a-select-option value="<">Less than</a-select-option>
+                    <a-select-option value="<=">Less or equal to</a-select-option>
+                    <a-select-option value="=">Equals</a-select-option>
+                    <a-select-option value="!=">Not equals</a-select-option>
+                    <a-select-option value="in">In</a-select-option>
+                    <a-select-option value="notin">Not in</a-select-option>
+                  </a-select>
+                </span>
+                <span slot="value" slot-scope="text, record">
+                  <a-textarea v-if="record.type===0" placeholder="e.g.1.0.1" auto-size v-model="record.value" />
+                  <a-input-number v-else v-model="record.value" />
+                </span>
+                <span slot="remove" slot-scope="text">
+                  <img src="/icon/Button-Delete.svg" @click="customList.splice(customList.findIndex(row=>row.id===text), 1)">
+                </span>
+              </a-table>
+              <a-button
+                type="dashed"
+                ghost
+                :disabled="!!customList.find(row=>{return !row.name || !row.operator || !row.value})"
+                style="width: 240px; height: 32px;"
+                @click="addCustomTag">+ Add Parameter</a-button>
             </om-form-model>
           </span>
         </a-card>
@@ -277,6 +333,8 @@ import OmPageAction from '@/components/OmPageAction'
 import OmFormModel from '@/components/OmFormModel'
 import RegionsSelect from '@/components/om/RegionsSelect'
 import { modelSearch, brandSearch } from '@/api/publisher'
+import { generateUUID } from 'ant-design-vue/lib/vc-select/util'
+import { arrDiff } from '@/utils/util'
 
 export default {
   name: 'MediationEdit',
@@ -311,6 +369,37 @@ export default {
         scopedSlots: { customRender: 'status' }
       }
     ]
+    const customColumn = [
+      {
+        title: 'Name',
+        dataIndex: 'name',
+        width: 200,
+        scopedSlots: { customRender: 'name' }
+      },
+      {
+        title: 'Data Type',
+        dataIndex: 'type',
+        width: 150,
+        scopedSlots: { customRender: 'type' }
+      },
+      {
+        title: 'Operator',
+        dataIndex: 'operator',
+        width: 200,
+        scopedSlots: { customRender: 'operator' }
+      },
+      {
+        title: 'Value',
+        dataIndex: 'value',
+        scopedSlots: { customRender: 'value' }
+      },
+      {
+        title: '',
+        width: 10,
+        dataIndex: 'id',
+        scopedSlots: { customRender: 'remove' }
+      }
+    ]
     const validateIap = (rule, value, callback) => {
       if (!this.mediationRuleInfo.iapMin || !this.mediationRuleInfo.iapMax) {
         callback()
@@ -337,6 +426,13 @@ export default {
         }
       }
     }
+    const validateCustomParams = (rule, value, callback) => {
+      if (!this.customList) {
+        callback()
+      } else {
+        callback()
+      }
+    }
     if (!this.$auth('mediation.edit')) {
       columnsHB.pop()
     }
@@ -345,6 +441,8 @@ export default {
       visible: false,
       deviceBrandData: [],
       deviceModelData: [],
+      customList: [],
+      customColumn,
       lastFetchId: 0,
       fetching: false,
       value: [],
@@ -368,7 +466,10 @@ export default {
         conType: [],
         deviceModelType: [],
         hourBefore: 24,
-        gender: []
+        gender: [],
+        osvExp: undefined,
+        sdkvExp: undefined,
+        appvExp: undefined
       },
       rules: {
         name: [
@@ -382,6 +483,9 @@ export default {
         ],
         age: [
           { validator: validateAge, trigger: 'change' }
+        ],
+        customParams: [
+          { validator: validateCustomParams, trigger: 'change' }
         ]
       },
       params: {},
@@ -419,59 +523,63 @@ export default {
     if (this.ruleId) {
       const params = { ruleId: this.ruleId, pubAppId: this.appId, placementId: this.placementId }
       segmentGet(params).then(res => {
-        if (res.code === 0) {
-          this.segmentId = res.data.segmentId
-          if (res.data.countries && res.data.countries.indexOf('00') > -1) {
-            res.data.countries.splice(res.data.countries.indexOf('00'), 1)
-            res.data.countries.push('ALL')
-            this.regions = res.data.countries
-          } else {
-            this.regions = res.data.countries
-          }
-          res.data.regions = res.data.countries
-          if (res.data.channel) {
-            res.data.channel = res.data.channel.split(',')
-          } else {
-            res.data.channel = []
-          }
-          this.countries = res.data.countries || null
-          if (res.data.conType) {
-            const carr = []
-            const ct = res.data.conType
-            for (let i = 0; i < 4; ++i) {
-              if ((ct & (1 << i)) === (1 << i)) carr.push(i)
-            }
-            res.data.conType = carr
-          } else {
-            res.data.conType = []
-          }
-          if (res.data.gender) {
-            const gender = []
-            const gd = res.data.gender
-            for (let z = 0; z < 3; ++z) {
-              if ((gd & (1 << z)) === (1 << z)) gender.push(z)
-            }
-            res.data.gender = gender
-          } else {
-            res.data.gender = []
-          }
-          if (res.data.deviceModelType) {
-            const modelType = []
-            const mt = res.data.deviceModelType
-            for (let x = 0; x < 3; ++x) {
-              if ((mt & (1 << x)) === (1 << x)) modelType.push(x)
-            }
-            res.data.deviceModelType = modelType
-          } else {
-            res.data.deviceModelType = []
-          }
-          if (this.type === 'Duplicate') {
-            res.data.name = ''
-          }
-          this.mediationRuleInfo = Object.assign(this.mediationRuleInfo, res.data)
-          this.oldData = JSON.parse(JSON.stringify(this.mediationRuleInfo))
-          this.spinning = false
+        if (res.code) {
+          this.$message.error(`${res.code}, ${res.msg}`)
+          return
         }
+        this.segmentId = res.data.segmentId
+        if (res.data.countries && res.data.countries.indexOf('00') > -1) {
+          res.data.countries.splice(res.data.countries.indexOf('00'), 1)
+          res.data.countries.push('ALL')
+          this.regions = res.data.countries
+        } else {
+          this.regions = res.data.countries
+        }
+        res.data.regions = res.data.countries
+        if (res.data.channel) {
+          res.data.channel = res.data.channel.split(',')
+        } else {
+          res.data.channel = []
+        }
+        this.countries = res.data.countries || null
+        if (res.data.conType) {
+          const carr = []
+          const ct = res.data.conType
+          for (let i = 0; i < 4; ++i) {
+            if ((ct & (1 << i)) === (1 << i)) carr.push(i)
+          }
+          res.data.conType = carr
+        } else {
+          res.data.conType = []
+        }
+        if (res.data.gender) {
+          const gender = []
+          const gd = res.data.gender
+          for (let z = 0; z < 3; ++z) {
+            if ((gd & (1 << z)) === (1 << z)) gender.push(z)
+          }
+          res.data.gender = gender
+        } else {
+          res.data.gender = []
+        }
+        if (res.data.deviceModelType) {
+          const modelType = []
+          const mt = res.data.deviceModelType
+          for (let x = 0; x < 3; ++x) {
+            if ((mt & (1 << x)) === (1 << x)) modelType.push(x)
+          }
+          res.data.deviceModelType = modelType
+        } else {
+          res.data.deviceModelType = []
+        }
+        if (this.type === 'Duplicate') {
+          res.data.name = ''
+        }
+        this.customList = this.parseCustomTags(res.data.customTags)
+        Object.assign(this.mediationRuleInfo, res.data)
+        this.oldData = JSON.parse(JSON.stringify(this.mediationRuleInfo))
+        this.oldData.customList = JSON.parse(JSON.stringify(this.customList))
+        this.spinning = false
       }).finally(() => {
         this.spinning = false
       })
@@ -479,6 +587,40 @@ export default {
     this.search()
   },
   methods: {
+    addCustomTag () {
+      const id = generateUUID()
+      this.customList.push({ id, name: '', type: 0, operator: undefined, value: '' })
+    },
+    parseCustomTags (json) {
+      const list = []
+      if (!json) return list
+      try {
+        const o = JSON.parse(json)
+        for (const [k, v] of Object.entries(o)) {
+          const { type, conditions } = v
+          for (const cond of conditions) {
+            const { operator, value } = cond
+            const id = generateUUID()
+            list.push({ id, name: k, type, operator, value })
+          }
+        }
+      } catch (e) {
+        console.warn('parse customTags error', e)
+      }
+      return list
+    },
+    stringifyCustomTags (list) {
+      const o = {}
+      for (const l of list) {
+        const { name, type, operator, value } = l
+        let v = o[name]
+        if (!v) {
+          v = o[name] = { type, conditions: [] }
+        }
+        v.conditions.push({ operator, value })
+      }
+      return JSON.stringify(o)
+    },
     adnChange (val) {
       this.adnIds = val
       this.instanceIds = []
@@ -685,6 +827,9 @@ export default {
         return false
       }
       const values = Object.assign({}, this.mediationRuleInfo)
+      if (this.customList.length) {
+        values.customTags = this.stringifyCustomTags(this.customList)
+      }
       values.pubAppId = this.appId
       values.placementId = this.placementId
       values.id = that.placementId
@@ -772,56 +917,19 @@ export default {
         return true
       }
       const temp = this.mediationRuleInfo
-      const { name, autoOpt, frequency, iapMin, brandType, brandList, modelType, modelList, channel, channelBow, gender, ageMax, ageMin, conType, deviceModelType, regions } = { ...this.oldData }
       try {
-        if (temp.name !== name) {
-          return true
-        }
-        if (temp.autoOpt !== autoOpt) {
-          return true
-        }
-        if (temp.frequency !== frequency) {
-          return true
-        }
-        if (temp.iapMin !== iapMin) {
-          return true
-        }
-        if (temp.brandType !== brandType) {
-          return true
-        }
-        if (temp.brandList.join(',') !== brandList.join(',')) {
-          return true
-        }
-        if (temp.modelType !== modelType) {
-          return true
-        }
-        if (temp.modelList.join(',') !== modelList.join(',')) {
-          return true
-        }
-        if (this.isNgp) {
-          if (temp.channel !== channel) {
-            return true
-          }
-          if (temp.channelBow !== channelBow) {
-            return true
+        for (const f of Object.keys(temp)) {
+          if (Array.isArray(temp[f])) {
+            if (arrDiff(temp[f], this.oldData[f])) {
+              return true
+            }
+          } else {
+            if (temp[f] !== this.oldData[f]) {
+              return true
+            }
           }
         }
-        if (temp.gender.join(',') !== gender.join(',')) {
-          return true
-        }
-        if (temp.conType.join(',') !== conType.join(',')) {
-          return true
-        }
-        if (temp.deviceModelType.join(',') !== deviceModelType.join(',')) {
-          return true
-        }
-        if (temp.regions.join(',') !== regions.join(',')) {
-          return true
-        }
-        if (temp.ageMax !== ageMax) {
-          return true
-        }
-        if (temp.ageMin !== ageMin) {
+        if (arrDiff(this.customList, this.oldData.customList)) {
           return true
         }
       } catch (e) {

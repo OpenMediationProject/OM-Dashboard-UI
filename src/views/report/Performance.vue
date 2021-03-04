@@ -10,6 +10,39 @@
       <om-placement-select-simple :pubAppIds="pubAppIds" :defaultValue="def.defaultPlacements" :form="form" width="225px"/>
       <om-ad-network-select :defaultValue="def.defaultAdns" width="185px"/>
       <a-form-item>
+        <a-select
+          mode="tags"
+          v-decorator="['appVersion']"
+          :allowClear="true"
+          :tokenSeparators="[';']"
+          placeholder="App Version"
+          style="width:200px" />
+      </a-form-item>
+      <a-form-item>
+        <a-select
+          mode="tags"
+          v-decorator="['sdkVersion']"
+          :allowClear="true"
+          :tokenSeparators="[';']"
+          placeholder="SDK Version"
+          style="width:200px" />
+      </a-form-item>
+      <a-form-item>
+        <a-input-group compact>
+          <a-input
+            style="width: 100px; border-right: 0; pointer-events: none; background-color: #fff"
+            placeholder="OS Version"
+            disabled/>
+          <a-input v-model="osvmin" style="width: 100px; text-align: center" placeholder="Minimum" />
+          <a-input
+            style="width: 30px; border-left: 0; pointer-events: none; background-color: #fff"
+            placeholder="~"
+            disabled
+          />
+          <a-input v-model="osvmax" style="width: 100px; text-align: center; border-left: 0" placeholder="Maximum" />
+        </a-input-group>
+      </a-form-item>
+      <a-form-item>
         <a-button ghost @click="handleApply" type="primary" style="width: 84px;">Apply</a-button>
       </a-form-item>
     </a-form>
@@ -23,7 +56,7 @@
           </a>
           <a-menu slot="overlay">
             <a-menu-item v-for="s in dimList4Chart" :key="s.id" :title="s.title">
-              <a href="javascript:;" @click="handleDim4ChartChange(s)">{{ s.title }}</a>
+              <a href="javascript:void(0);" @click="handleDim4ChartChange(s)">{{ s.title }}</a>
             </a-menu-item>
           </a-menu>
         </a-dropdown>
@@ -182,7 +215,6 @@ import { OmAdNetworkSelect, OmRegionsSelect, OmReportDatePicker, OmPubAppSelect,
 import OmReportChart from './ChartCardG2.js'
 import { getReportList } from '../../api/report'
 import Tip from './Tip'
-
 import { generateUUID } from 'ant-design-vue/lib/vc-select/util'
 import numerify from 'numerify'
 import numerifyCurrency from 'numerify/lib/plugins/currency.es'
@@ -194,13 +226,13 @@ numerify.register('percent', numerifyPercent)
 const supportedDimensions = {
   hour: 'Hour',
   day: 'Day',
-  country: 'Regions',
-  pubAppId: 'Apps',
+  country: 'Region',
+  pubAppId: 'App',
   adType: 'Ad Type',
-  placementId: 'Placements',
-  adnId: 'AdNetworks',
+  placementId: 'Placement',
+  adnId: 'AdNetwork',
   instanceId: 'Instance',
-  sceneId: 'Scenes'
+  sceneId: 'Scene'
 }
 
 const dimColumnMapper = {
@@ -273,6 +305,8 @@ export default {
       regions: def.defaultRegions || [],
       country: [],
       pubAppIds: pubids,
+      osvmin: undefined,
+      osvmax: undefined,
       metricFields: {
         request: 'waterfallRequest',
         filled: 'waterfallFilled',
@@ -544,6 +578,9 @@ export default {
         ps.country.splice(ps.country.indexOf('ALL'), 1)
         ps.country.push('00')
       }
+      if (this.osvmin || this.osvmax) {
+        ps.osVersion = `[${[this.osvmin, this.osvmax].join(',')}]`
+      }
       ps.type = ['lr', 'api']
       ps.dimension = ['day', this.chartGroupBy]
       if (ps.adnId && ps.adnId.length) {
@@ -572,7 +609,6 @@ export default {
       this.current = 1
       const { metric } = this.table
       const dimension = this.dimension
-      const _this = this
       if (metric.length === 0) {
         this.table.columns = []
         this.table.data = []
@@ -683,17 +719,13 @@ export default {
               if (dimension.length > 0) {
                 sumData[dimColumnMapper[dimension[dimension.length - 1]]] = 'Total'
               }
-              _this.table.sum = sumData
-              setTimeout(function () {
-                const dom = _this.$vnode.elm.querySelectorAll('.ant-table-body')[0]
+              this.table.sum = sumData
+              setTimeout(() => {
+                const dom = this.$vnode.elm.querySelectorAll('.ant-table-body')[0]
                 if (dom) {
-                  dom.addEventListener(
-                    'scroll',
-                    () => {
-                      _this.$vnode.elm.querySelectorAll('.ant-table-body')[1].scrollLeft = dom.scrollLeft
-                    },
-                    true
-                  )
+                  dom.addEventListener('scroll', () => {
+                    this.$vnode.elm.querySelectorAll('.ant-table-body')[1].scrollLeft = dom.scrollLeft
+                  }, true)
                 }
               }, 500)
             }
@@ -807,9 +839,19 @@ export default {
 <style type="less" scoped>
   .ant-form-item {
     margin-right: 8px;
-    button {
-      width: 100px;
-    }
+  }
+  .ant-form-item button {
+    width: 100px;
+  }
+  .ant-input-group {
+    display: inline-block;
+    margin-right: 8px;
+  }
+  .ant-input-group-compact {
+    display: unset;
+  }
+  .ant-input-group.ant-input-group-compact::before, .ant-input-group.ant-input-group-compact::after {
+    display: unset;
   }
   .performance_no_data {
     background: #FBFBFB;

@@ -38,10 +38,6 @@
         </a-input>
       </a-form-item>
 
-      <a-form-item>
-        <a-checkbox v-decorator="['rememberMe']">Remember me</a-checkbox>
-      </a-form-item>
-
       <a-form-item style="margin-top:24px">
         <a-button
           size="large"

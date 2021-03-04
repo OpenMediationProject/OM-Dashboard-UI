@@ -2,7 +2,7 @@
 <template>
   <a-form-item>
     <a-select
-      placeholder="Apps"
+      placeholder="App"
       :size="size"
       :style="{ width: width }"
       :allowClear="true"

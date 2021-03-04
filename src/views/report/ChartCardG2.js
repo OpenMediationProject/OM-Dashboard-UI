@@ -50,6 +50,10 @@ export default {
     groupBy: {
       type: [String, Function],
       required: false
+    },
+    dropZero: {
+      type: Boolean,
+      default: false
     }
   },
   data () {
@@ -101,16 +105,37 @@ export default {
      * @param {String} y y-column
      */
     buildChartData (data, x, g, y) {
-      return data.map(d => {
-        const xv = this.getColumnValue(d, x)
-        const gv = this.getColumnValue(d, g)
-        const yv = this.getColumnValue(d, y)
-        if (this.groupBy) {
-          return { 'x': xv, 'g': String(gv), 'y': yv }
-        } else {
+      if (!g) {
+        return data.map(d => {
+          const xv = this.getColumnValue(d, x)
+          const yv = this.getColumnValue(d, y)
           return { 'x': xv, 'y': yv }
+        })
+      }
+      const xMap = {}
+      const gMap = {}
+      for (const d of data) {
+        const xv = this.getColumnValue(d, x)
+        const yv = this.getColumnValue(d, y)
+        const gv = String(this.getColumnValue(d, g)) || '(Empty)'
+        xMap[xv] = 1
+        if (!gMap[gv]) gMap[gv] = {}
+        gMap[gv][xv] = yv
+      }
+      const rv = []
+      const xvs = Object.keys(xMap)
+      for (const gv of Object.keys(gMap)) {
+        let zeroTimes = 0
+        for (const xv of xvs) {
+          const yv = gMap[gv][xv] || 0
+          rv.push({ 'x': xv, 'g': gv, 'y': yv })
+          if (!yv) ++zeroTimes
         }
-      })
+        if (this.dropZero && zeroTimes === xvs.length) {
+          rv.splice(-xvs.length, xvs.length)
+        }
+      }
+      return rv
     },
     buildChart () {
       const chartData = this.buildChartData(this.data || [], this.xColumn, this.groupBy, this.yColumn)
@@ -124,7 +149,7 @@ export default {
       const opts = {
         data: chartData,
         forceFit: true,
-        smooth: true,
+        smooth: false,
         xField: 'x',
         yField: 'y',
         // point: { //显示数据点

@@ -59,3 +59,54 @@ export function removeLoadingAnimate (id = '', timeout = 1500) {
     document.body.removeChild(document.getElementById(id))
   }, timeout)
 }
+
+/**
+ * compare two Array<br>
+ * arrDiff(undefined, null): false<br>
+ * arrDiff(undefined, undefined): false<br>
+ * arrDiff(undefined, []): false<br>
+ * arrDiff([], undefined): false<br>
+ * arrDiff(undefined, [1]): true<br>
+ * arrDiff([1,2], [1]): true<br>
+ * arrDiff([1,2], [1,2]): false<br>
+ * @param {Array} a
+ * @param {Array} b
+ * @returns {boolean} true: not equals
+ */
+export function arrDiff (a, b) {
+  if (a === b) return false
+  if (!a) {
+    if (!b) return false
+    return !!b.length
+  }
+  if (!b) return !!a.length
+  return a.join('#$&#') !== b.join('#$&#')
+}
+
+/**
+ * compare two Objects
+ * @param {Object} a reqiured
+ * @param {Object} b reqiured
+ * @returns {boolean} true: not equals
+ */
+export function objDiff (a, b) {
+  if (a === b) return false
+  const aKeys = Object.keys(a).sort()
+  const bKeys = Object.keys(b).sort()
+  if (arrDiff(aKeys, bKeys)) return true
+  for (const k of aKeys) {
+    const aV = a[k]
+    const bV = b[k]
+    const aEmtpy = (aV === undefined || aV === null)
+    const bEmpty = (bV === undefined || bV === null)
+    if (aEmtpy && bEmpty) continue
+    if (aEmtpy !== bEmpty) return true
+    if (Array.isArray(aV)) {
+      if (!Array.isArray(bV)) return true
+      if (arrDiff(aV, bV)) return true
+    } else if (aV !== bV) {
+      return true
+    }
+  }
+  return false
+}
