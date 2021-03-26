@@ -78,6 +78,14 @@ do
             ln -sf ${!env_var}/${CONFFILE}/https  /usr/local/nginx/
             continue
         fi
+        if [[ ${item_name} = "mountlogs" ]];then
+            loginfo_note "[Cloud Storage] Link ${!env_var}/ to /usr/local/nginx/logs"
+            if [[ -d /usr/local/nginx/logs ]];then
+               rm -fr /usr/local/nginx/logs
+            fi
+            ln -sf ${!env_var}/  /usr/local/nginx/logs
+            continue
+        fi
     fi
 done
 IFS=$BFIFS
