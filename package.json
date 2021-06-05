@@ -13,11 +13,9 @@
   },
   "dependencies": {
     "@antv/data-set": "^0.10.2",
-    "@antv/g2plot": "^0.11.32",
+    "@antv/g2plot": "^0.11.41",
     "ant-design-vue": "1.7.1",
     "axios": "^0.21.1",
-    "browserslist": "^4.16.6",
-    "caniuse-lite": "^1.0.30001234",
     "core-js": "^3.6.5",
     "echarts": "^5.0.2",
     "enquire.js": "^2.1.6",
@@ -47,7 +45,8 @@
     "vue-svg-component-runtime": "^1.0.1",
     "vue-swatches": "^2.1.1",
     "vuedraggable": "^2.23.2",
-    "vuex": "^3.1.1"
+    "vuex": "^3.1.1",
+    "@antv/gui": "^0.1.1"
   },
   "devDependencies": {
     "@ant-design/colors": "^3.2.1",
