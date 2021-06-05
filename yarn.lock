@@ -185,20 +185,7 @@
     "@antv/path-util" "^2.0.2"
     "@antv/scale" "~0.3.0"
     "@antv/util" "~2.0.4"
-
-"@antv/g2plot@^0.11.32":
-  version "0.11.32"
-  resolved "https://registry.yarnpkg.com/@antv/g2plot/-/g2plot-0.11.32.tgz#62f507981ce6f2b3c19f31fd09f54e4c1c3e44fc"
-  integrity sha512-9mmCQSOd9CyyWeB+FX1dxBYF6mlV1fCoIJkWBz7HnMaEob8LsUCjMvfqN03roYaCcD9Hhxe4riuyA17F0++RqA==
-  dependencies:
-    "@antv/g-gesture" "~0.1.0"
-    "@antv/g2" "~3.6.0-beta.18"
-    "@antv/gui" "~0.1.0"
-    d3-regression "^1.2.8"
-    fecha "~4.1.0"
-    resize-observer-polyfill "^1.5.1"
-    tslib "^1.10.0"
-
+    
 "@antv/g@~3.3.5", "@antv/g@~3.3.6":
   version "3.3.6"
   resolved "https://registry.yarnpkg.com/@antv/g/-/g-3.3.6.tgz#11fed9ddc9ed4e5a2aa244b7c8abb982a003f201"
@@ -228,18 +215,6 @@
   version "2.7.1"
   resolved "https://registry.yarnpkg.com/@antv/gl-matrix/-/gl-matrix-2.7.1.tgz#acb8e37f7ab3df01345aba4372d7942be42eba14"
   integrity sha512-oOWcVNlpELIKi9x+Mm1Vwbz8pXfkbJKykoCIOJ/dNK79hSIANbpXJ5d3Rra9/wZqK6MC961B7sybFhPlLraT3Q==
-
-"@antv/gui@~0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@antv/gui/-/gui-0.1.0.tgz#899ef869638558ea6d9926eeee482bd5b097b2c3"
-  integrity sha512-FDxZHXHrryqtERsVR/61+dwIATik1jk9gIk+H/KTMjVTCXBuQHlHW9ySEFwBEO3Iw7cjnRo4a+7NBMLSutucQA==
-  dependencies:
-    "@antv/dom-util" "^2.0.1"
-    "@antv/g" "~3.5.0-beta.1"
-    "@antv/path-util" "^2.0.0"
-    "@antv/scale" "~0.2.0"
-    "@antv/util" "~2.0.0"
-    tslib "^1.10.0"
 
 "@antv/hierarchy@~0.4.0":
   version "0.4.0"
