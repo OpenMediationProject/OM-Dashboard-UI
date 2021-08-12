@@ -8,12 +8,16 @@
     </page-header>
     <div class="content" style="margin-left: 144px; margin-right: 144px;padding-top: 64px;">
       <div class="page-header-index-wide">
-        <slot>
+        <!-- <slot>
           <keep-alive v-if="multiTab">
             <router-view ref="content" />
           </keep-alive>
           <router-view v-else ref="content" />
-        </slot>
+        </slot> -->
+        <keep-alive v-if="multiTab">
+          <router-view ref="content" />
+        </keep-alive>
+        <router-view v-else ref="content" />
       </div>
     </div>
   </div>

@@ -35,7 +35,8 @@ const vueConfig = {
       new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/)
     ],
     // if prod, add externals
-    externals: isProd ? assetsCDN.externals : {}
+    // externals: isProd ? assetsCDN.externals : {}
+    externals: {}
   },
 
   chainWebpack: (config) => {
@@ -55,12 +56,12 @@ const vueConfig = {
 
     // if prod is on
     // assets require on cdn
-    if (isProd) {
-      config.plugin('html').tap(args => {
-        args[0].cdn = assetsCDN
-        return args
-      })
-    }
+    // if (isProd) {
+    //   config.plugin('html').tap(args => {
+    //     args[0].cdn = assetsCDN
+    //     return args
+    //   })
+    // }
   },
 
   css: {
@@ -87,7 +88,7 @@ const vueConfig = {
 
   devServer: {
     // development server port 8000
-    port: 8000,
+    port: 8080,
     // If you want to turn on the proxy, please remove the mockjs /src/main.jsL11
     proxy: {
       '/api': {

@@ -191,6 +191,15 @@
         :edit="canEdit"
         field="cb_right" />
     </div>
+    <div v-else-if="id===23">
+      <om-form
+        :form="form"
+        label="App Auth Token"
+        msg="App Auth Token can not be empty."
+        :edit="canEdit"
+        field="adnAppKey"
+      />
+    </div>
     <div v-else-if="id===30">
       <!-- Fyber -->
       <om-form

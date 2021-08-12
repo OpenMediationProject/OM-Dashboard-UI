@@ -106,7 +106,9 @@
               :authType="record.authType"
               :edit="record.editStatus"
               :form="form"
-              :id="currentAdn" />
+              :id="currentAdn"
+              accountPath="accountManagement"
+              @dontSaveInfo="dontSaveInfo" />
           </p>
         </a-table>
       </a-card>
@@ -177,7 +179,9 @@ export default {
           dataIndex: 'status',
           scopedSlots: { customRender: 'status' }
         }
-      ]
+      ],
+      saveFlag: true,
+      isSignInGoogle: false
     }
   },
   created () {
@@ -194,6 +198,10 @@ export default {
     }
   },
   methods: {
+    dontSaveInfo (f) {
+      this.saveFlag = f
+      if (f) this.isSignInGoogle = true
+    },
     adnChange (val) {
       this.currentAdn = val.id
     },
@@ -224,7 +232,8 @@ export default {
       const { form: { validateFields } } = this
       validateFields((err, values) => {
         if (!err) {
-          values.authType = record.authType
+          // values.authType = record.authType
+          values.authType = this.authTypeFilter(record, values)
           values.id = record.id
           values.adnAccountId = record.adnAccountId
           if (values.adnAppToken) {
@@ -243,7 +252,7 @@ export default {
             values.userId = values.userId.trim()
           }
           if (record.createNew) {
-            if (values.authType === 1 && values.adnId === 2 && !values.userId) {
+            if ((values.authType === 1 || values.authType === 3) && values.adnId === 1 && !values.userId) {
               this.$message.error('Please Sign in with Google first')
               return false
             }
@@ -260,11 +269,11 @@ export default {
             if (record.status === 2) {
               values.status = 1
             }
-            if (values.authType === 1 && record.adnId === 2 && !values.userId) {
+            if ((values.authType === 1 || values.authType === 3) && record.adnId === 1 && !values.userId) {
               this.$message.error('Please Sign in with Google first')
               return false
             }
-            if (record.adnId === 2 && values.authType === 1) {
+            if (record.adnId === 1 && (values.authType === 1 || values.authType === 3)) {
               values.adnAppToken = record.adnAppToken
             }
             accountUpdate(Object.assign(record, values)).then(res => {
@@ -279,7 +288,77 @@ export default {
         }
       })
     },
+    isAutoOrManual (authType, adnId) {
+      let result
+      if (adnId === 1) {
+        if (authType === 1 || authType === 3) {
+          result = 'Auto'
+        } else if (authType === 2 || authType === 4) {
+          result = 'Manual'
+        } else {
+          result = 'Not_AdMob'
+        }
+      } else {
+        result = 'Not_AdMob'
+      }
+      return result
+    },
+    authTypeFilter ({ authType, adnId }, { adnAppId, adnApiKey, userSignature, adnAppToken }) {
+      let result
+      if (this.isAutoOrManual(authType, adnId) === 'Auto') {
+        result = this.setAutoAuthType(authType)
+      } else if (this.isAutoOrManual(authType, adnId) === 'Manual') {
+        result = this.setManualAuthType(authType, adnAppId, adnApiKey, userSignature, adnAppToken)
+      } else {
+        result = authType
+      }
+      return result
+    },
+    setAutoAuthType (authType) {
+      let result
+      if (this.isSignInGoogle) {
+        result = 3
+      } else {
+        result = authType
+      }
+      return result
+    },
+    setManualAuthType (authType, adnAppIdEd, adnApiKeyEd, userSignatureEd, adnAppTokenEd) {
+      let result
+      if (this.getAdmob_od()) {
+        if (
+          this.getAdmob_od().adnAppId !== adnAppIdEd &&
+          this.getAdmob_od().adnApiKey !== adnApiKeyEd &&
+          this.getAdmob_od().userSignature !== userSignatureEd &&
+          this.getAdmob_od().adnAppToken !== adnAppTokenEd
+        ) {
+          result = 4
+        } else {
+          result = authType
+        }
+      } else {
+        result = authType
+      }
+      return result
+    },
+    getAdmob_od () {
+      let result
+      if (this.data && this.data.length) {
+        result = this.data.filter(v => {
+          return v.adnId === 1
+        })
+        if (result.length) {
+          result = result[0]
+        } else {
+          result = null
+        }
+      } else {
+        result = null
+      }
+      return result
+    },
     cancel (record) {
+      this.saveFlag = true
       if (record.createNew) {
         this.data.splice(this.data.findIndex(item => item.id === record.id), 1)
       }

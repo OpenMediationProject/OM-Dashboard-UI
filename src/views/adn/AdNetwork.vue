@@ -108,6 +108,7 @@
             rowKey="id"
           >
             <AdnAppEdit
+              ref="adnAppEdit"
               @authSuccess="authSuccess"
               style="margin-top:24px;"
               :form="form"
@@ -243,11 +244,12 @@ export default {
         if (!err) {
           values.adnId = 2
           if (record.id === 2 && !values.adnAppId) {
-            values.authType = 1
+            values.authType = 3
           } else {
-            values.authType = 2
+            values.authType = 4
           }
           values.reportAccountId = accountId
+          console.log(record.adNetworkAppId)
           if (record.adNetworkAppId) {
             values.id = record.adNetworkAppId
             adNetworkAppUpdate(values).then(res => {
@@ -278,6 +280,7 @@ export default {
       })
     },
     saveAdNetworkApp (record) {
+      // if (!this.$refs.adnAppEdit.saveFlag) return
       const { form: { validateFields } } = this
       const _this = this
       validateFields(async (err, values) => {
@@ -298,12 +301,12 @@ export default {
           if (!values.reportAccountId && ![3].includes(record.id)) {
             values.adnId = record.id
             if (record.id === 2 && !values.adnAppId) {
-              values.authType = 1
+              values.authType = 3
             } else {
-              values.authType = 2
+              values.authType = 4
             }
             values.adnAccountId = 0
-            if (values.adnId === 2 && values.authType === 1 && !values.userId) {
+            if (values.adnId === 2 && (values.authType === 1 || values.authType === 3) && !values.userId) {
               this.$message.error('Please Sign in with Google first')
               return false
             }
@@ -415,6 +418,7 @@ export default {
       adNetworkList({ pubAppId: this.searchApp })
         .then(res => {
           if (res.data) {
+            console.log(res.data)
             res.data.forEach(item => {
               item.editStatus = false
               item.expandStatus = false

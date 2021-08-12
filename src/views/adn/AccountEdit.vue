@@ -16,10 +16,77 @@
     <div style="text-align:center;" v-else-if="id===2">
       <!-- AdMob -->
       <a-radio-group style="margin-bottom:24px;" :value="aType" @change="handleTypeChange">
-        <a-radio-button style="width:160px;" :value="1">Sign in with Google</a-radio-button>
-        <a-radio-button style="width:160px;" :value="2">Manual</a-radio-button>
+        <a-radio-button style="width:160px;" :value="1" v-if="authType === 1">Sign in with Google</a-radio-button>
+        <a-radio-button style="width:160px;" :value="3" v-else>Sign in with Google</a-radio-button>
+        <a-radio-button style="width:160px;" :value="2" v-if="authType === 2">Manual</a-radio-button>
+        <a-radio-button style="width:160px;" :value="4" v-else>Manual</a-radio-button>
         <a-radio-button style="width:160px;" v-if="!create" :value="0">Input/Medium</a-radio-button>
       </a-radio-group>
+      <span v-if="aType===4">
+        <om-form :form="form" label="Currency">
+          <CurrencySelect default-value="USD" :edit="canEdit" :adnId="record" />
+        </om-form>
+        <om-form
+          label="API Key"
+          @change="changeValue('adnAppId', $event)"
+          :defaultValue="temp ? temp.adnAppId : record.adnAppId"
+          :edit="canEdit"
+          :msg="$msg('account.api_key')"
+          field="adnAppId"
+          :tip="$msg('account.admob_api_key_tip')" />
+        <om-form
+          label="Client ID"
+          @change="changeValue('adnApiKey', $event)"
+          :defaultValue="temp ? temp.adnApiKey : record.adnApiKey"
+          :edit="canEdit"
+          :msg="$msg('account.client_id')"
+          field="adnApiKey"
+          :tip="$msg('account.admob_client_id_tip')" />
+        <om-form
+          label="Client Secrect"
+          :msg="$msg('account.client_secrect')"
+          @change="changeValue('userSignature', $event)"
+          :defaultValue="temp ? temp.userSignature : record.userSignature"
+          :edit="canEdit"
+          field="userSignature"
+          :tip="$msg('account.admob_client_secrect_tip')" />
+        <om-form
+          label="Refresh Token"
+          :msg="$msg('account.refresh_token')"
+          @change="changeValue('adnAppToken', $event)"
+          :defaultValue="temp ? temp.adnAppToken : record.adnAppToken"
+          :edit="canEdit"
+          field="adnAppToken"
+          :tip="$msg('account.admob_refresh_token_tip')" />
+      </span>
+      <span v-if="aType===3">
+        <br/>
+        <om-form :form="form" label="Currency">
+          <CurrencySelect default-value="USD" :edit="canEdit" :adnId="record" />
+        </om-form>
+        <om-form
+          label="Publisher ID"
+          :fill="false"
+          :edit="false"
+          field="userId"
+          :tip="$msg('account.admob_publisher_id')" />
+        <a-spin tip="Processing..." class="spinStyle" :class="spinning? 'proSpin' : 'proSpin'" :spinning="spinning" v-if="!relogin && record && record.userId">
+          <span class="signGoogleSpan_s1">
+            <img style="opacity: 0.3; padding: 0;margin: 8px 0;" src="/icon/sign-google.svg"/><br>
+            <a style="margin-left: 18px" v-if="edit" @click="()=>{this.relogin = true}">Relogin</a>
+          </span>
+        </a-spin>
+        <a-spin tip="Processing..." class="spinStyle" :class="spinning? '' : 'proSpin'" :spinning="spinning" v-else>
+          <span class="signGoogleSpan_s1">
+            <img @click="googleApiInit" style="cursor: pointer;margin: 8px 0;" src="/icon/sign-google.svg"/>
+          </span>
+        </a-spin>
+        <!-- <span v-if="!relogin && record && record.userId" >
+          <img style="opacity: 0.3;margin-right:8px;margin-bottom:8px;" src="/icon/sign-google.svg"/><br>
+          <a v-if="edit" @click="()=>{this.relogin = true}">Relogin</a>
+        </span>
+        <img @click="googleApiInit" v-else style="cursor: pointer;margin-bottom:16px;" src="/icon/sign-google.svg"/> -->
+      </span>
       <span v-if="aType===2">
         <om-form :form="form" label="Currency">
           <CurrencySelect default-value="USD" :edit="canEdit" :adnId="record" />
@@ -68,11 +135,55 @@
           :edit="false"
           field="userId"
           :tip="$msg('account.admob_publisher_id')" />
-        <span v-if="!relogin && record && record.userId" >
-          <img style="opacity: 0.3;margin-right:8px;margin-bottom:8px;" src="/icon/sign-google.svg"/><br>
-          <a v-if="edit" @click="()=>{this.relogin = true}">Relogin</a>
-        </span>
-        <img @click="googleApiInit" v-else style="cursor: pointer;margin-bottom:16px;" src="/icon/sign-google.svg"/>
+        <a-spin tip="Processing..." class="spinStyle" :class="spinning? 'proSpin' : 'proSpin'" :spinning="spinning" v-if="!relogin && record && record.userId">
+          <span class="signGoogleSpan_s1">
+            <img style="opacity: 0.3; padding: 0;margin: 8px 0;" src="/icon/sign-google.svg"/><br>
+            <a style="margin-left: 18px" v-if="edit" @click="()=>{this.relogin = true}">Relogin</a>
+          </span>
+        </a-spin>
+        <a-spin tip="Processing..." class="spinStyle" :class="spinning? '' : 'proSpin'" :spinning="spinning" v-else>
+          <span class="signGoogleSpan_s1">
+            <img @click="googleApiInit" style="cursor: pointer;margin: 8px 0;" src="/icon/sign-google.svg"/>
+          </span>
+        </a-spin>
+      </span>
+      <span v-if="aType===0">
+        <om-form :form="form" label="Currency">
+          <CurrencySelect default-value="USD" :edit="canEdit" :adnId="record" />
+        </om-form>
+        <om-form
+          label="Publisher ID"
+          :defaultValue="record.userId"
+          :fill="false"
+          :edit="false"
+          field="userId"
+          :tip="$t('account.admob_user_id_tip')" />
+        <om-form
+          label="Client ID"
+          :defaultValue="record.adnApiKey"
+          :fill="false"
+          :edit="false"
+          field="adnApiKey"
+          :tip="$t('account.admob_client_id_tip')" />
+        <om-form
+          label="Client JSON"
+          :fill="false"
+          :defaultValue="record.adnAppToken"
+          :edit="false"
+          field="adnAppToken"
+          :tip="$t('account.admob_client_json_tip')" />
+        <om-form
+          label="Authorized redirect URIs"
+          :defaultValue="record.authKeyUrl"
+          :fill="false"
+          :edit="false"
+          field="authKeyUrl"
+          :tip="$t('account.admob_auth_url_tip')" />
+        <div class="spinStyle">
+          <span class="signGoogleSpan_s2">
+            <img style="opacity: 0.3;cursor: pointer;margin: 8px 0;" src="/icon/sign-google.svg"/>
+          </span>
+        </div>
       </span>
     </div>
     <div v-else-if="id===4">
@@ -272,6 +383,15 @@
         :edit="canEdit"
         field="adnAppToken" />
     </div>
+    <div v-else-if="id===23">
+      <om-form
+        :form="form"
+        label="Access Token"
+        msg="Access Token can not be empty."
+        :edit="canEdit"
+        field="adnApiKey"
+      />
+    </div>
     <div v-else-if="id===30">
       <!-- Fyber -->
       <om-form
@@ -302,7 +422,7 @@
 import { mapState } from 'vuex'
 import omForm from './OmForm'
 import { importScript } from '@/api/import'
-import { accountCreate, googleTokenSave } from '@/api/account'
+import { accountCreate, accountUpdate, admobTokenSave } from '@/api/account'
 import CurrencySelect from '@/components/om/CurrencySelect'
 importScript('https://apis.google.com/js/platform.js?onload=initGAPI')
 
@@ -318,7 +438,8 @@ export default {
       canEdit: this.edit,
       temp: {},
       relogin: false,
-      aType: this.authType
+      aType: this.authType,
+      spinning: false
     }
   },
   name: 'AccountEdit',
@@ -383,7 +504,10 @@ export default {
       }
     },
     googleApiInit () {
-      const scope = 'https://www.googleapis.com/auth/adsense.readonly https://www.googleapis.com/auth/dfp'
+      this.spinning = true
+      this.$emit('dontSaveInfo', false)
+      // const scope = 'https://www.googleapis.com/auth/adsense.readonly https://www.googleapis.com/auth/dfp'
+      const scope = 'https://www.googleapis.com/auth/admob.readonly https://www.googleapis.com/auth/admob.report'
       const { form: { validateFields } } = this
       validateFields((err, values) => {
         if (!err) {
@@ -392,6 +516,7 @@ export default {
             // eslint-disable-next-line no-undef
             const GoogleAuth = gapi.auth2.init({
               client_id: this.clientId,
+              // client_id: clientId,
               fetch_basic_profile: false,
               scope: scope
             })
@@ -401,11 +526,12 @@ export default {
             }).then(resp => {
               if (resp.code) {
                 const params = { authCode: resp.code }
-                googleTokenSave(params).then(res => {
+                admobTokenSave(params).then(res => {
                   if (res.code === 0) {
                     values.userId = res.data.pubId
                     values.adnAppToken = res.data.refreshToken
-                    values.authType = this.aType
+                    // values.authType = this.aType
+                    values.authType = 3
                     if (this.record) {
                       values.id = this.record.id
                       values.adnAccountId = this.record.adnAccountId
@@ -413,22 +539,54 @@ export default {
                       values.adnAccountId = 0
                     }
                     values.adnId = 2
-                    accountCreate(values).then(res => {
-                      if (res.code === 0) {
-                        if (this.record) {
-                          this.record = Object.assign(this.record, res.data)
-                        } else {
-                          this.record = res.data
+                    if (this.accountPath) {
+                      accountUpdate(values).then(res => {
+                        if (res.code === 0) {
+                          if (this.record) {
+                            this.record = Object.assign(this.record, res.data)
+                          } else {
+                            this.record = res.data
+                          }
+                          this.$emit('dontSaveInfo', true)
+                          this.$emit('authSuccess', this.record.id)
+                          this.$message.success('success')
                         }
-                        this.$emit('authSuccess', this.record.id)
-                        this.$message.success('success')
-                      }
-                    })
+                      }).finally(() => {
+                        this.spinning = false
+                      })
+                    } else {
+                      accountCreate(values).then(res => {
+                        if (res.code === 0) {
+                          if (this.record) {
+                            this.record = Object.assign(this.record, res.data)
+                          } else {
+                            this.record = res.data
+                          }
+                          this.$emit('dontSaveInfo', true)
+                          this.$emit('authSuccess', this.record.id)
+                          this.$message.success('success')
+                        }
+                      }).finally(() => {
+                        this.spinning = false
+                      })
+                    }
                   }
+                }).catch(() => {
+                  this.spinning = false
+                  // this.$emit('dontSaveInfo', true)
                 })
+              } else {
+                // this.$message.error('GrantOfflineAccess Error!')
               }
+            }).catch((e) => {
+              // this.$message.error('GrantOfflineAccess Error!')
+              this.spinning = false
+              // this.$emit('dontSaveInfo', true)
             })
           })
+        } else {
+          this.spinning = false
+          this.$emit('dontSaveInfo', true)
         }
       })
     }
@@ -446,5 +604,33 @@ margin-left:6px;margin-top:-5px;
 }
 .ant-form-item {
   margin-bottom: 12px;
+}
+/deep/ .ant-spin-nested-loading{
+  background: rgba(255, 255, 255, 0.4);
+}
+/deep/ .spinStyle .ant-spin-container{
+  width: 33.3333333%;
+}
+.proSpin{
+  // background: #f5f5f5
+  background: transparent;
+}
+.signGoogleSpan_s1{
+  width: 100%;
+  display:flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+.signGoogleSpan_s2{
+  width: 33.3333333%;
+  display:flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+.spinStyle{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 32px;
 }
 </style>

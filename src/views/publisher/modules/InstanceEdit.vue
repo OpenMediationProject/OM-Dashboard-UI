@@ -41,6 +41,7 @@
                 <a-button type="primary" style="margin-right:8px;margin-left:8px;" ghost @click="listSearch">Apply</a-button>
               </span>
             </a-form-item>
+            <!-- <a-button type="primary" :disabled="this.curExpandedRowKeys.length > 0" ghost @click="instanceAdd">Add Instance</a-button> -->
             <a-form-item v-action:edit v-if="canEdit" style="position:absolute; right:8px;">
               <span class="table-page-search-submitButtons" >
                 <a-button type="primary" :disabled="this.curExpandedRowKeys.length > 0" ghost @click="instanceAdd">Add Instance</a-button>
@@ -76,7 +77,7 @@
                 :fill="false"
                 style="margin-bottom: 0;">
                 <a-checkbox
-                  :disabled="!record.editStatus || !record.createNew || [12,17].includes(record.id) || [12,17].includes(tempAdn)"
+                  :disabled="!record.editStatus || !record.createNew || [12,17,23].includes(record.id) || [12,17,23].includes(tempAdn)"
                   size="small"
                   v-model="instanceInfo.hbStatus"
                 />
@@ -165,6 +166,19 @@
                   </a-select>
                 </a-input-group>
               </om-form-model>
+              <!-- Manual Ecpm -->
+              <om-form-model
+                label="Manual eCPM"
+                :colon="false"
+                :fill="false"
+                :labelCol="{ lg: { span: 6 }, sm: { span: 6 } }"
+                style="margin-bottom: 24px;">
+                <waterfall-table-inner
+                  ref="waterfalltableinner"
+                  :recordF="record"
+                  @editECPM="d => changeManualECPM(d, record)">
+                </waterfall-table-inner>
+              </om-form-model>
             </div>
             <span slot="status" slot-scope="text, record">
               <template>
@@ -252,6 +266,7 @@ import ADNSelect from './ADNSelect'
 import { mapState } from 'vuex'
 import OmAdNetworkSelect from '@/components/om/AdNetworkSelect'
 import OmFormModel from '@/components/OmFormModel'
+import WaterfallTableInner from '@/views/mediation/modules/WaterfallTableInner'
 
 export default {
   name: 'InstanceEdit',
@@ -264,7 +279,8 @@ export default {
     ADNSelect,
     OmAdNetworkSelect,
     OmAlert,
-    OmFormModel
+    OmFormModel,
+    WaterfallTableInner
   },
   computed: mapState({
     searchApp: state => state.publisher.searchApp,
@@ -431,12 +447,14 @@ export default {
       }
       this.tempAdn = val.id
       this.instanceInfo.adnId = val.id
-      if (this.tempAdn === 17) {
-        const current = this.data.find(row => row.id === this.curExpandedRowKeys[0])
-        current.hbStatus = true
+      if (this.tempAdn === 17 || this.tempAdn === 23) {
+        // const current = this.data.find(row => row.id === this.curExpandedRowKeys[0])
+        // current.hbStatus = true
+        this.instanceInfo.hbStatus = true
       } else {
-        const current = this.data.find(row => row.id === this.curExpandedRowKeys[0])
-        current.hbStatus = false
+        // const current = this.data.find(row => row.id === this.curExpandedRowKeys[0])
+        // current.hbStatus = false
+        this.instanceInfo.hbStatus = false
       }
       this.accounts = val.accounts
       if (!val.adNetworkAppId) {
@@ -490,6 +508,7 @@ export default {
       }
     },
     handleInstanceSave (record) {
+      console.log(record)
       this.$refs.instanceForm.validate((b) => {
         if (b) {
           const item = { ...this.instanceInfo }
@@ -500,6 +519,7 @@ export default {
           item.modelBlacklist = item['modelType'] === 'exclude' && item['modelList'] ? item['modelList'].join('\n') : ''
           item.hbStatus = item.hbStatus ? 1 : 0
           item.pubAppId = this.searchApp
+          item.instanceCountries = record.instanceCountries
           if (record.createNew) {
             item.adnAppId = this.currentAdnAppId
             instancesCreate(item).then(res => {
@@ -569,7 +589,8 @@ export default {
         expandStatus: false,
         editStatus: true,
         placementKey: '',
-        placementId: this.searchPlacement
+        placementId: this.searchPlacement,
+        instanceCountries: []
       }
       this.data.unshift(newItem)
       this.handleOpen(newItem)
@@ -695,30 +716,42 @@ export default {
           query: { type: 'Add' }
         })
       }
+    },
+    changeManualECPM (d, record) {
+      const tempArr = []
+      d.forEach(v => {
+        if (v.eCPM != null && v.eCPM !== '' && v.regions.length > 0) {
+          tempArr.push({
+            country: v.regions.join(','),
+            manualEcpm: v.eCPM
+          })
+        }
+      })
+      record.instanceCountries = tempArr
     }
   }
 }
 </script>
 
-<style type="less" scoped>
-  .hb-bottom >>> .ant-btn {
+<style lang="less" scoped>
+  .hb-bottom /deep/ .ant-btn {
     padding: 0 0;
   }
-  .adnedit >>> .ant-card-head-title {
+  .adnedit /deep/ .ant-card-head-title {
     margin-left: -8px;
     margin-top: -6px;
   }
-  .adnedit >>> .ant-card-head {
+  .adnedit /deep/ .ant-card-head {
     height: 48px;
   }
-  .adnedit >>> .ant-form-item {
+  .adnedit /deep/ .ant-form-item {
     margin-bottom: 0;
   }
-  .expand-row >>> .ant-divider {
+  .expand-row /deep/ .ant-divider {
     height: 1px;
     margin-top: -16px;
   }
-  .adnedit >>> .ant-form-explain, .ant-form-extra {
+  .adnedit /deep/ .ant-form-explain, .ant-form-extra {
     line-height: 1.5;
     margin-bottom: -20px;
   }

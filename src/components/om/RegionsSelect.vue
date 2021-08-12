@@ -54,6 +54,10 @@ export default {
     ignoreApp: {
       type: Boolean,
       default: false
+    },
+    disabledList: {
+      type: Array,
+      default: null
     }
   },
   created () {
@@ -72,6 +76,15 @@ export default {
     },
     defaultSelected (val) {
       this.value = val
+    },
+    disabledList: {
+      handler: function (val) {
+        if (!this.defaultSelected || !this.defaultSelected.length) {
+          this.setDisTreeData(val)
+        } else if (val && val.length > 0) {
+          this.setDisTreeData(val.filter(v => !this.defaultSelected.includes(v)))
+        }
+      }
     }
   },
   methods: {
@@ -95,7 +108,13 @@ export default {
       }
     },
     buildNode (a) {
-      return { key: a.a2, title: a.a2 + ' - ' + a.name, value: a.a2, text: [a.a2, a.a3, a.name].join(' ').toLowerCase() }
+      return {
+        key: a.a2,
+        title: a.a2 + ' - ' + a.name,
+        value: a.a2,
+        disabled: false,
+        text: [a.a2, a.a3, a.name].join(' ').toLowerCase()
+      }
     },
     updateRegions (pubAppId) {
       const ps = { pubAppId }
@@ -120,11 +139,12 @@ export default {
               tierGroup[a.tier].push(this.buildNode(a))
             }
           })
-          const data = [{ title: 'ALL', key: 'ALL', value: 'ALL' }]
+          const data = [{ title: 'ALL', disabled: false, key: 'ALL', value: 'ALL' }]
           data.push({
             title: 'TOP5',
             key: 'TOP5',
             value: 'TOP5',
+            disabled: false,
             children: top.map(this.buildNode)
           })
           Object.keys(tierGroup).sort().forEach(tier => {
@@ -132,12 +152,36 @@ export default {
               title: 'Tier' + tier,
               key: tier,
               value: tier,
+              disabled: false,
               children: tierGroup[tier]
             })
           })
-
           this.treeData = data
+          if (this.disabledList !== null) {
+            this.setDisTreeData(this.disabledList)
+          }
         })
+    },
+    setDisTreeData (disArr) {
+      if (this.treeData && this.treeData.length > 0) {
+        this.treeData.forEach(v => {
+          let disFlag = false
+          if (v.key === 'ALL' && disArr.includes(v.key)) {
+            disFlag = true
+          }
+          if (v.children && v.children.length) {
+            v.children.forEach(c => {
+              if (disArr.includes(c.key)) {
+                c.disabled = true
+                disFlag = true
+              } else {
+                c.disabled = false
+              }
+            })
+          }
+          v.disabled = disFlag
+        })
+      }
     },
     filterTreeNode (input, option) {
       const text = option.componentOptions.propsData.dataRef.text

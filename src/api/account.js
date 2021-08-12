@@ -6,7 +6,8 @@ const api = {
   accountUpdate: '/publisher/account/update',
   accountDelete: '/publisher/account/delete',
   accountSelectList: '/publisher/account/select/list',
-  googleTokenSave: '/report/google/refreshToken/save'
+  googleTokenSave: '/report/google/refreshToken/save',
+  admobTokenSave: '/report/admob/refreshToken/save'
 }
 export function accountList (params) {
   return axios({
@@ -46,6 +47,13 @@ export function accountSelectList (params) {
 export function googleTokenSave (params) {
   return axios({
     url: api.googleTokenSave,
+    method: 'get',
+    params: params
+  })
+}
+export function admobTokenSave (params) {
+  return axios({
+    url: api.admobTokenSave,
     method: 'get',
     params: params
   })
