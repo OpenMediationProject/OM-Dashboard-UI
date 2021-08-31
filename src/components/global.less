@@ -23,6 +23,10 @@ body {
   //   max-height: 32px;
   //   overflow: hidden;
   // }
+  .ant-tooltip {
+    max-width: 1200px!important;
+    color: #666666;
+  }
   .ant-tooltip-arrow {
     // background-color: #FFFFFF;
     border-left-color: rgba(255, 255, 255, 0);
@@ -40,7 +44,19 @@ body {
     border-radius: 5px;
     padding: 8px 8px !important;
   }
-
+  .my-tooltip {
+    .ant-tooltip-inner {
+      background: #3DADFF;
+      color: white;
+      padding: 16px 16px !important;
+    }
+  } 
+  .my-tooltip{
+    .ant-tooltip-arrow::before {
+      background-color: #3DADFF;
+    }
+  } 
+rgb(23, 25, 26)
   .ant-tooltip-placement-bottom .ant-tooltip-arrow, .ant-tooltip-placement-bottomLeft .ant-tooltip-arrow, .ant-tooltip-placement-bottomRight .ant-tooltip-arrow {
     border-bottom-color: rgba(255, 255, 255, 1);
   }

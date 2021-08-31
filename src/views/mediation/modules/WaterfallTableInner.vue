@@ -359,7 +359,7 @@ export default {
 }
 .addRow {
   margin-top: 8px;
-  color: @primary-color!important;
+  color: #1A7DF1!important;
 }
 .addRow.addRow-disabled{
   color: #D8D8D8!important;

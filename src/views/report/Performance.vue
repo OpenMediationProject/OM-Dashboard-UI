@@ -195,6 +195,9 @@
           </span>
           <span v-else>{{ text }}</span>
         </span>
+        <span slot="App Version"><tip tip="The version of this application." title="App Version"></tip></span>
+        <span slot="SDK Version"><tip tip="The version of OpenMediation SDK." title="SDK Version"></tip></span>
+        <span slot="OS Version"><tip tip="The operation system version of the device." title="OS Version"></tip></span>
       </a-table>
       <div v-else class="performance_no_data">
         <div class="no_data">
@@ -227,12 +230,15 @@ const supportedDimensions = {
   hour: 'Hour',
   day: 'Day',
   country: 'Region',
-  pubAppId: 'App',
+  pubAppId: 'Apps',
   adType: 'Ad Type',
   placementId: 'Placement',
   adnId: 'AdNetwork',
   instanceId: 'Instance',
-  sceneId: 'Scene'
+  sceneId: 'Scene',
+  appVersion: 'App Version',
+  sdkVersion: 'SDK Version',
+  osVersion: 'OS Version'
 }
 
 const dimColumnMapper = {
@@ -335,7 +341,7 @@ export default {
         videoCompletion: { title: 'Video Completions', sort: 20, format: '0,0' }
       },
       dimList4Chart: this.filterDim('pubAppId', 'country', 'adnId'),
-      dimList4Table: this.filterDim('day', 'hour', 'country', 'pubAppId', 'adType', 'placementId', 'adnId', 'instanceId', 'sceneId'),
+      dimList4Table: this.filterDim('day', 'hour', 'country', 'pubAppId', 'adType', 'placementId', 'adnId', 'instanceId', 'sceneId', 'appVersion', 'sdkVersion', 'osVersion'),
       loading: false,
       chartGroupBy: 'pubAppId',
       chartData: [],

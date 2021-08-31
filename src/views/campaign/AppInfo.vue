@@ -57,6 +57,7 @@ export default {
     async load () {
       if (!this.apps || !this.apps.length) {
         const res = await appSelectList()
+        console.log(res.data)
         this.$store.commit('UPDATEAPPS', res.data)
         this.appInfo = this.apps.find(row => {
           return row.id === this.appId

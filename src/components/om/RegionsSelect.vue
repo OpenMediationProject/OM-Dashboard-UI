@@ -1,7 +1,8 @@
 <!-- Regions select component  the props defaultSelected is the default value with tree select  -->
 <template>
   <a-tree-select
-    showSearch
+    style="width: 100%"
+    :show-search="true"
     :value="value"
     :dropdownStyle="{ maxHeight: '300px', overflow: 'auto' }"
     placeholder="Region"
@@ -9,6 +10,7 @@
     :size="size"
     :disabled="disabled"
     :multiple="true"
+    :showArrow="false"
     :treeCheckable="true"
     :treeData="treeData"
     treeNodeLabelProp="value"

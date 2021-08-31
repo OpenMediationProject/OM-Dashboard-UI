@@ -1,10 +1,11 @@
 <template>
   <span :style="status===0 ? 'opacity: 0.3;' : null" >
-    <a-tag v-if="adTypes && adTypes.indexOf('RewardedVideo')>-1">Rewarded Video</a-tag>
-    <a-tag v-if="adTypes && adTypes.indexOf('Interstitial')>-1">Interstitial</a-tag>
-    <a-tag v-if="adTypes && adTypes.indexOf('Native')>-1">Native</a-tag>
-    <a-tag v-if="adTypes && adTypes.indexOf('Banner')>-1">Banner</a-tag>
-    <a-tag v-if="adTypes && adTypes.indexOf('Splash')>-1">Splash</a-tag>
+    <a-tag v-if="adTypes && adTypes.indexOf('RewardedVideo')>-1">{{ $t('placements.rewardedVideo') }}</a-tag>
+    <a-tag v-if="adTypes && adTypes.indexOf('Interstitial')>-1">{{ $t('placements.interstitial') }}</a-tag>
+    <a-tag v-if="adTypes && adTypes.indexOf('Interactive')>-1">{{ $t('placements.interactive') }}</a-tag>
+    <a-tag v-if="adTypes && adTypes.indexOf('Native')>-1">{{ $t('placements.native') }}</a-tag>
+    <a-tag v-if="adTypes && adTypes.indexOf('Banner')>-1">{{ $t('placements.banner') }}</a-tag>
+    <a-tag v-if="adTypes && adTypes.indexOf('Splash')>-1">{{ $t('placements.splash') }}</a-tag>
   </span>
 </template>
 

@@ -9,7 +9,7 @@
       :allowClear="allowClear"
       :disabled="disabled"
       :mode="mode"
-      :showArrow="!allowClear"
+      :showArrow="!allowClear || allowArrow"
       optionLabelProp="title"
       :dropdownMatchSelectWidth="false"
       v-decorator="[modelName, {initialValue: initValue}]"
@@ -78,6 +78,10 @@ export default {
     adnIds: {
       type: Array,
       default: null
+    },
+    allowArrow: {
+      type: Boolean,
+      default: false
     }
   },
   data () {

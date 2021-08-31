@@ -47,10 +47,10 @@ export default {
         return
       }
       const that = this
-      placementSelectList({ pubAppId: pubAppId })
+      placementSelectList({ pubAppId: pubAppId, status: 1 })
         .then(res => {
           if (res.code === 0 && res.data.length) {
-            that.plcList = res.data.filter(row => row.adType !== 5)
+            that.plcList = res.data.filter(row => row.adType !== 9)
             const localPlacement = localStorage.getItem('searchPlacement')
             if (localPlacement) {
               const target = res.data.find(item => item.id === parseInt(localPlacement))
@@ -99,6 +99,6 @@ export default {
     font-weight: 500;
   }
   .plc-select >>> .plc-icon {
-    position: absolute; left: 4px; top: 8px;
+    position: absolute; left: -4px; top: 8px;
   }
 </style>

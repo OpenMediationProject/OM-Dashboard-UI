@@ -1,12 +1,12 @@
 <template>
   <div :style="status?null:'opacity: 0.3;'">
     <div class="plc-info">
-      <img class="plc-icon" style="width:18px;" :src="'/icon/placement/'+type+'.svg'" />
+      <img class="plc-icon" style="width:32px;" :src="GLOBAL.typeInfo(type, $i18n.locale).icon" />
       <div class="plc-title">
         <ellipsis :length="40" tooltip>{{ name }}</ellipsis><img v-if="abt===1" style="margin-left:4px;margin-right:4px;" src="/icon/TA.svg"/><img v-if="abt===1" src="/icon/TB.svg"/>
       </div>
       <div class="plc-type">
-        <span>{{ GLOBAL.typeInfo(type).title }}</span>
+        <span>{{ GLOBAL.typeInfo(type, $i18n.locale).title }}</span>
         <a-divider type="vertical" />
         <span style="margin-left:-2px;">{{ id }}</span>
       </div>
@@ -68,7 +68,7 @@ export default {
   display: inline-block;margin-left: 32px;
 }
 .plc-icon {
-  position: absolute; left: 16px; top: 10px;
+  position: absolute; left: 8px; top: 10px;
 }
 .plc-type {
   color:#999999;font-size: 12px;text-align: left;

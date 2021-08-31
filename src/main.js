@@ -19,6 +19,7 @@ import './utils/filter' // global filter
 import './components/global.less'
 import global from './global'
 import i18n from '../lang/index'
+import '../public/assets/iconfont/iconfont.css'
 
 Vue.config.productionTip = false
 Vue.prototype.GLOBAL = global

@@ -2,19 +2,19 @@
 <template>
   <a-select
     showSearch
-    :style="{ width: width, marginTop: '4px' }"
-    placeholder="Instance"
+    :style="{ width: width, marginTop: '4px', height: '32px' }"
+    :placeholder="$t('mediation.instance')"
     size="default"
-    :allowClear="allowClear"
+    :allowClear="true"
     :disabled="disabled"
     :mode="mode"
-    :showArrow="!allowClear"
     optionLabelProp="title"
     :dropdownMatchSelectWidth="false"
     v-model="initValue"
     :filterOption="instanceFilterOption"
     @change="handleChange">
-    <a-select-option v-for="instance in data" :key="instance.id" :title="instance.name">
+    <a-icon slot="suffixIcon" type="search" />
+    <a-select-option v-for="instance in data" :key="instance.id" :title="instance.name" :value="instance.id">
       <div style="display: inline-block;vertical-align: middle;">
         <div style="color:#333333;font-size: 14px;">
           <ellipsis :length="30">{{ instance.name }}</ellipsis>
@@ -60,6 +60,10 @@ export default {
       default () {
         return []
       }
+    },
+    defaultShowInstace: {
+      type: String,
+      default: ''
     },
     placementId: {
       type: Number,
@@ -110,9 +114,7 @@ export default {
         instancesSelectList(params).then(res => {
           if (res.code === 0) {
             if (this.hb) {
-              res.data = res.data.filter(row => {
-                return !row.headbidding
-              })
+              res.data = res.data.filter(row => { return !row.headbidding })
             }
             this.data = res.data
           }
@@ -128,9 +130,7 @@ export default {
       instancesSelectList(params).then(res => {
         if (res.code === 0) {
           if (this.hb) {
-            res.data = res.data.filter(row => {
-              return !row.headbidding
-            })
+            res.data = res.data.filter(row => { return !row.headbidding })
           }
           this.data = res.data
         }
@@ -145,9 +145,7 @@ export default {
       instancesSelectList(params).then(res => {
         if (res.code === 0) {
           if (this.hb) {
-            res.data = res.data.filter(row => {
-              return !row.headbidding
-            })
+            res.data = res.data.filter(row => { return !row.headbidding })
           }
           this.data = res.data
         }
@@ -167,6 +165,10 @@ export default {
     },
     searchPlacement (val) {
       this.resetOptions()
+    },
+    defaultShowInstace (val) {},
+    defaultValue (val) {
+      this.initValue = val
     }
   }
 }

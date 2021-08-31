@@ -1,51 +1,100 @@
 <template>
   <a-spin :spinning="spinning" size="large">
-    <div v-show="!spinning" class="water-fall">
+    <OmFocus v-if="addModel" />
+    <div v-if="guideRlFirst" @click="onGuideModel" style="background: black;width: 100vw;height: 100vh;position: fixed;top: 0;left: 0;opacity: 0.3;z-index: 1001;"></div>
+    <add-instance
+      v-if="addModel"
+      :isNeedGroupLevel="true"
+      @addInstancesCancel="()=> this.addModel = false"
+      @refreshData="afterAddInstances"
+    ></add-instance>
+    <div v-show="!spinning" class="water-fall" style="position: relative;">
       <OmPageAction :has-change="hasChange" :loading="loading" @save="segmentSave" :canEdit="canEdit"/>
-      <page-header-placement/>
+      <page-header-placement />
+      <GuideModel
+        :visible="guideRlNum === 0"
+        placement="bottomLeft"
+        top="-5px"
+        left="-60px"
+        :type="1"
+        :linkUrl="`${ $i18n.locale === 'zhCN' ? 'https://support.openmediation.com/hc/zh-cn/articles/360050663934-搭建聚合规则体系' : 'https://support.openmediation.com/hc/en-us/articles/360050663934-Mediation-rule-settings' }`"
+        :guideTitle="$t('mediation.guide_t8_tip')"
+        :guideContent="$t('mediation.guide_c8_tip')"
+        @nextGuideNum="() => guideRlNum++"
+        @closeGuide="closeGuide"
+        @laterGuide="laterGuide"
+      />
       <a-form-model ref="ruleForm" :model="mediationRuleInfo" :rules="rules" :hideRequiredMark="true">
-        <a-card class="card-noline om-card-style" title="Basic Information" :bordered="false" >
-          <om-form-model field="name" label="Name" :tip="this.$msg('mediation.rule_name_tip')">
-            <a-input :max-length="500" placeholder="Name" v-model="mediationRuleInfo.name"/>
+        <a-card class="card-noline om-card-style" :title="$t('mediation.basicInformation')" :bordered="false" >
+          <om-form-model field="name" :label="$t('comm.name')" :tip="this.$t('mediation.rule_name_tip')">
+            <a-input :max-length="500" :placeholder="$t('comm.name')" v-model="mediationRuleInfo.name" />
           </om-form-model>
-          <om-form-model field="autoOpt" label="Optimized Type" :tip="this.$msg('mediation.optimized_type_tip')">
-            <a-select placeholder="Manual" v-model="mediationRuleInfo.autoOpt">
-              <a-select-option :value="0">Manual</a-select-option>
-              <a-select-option :value="1">Auto</a-select-option>
+          <!-- <om-form-model field="autoOpt" :label="$t('mediation.optimizedType')" :tip="this.$t('mediation.optimized_type_tip')">
+            <a-select :label="$t('ab.manual')" v-model="mediationRuleInfo.autoOpt" >
+              <a-select-option :value="0">{{ $t('ab.manual') }}</a-select-option>
+              <a-select-option :value="1">{{ $t('ab.auto') }}</a-select-option>
             </a-select>
-          </om-form-model>
-          <om-form-model label="Regions" field="regions" :tip="this.$msg('mediation.regions_tip')">
+          </om-form-model> -->
+          <om-form-model :label="$t('comm.regions')" field="regions" :tip="this.$t('mediation.regions_tip')">
             <regions-select
               mode="multiple"
               :default-selected="mediationRuleInfo.regions"
               @change="(v)=>{mediationRuleInfo.regions=v}"
               style="width: 100%"/>
           </om-form-model>
-          <om-form-model label="Channel" field="channel" :fill="false">
+          <om-form-model :label="$t('mediation.tracking_allowed')" field="appTracking" :tip="mediationRuleInfo.appTracking ? this.$t('mediation.app_tracking_allowed_tip_on') : this.$t('mediation.app_tracking_allowed_tip_off')">
+            <a-switch v-model="mediationRuleInfo.appTracking" >
+              <a-icon slot="checkedChildren" type="check" />
+              <a-icon slot="unCheckedChildren" type="close" />
+            </a-switch>
+            {{ mediationRuleInfo.appTracking? $t('mediation.app_tracking_open'): $t('mediation.app_tracking_close') }}
+          </om-form-model>
+          <!-- <om-form-model :label="$t('ab.channel')" v-if="isNgp" field="channel" :fill="false">
             <a-input-group style="width:100%" compact>
               <a-select v-model="mediationRuleInfo.channelBow">
-                <a-select-option :value="1">include</a-select-option>
-                <a-select-option :value="0">exclude</a-select-option>
+                <a-select-option :value="1">{{ $t('placements.include') }}</a-select-option>
+                <a-select-option :value="0">{{ $t('placements.exclude') }}</a-select-option>
               </a-select>
               <a-select allowClear v-model="mediationRuleInfo.channel" mode="tags" style="width: 73%">
               </a-select>
             </a-input-group>
-          </om-form-model>
-          <a-divider><img v-if="visible" @click="visible = !visible" src="/assets/lineUp.svg"><img
-            @click="visible = !visible"
-            v-else
-            src="/assets/lineDown.svg"></a-divider>
-          <span v-show="visible">
-            <om-form-model label="App Versions" field="appvExp" :fill="false" :tip="this.$msg('mediation.appv_exp_tip')" >
-              <a-input placeholder="e.g: [1.0,)" style="width:100%" v-model="mediationRuleInfo.appvExp"/>
+          </om-form-model> -->
+          <a-row style="margin-bottom: 16px;">
+            <!-- <a-col :span="8" style="text-align: right; padding-right: 8px;"><a @click="visible = !visible">Advanced Options <img src="/icon/d.svg"></a></a-col> -->
+            <a-divider></a-divider>
+            <a-col :span="24" style="text-align: center; padding-right: 8px;"><a @click="visible = !visible">{{ $t('mediation.advancedOptions') }} <span class="iconfont">{{ visible ? '&#xe603;' : '&#xe602;' }}</span></a></a-col>
+            <!-- <a-col :span="16"></a-col> -->
+            <!-- <a-divider><a @click="visible = !visible">{{ $t('mediation.advancedOptions') }} <span class="iconfont">{{ visible ? '&#xe603;' : '&#xe602;' }}</span></a></a-divider> -->
+          </a-row>
+          <div v-show="visible" style="background-color: #FBFBFB; padding: 16px 0 16px 0;">
+            <om-form-model :label="$t('mediation.appVersions')" field="appvExp" :fill="false" :tip="$t('mediation.appv_exp_tip')" >
+              <a-input placeholder="e.g.1.0.1;1.0.2" :max-length="100" style="width:100%" v-model="mediationRuleInfo.appvExp"/>
             </om-form-model>
-            <om-form-model label="OS Versions" field="osvExp" :fill="false" :tip="this.$msg('mediation.osv_exp_tip')" >
-              <a-input placeholder="e.g: (4.4,8];[10,)" style="width:100%" v-model="mediationRuleInfo.osvExp"/>
+            <om-form-model :label="$t('mediation.OSVersions')" :fill="false" field="osvmin" :tip="$t('mediation.osv_exp_tip')">
+              <OsVersion
+                :plat="currentAppInfo().plat"
+                @change="(v)=>{mediationRuleInfo.osvmin=v}"
+                :max="mediationRuleInfo.osvmax"
+                :default-value="mediationRuleInfo.osvmin"
+                :hint="$t('comm.minimum')"
+                :type="0"
+                style="width: 150px;"/> ~
+              <a-form-model-item prop="osvmax" style="display: inline-block;margin-bottom: 16px;"><OsVersion
+                :min="mediationRuleInfo.osvmin"
+                :default-value="mediationRuleInfo.osvmax"
+                @change="(v)=>{
+                  mediationRuleInfo.osvmax=v
+                }"
+                @maxv="(v)=>{maxv=v}"
+                style="width: 150px"
+                :plat="currentAppInfo().plat"
+                :type="1"
+                :hint="$t('comm.maximum')" /></a-form-model-item>
             </om-form-model>
-            <om-form-model label="SDK Versions" field="sdkvExp" :fill="false" :tip="this.$msg('mediation.sdkv_exp_tip')" >
-              <a-input placeholder="e.g: [2.0,)" style="width:100%" v-model="mediationRuleInfo.sdkvExp"/>
+            <om-form-model :label="$t('mediation.SDKVersions')" style="margin-top: -16px;" field="sdkvExp" :fill="false" :tip="$t('mediation.sdkv_exp_tip')" >
+              <a-input :max-length="100" placeholder="e.g.1.0.1;1.0.2" style="width:100%" v-model="mediationRuleInfo.sdkvExp"/>
             </om-form-model>
-            <om-form-model label="Frequency" field="frequency" :fill="false" :tip="this.$msg('mediation.frequency_tip')">
+            <om-form-model :label="$t('mediation.frequency')" field="frequency" :fill="false" :tip="$t('mediation.frequency_tip')" >
               <a-input-number
                 ref="iap-min"
                 style="width:100%"
@@ -55,9 +104,9 @@
                 v-model="mediationRuleInfo.frequency"/>
             </om-form-model>
             <om-form-model
-              label="IAP(USD)"
+              :label="$t('mediation.IAPUSD')"
               field="iap"
-              :tip="$msg('mediation.iap_tip')"
+              :tip="$t('mediation.iap_tip')"
               :fill="false">
               <a-input-group compact>
                 <a-input-number
@@ -67,7 +116,7 @@
                   @change="(v)=>iap[0]=v"
                   v-model="mediationRuleInfo.iapMin"
                   style=" width: 100px; text-align: center"
-                  placeholder="Minimum"/>
+                  :placeholder="$t('comm.minimum')" />
                 <a-input
                   style=" width: 30px; border-left: 0; pointer-events: none;"
                   placeholder="~"
@@ -80,19 +129,19 @@
                   :max="9999"
                   v-model="mediationRuleInfo.iapMax"
                   style="width: 100px; text-align: center; border-left: 0"
-                  placeholder="Maximum"/>
+                  :placeholder="$t('comm.maximum')" />
               </a-input-group>
             </om-form-model>
-            <om-form-model label="Gender" field="gender" :tip="this.$msg('mediation.gender_tip')" :fill="false">
+            <om-form-model :label="$t('mediation.gender')" field="gender" :tip="$t('mediation.gender_tip')" :fill="false">
               <a-checkbox-group v-model="mediationRuleInfo.gender">
-                <a-checkbox :value="0">Male</a-checkbox>
-                <a-checkbox :value="1">Female</a-checkbox>
+                <a-checkbox :value="0">{{ $t('mediation.male') }}</a-checkbox>
+                <a-checkbox :value="1">{{ $t('mediation.female') }}</a-checkbox>
               </a-checkbox-group>
             </om-form-model>
             <om-form-model
-              label="Age"
+              :label="$t('mediation.age')"
               field="age"
-              :tip="this.$msg('mediation.age_tip')"
+              :tip="this.$t('mediation.age_tip')"
               :fill="false">
               <a-input-group compact>
                 <a-input-number
@@ -102,7 +151,7 @@
                   @change="(v)=>age[0]=v"
                   v-model="mediationRuleInfo.ageMin"
                   style=" width: 100px; text-align: center"
-                  placeholder="Minimum"/>
+                  :placeholder="$t('comm.miniage')" />
                 <a-input
                   style=" width: 30px; border-left: 0; pointer-events: none;"
                   placeholder="~"
@@ -115,41 +164,29 @@
                   :max="200"
                   v-model="mediationRuleInfo.ageMax"
                   style="width: 100px; text-align: center; border-left: 0"
-                  placeholder="Maximum"/>
+                  :placeholder="$t('comm.maxiage')" />
               </a-input-group>
             </om-form-model>
-            <om-form-model
-              label="Connection Types"
-              field="conType"
-              :fill="false"
-              :tip="this.$msg('mediation.contype_tip')">
-              <a-select placeholder="Connection Types" v-model="mediationRuleInfo.conType" mode="multiple">
+            <om-form-model :label="$t('mediation.connectionTypes')" field="conType" :fill="false" :tip="this.$t('mediation.contype_tip')" >
+              <a-select :placeholder="$t('mediation.connectionTypes')" v-model="mediationRuleInfo.conType" mode="multiple">
                 <a-select-option :value="0">WIFI</a-select-option>
                 <a-select-option :value="1">2G</a-select-option>
                 <a-select-option :value="2">3G</a-select-option>
                 <a-select-option :value="3">4G</a-select-option>
               </a-select>
             </om-form-model>
-            <om-form-model
-              label="Model Type"
-              field="modelType"
-              :fill="false"
-              :tip="this.$msg('mediation.model_type_tip')">
-              <a-select
-                placeholder="Device Types"
-                v-model="mediationRuleInfo.deviceModelType"
-                mode="multiple"
-                style="width: 100%;">
+            <om-form-model :label="$t('mediation.modelType')" field="modelType" :fill="false" :tip="this.$t('mediation.model_type_tip')" >
+              <a-select :placeholder="$t('mediation.modelType')" v-model="mediationRuleInfo.deviceModelType" mode="multiple" style="width: 100%;">
                 <a-select-option :value="0">Phone</a-select-option>
                 <a-select-option :value="1">Pad</a-select-option>
                 <a-select-option :value="2">TV</a-select-option>
               </a-select>
             </om-form-model>
-            <om-form-model label="Device Brand" field="brand" :tip="this.$msg('mediation.brand_tip')" :fill="false">
+            <om-form-model :label="$t('mediation.deviceBrand')" field="brand" :tip="this.$t('mediation.brand_tip')" :fill="false">
               <a-input-group style="width:100%" compact>
                 <a-select v-model="mediationRuleInfo.brandType">
-                  <a-select-option value="include">include</a-select-option>
-                  <a-select-option value="exclude">exclude</a-select-option>
+                  <a-select-option value="include">{{ $t('placements.include') }}</a-select-option>
+                  <a-select-option value="exclude">{{ $t('placements.exclude') }}</a-select-option>
                 </a-select>
                 <a-select
                   style="width: 73%"
@@ -158,16 +195,16 @@
                   :notFoundContent="fetching ? undefined : null"
                   v-model="mediationRuleInfo.brandList"
                   mode="multiple">
-                  <a-spin v-if="fetching" slot="notFoundContent" size="small"/>
+                  <a-spin v-if="fetching" slot="notFoundContent" size="small" />
                   <a-select-option v-for="d in deviceBrandData" :key="d.value">{{ d.text }}</a-select-option>
                 </a-select>
               </a-input-group>
             </om-form-model>
-            <om-form-model label="Device Model" field="model" :tip="this.$msg('mediation.model_tip')" :fill="false">
+            <om-form-model :label="$t('mediation.deviceModel')" field="model" :tip="this.$t('mediation.model_tip')" :fill="false">
               <a-input-group style="width:100%" compact>
                 <a-select v-model="mediationRuleInfo.modelType">
-                  <a-select-option value="include">include</a-select-option>
-                  <a-select-option value="exclude">exclude</a-select-option>
+                  <a-select-option value="include">{{ $t('placements.include') }}</a-select-option>
+                  <a-select-option value="exclude">{{ $t('placements.exclude') }}</a-select-option>
                 </a-select>
                 <a-select
                   style="width: 73%"
@@ -176,12 +213,12 @@
                   :notFoundContent="fetching ? undefined : null"
                   v-model="mediationRuleInfo.modelList"
                   mode="multiple">
-                  <a-spin v-if="fetching" slot="notFoundContent" size="small"/>
+                  <a-spin v-if="fetching" slot="notFoundContent" size="small" />
                   <a-select-option v-for="d in deviceModelData" :key="d.value">{{ d.text }}</a-select-option>
                 </a-select>
               </a-input-group>
             </om-form-model>
-            <om-form-model label="Custom Tags" :fill="false" field="customParams">
+            <om-form-model :label="$t('mediation.customTags')" :fill="false" field="customParams">
               <a-table
                 v-if="customList.length"
                 rowKey="id"
@@ -192,17 +229,17 @@
                 :pagination="false"
                 :columns="customColumn">
                 <span slot="name" slot-scope="text, record">
-                  <a-input placeholder="Enter name" v-model="record.name" />
+                  <a-input :placeholder="$t('ab.enterName')" v-model="record.name" />
                 </span>
                 <span slot="type" slot-scope="text, record">
-                  <a-select v-model="record.type" @change="record.value=''" placeholder="Select">
+                  <a-select v-model="record.type" @change="record.value=''" :placeholder="$t('comm.select')">
                     <a-select-option :value="0">String</a-select-option>
                     <a-select-option :value="1">Integer</a-select-option>
                     <a-select-option :value="2">Float</a-select-option>
                   </a-select>
                 </span>
                 <span slot="operator" slot-scope="text, record">
-                  <a-select v-model="record.operator" placeholder="Select">
+                  <a-select v-model="record.operator" :placeholder="$t('comm.select')">
                     <a-select-option value=">">Greater than</a-select-option>
                     <a-select-option value=">=">Greater or equal to</a-select-option>
                     <a-select-option value="<">Less than</a-select-option>
@@ -226,91 +263,82 @@
                 ghost
                 :disabled="!!customList.find(row=>{return !row.name || !row.operator || !row.value})"
                 style="width: 240px; height: 32px;"
-                @click="addCustomTag">+ Add Parameter</a-button>
+                @click="addCustomTag">+ {{ $t('mediation.addParameter') }}</a-button>
             </om-form-model>
-          </span>
+          </div>
         </a-card>
-        <a-card
-          v-show="headerbidding.length"
-          class="card-noline om-card-style"
-          title="In-app Bidding"
-          :bordered="false"
-          style="margin-top:8px;">
-          <a-spin :spinning="fetchingHB">
-            <a-table
-              style="margin: 8px 24px 24px;"
-              class="ant-card-table-default-noshadow"
-              ref="hbTable"
-              rowKey="id"
-              :dataSource="headerbidding"
-              :columns="columnsHB"
-              :pagination="false"
-              :bordered="false"
-            >
-              <span slot="status" slot-scope="text, record">
-                <template>
-                  <a @click="instanceHbStatusUpdate(record, 'hb')">{{ record.priority >0 ? 'Disable' : 'Enable' }}</a>
-                </template>
-              </span>
-              <span slot="name" slot-scope="text, record">
-                <span :style="record.priority >0 ? null: 'opacity: 0.3;' ">
-                  <a-tooltip :title="record.placementKey">{{ text }}</a-tooltip>
-                </span>
-              </span>
-              <span slot="className" slot-scope="text, record">
-                <ad-network
-                  :className="text"
-                  :id="record.adnId"
-                  :status="record.priority>0 ? 1: 0"
-                />
-              </span>
-            </a-table>
-          </a-spin>
-        </a-card>
-        <a-card class="card-noline om-card-style" :bordered="false" title="Waterfall" style="margin-top:8px;">
-          <a-row type="flex" justify="start" style="height: 44px;">
-            <om-ad-network-select
-              :pubAppId="appId"
-              @change="adnChange"
-              size="default"
-              style="margin-left:24px;margin-right:8px; display:inline-block; "/>
-            <OmInstanceSelect
-              @change="(v)=>instanceIds=v"
-              :adnIds="adnIds"
-              :hb="true"
-              :allowClear="true"
-              modelName="instanceId"
-              :placementId="this.placementId"/>
-            <a-form-item>
-              <a-select
-                style="width:200px;margin-left: 8px;"
-                @change="hourChange"
-                v-model="mediationRuleInfo.hourBefore"
-                :allowClear="false">
-                <span slot="suffixIcon"><img src="/icon/Clock.svg"></span>
-                <a-select-option
-                  v-for="time in [{value: 12, title:'In 12 hours'},{value: 24, title:'In 24 hours'},{value:48, title:'In 48 hours'}]"
-                  :key="time.value"
-                  :title="time.title">
-                  {{ time.title }}
-                </a-select-option>
-              </a-select>
-            </a-form-item>
-            <a-button type="primary" style="margin-left:8px;width:100px;margin-top: 3px;" ghost @click="search(true)">
-              Apply
-            </a-button>
-          </a-row>
+        <a-card class="card-noline om-card-style" :bordered="false" style="margin-top:8px;" >
+          <a-form :form="form" :hideRequiredMark="true">
+            <a-row type="flex" justify="start" style="height: 44px;margin-top:16px;position: relative;">
+              <OmAdNetworkSelect
+                name="adnetworkSelect"
+                :pubAppId="appId"
+                @change="adnChange"
+                size="default"
+                width="180px"
+                style="margin-left:24px;margin-right:8px; display:inline-block; "/>
+              <OmInstanceSelect
+                name="instanceSelect"
+                @change="insSelectChange"
+                :adnIds="adnIds"
+                :hb="true"
+                :allowClear="true"
+                width="180px"
+                modelName="instanceId"
+                :placementId="this.placementId" />
+              <a-form-item :style=" guideRlNum === 2 ? `position: relative; z-index: 1003;` : ``">
+                <RegionsSelect :defaultSelected="resionDefaultArrs" @change="regoinsSelectedId" size="default" style="margin-left: 8px;margin-top:2px;width:180px;" />
+                <GuideModel
+                  :visible="guideRlNum === 2"
+                  :totalNum="3"
+                  :currentNum="2"
+                  :type="3"
+                  placement="bottomLeft"
+                  top="30px"
+                  left="50px"
+                  :guideTitle="$t('mediation.guide_t10_tip')"
+                  :guideContent="$t('mediation.guide_c10_tip')"
+                  @preGuideNum="() => guideRlNum--"
+                  @nextGuideNum="() => guideRlNum++"
+                  @closeGuide="closeGuide"/>
+              </a-form-item>
+              <a-form-item>
+                <DaysSelect ref="daySelect" style="margin-left: 8px;" @change="daysSelectedId" size="default"/>
+              </a-form-item>
+              <div :style="`position: absolute; right: 24px; top: 4px; ${ guideRlNum === 1 ? 'z-index: 1003' : '' }`">
+                <a-button type="primary" ghost @click="instanceAdd"><span class="iconfont" style="margin-right: 4px;">&#xe609;</span>{{ $t('mediation.AddInstance') }}</a-button>
+                <GuideModel
+                  :visible="guideRlNum === 1"
+                  :totalNum="3"
+                  :currentNum="1"
+                  :type="2"
+                  placement="bottomRight"
+                  top="28px"
+                  left="120px"
+                  :guideTitle="$t('mediation.guide_t9_tip')"
+                  :guideContent="$t('mediation.guide_c9_tip')"
+                  :guideImg="$i18n.locale === 'zhCN' ? '/mediation/zh/rule.webp' : '/mediation/en/rule.webp'"
+                  @preGuideNum="() => guideRlNum--"
+                  @nextGuideNum="() => guideRlNum++"
+                  @closeGuide="closeGuide"/>
+              </div>
+            </a-row>
+          </a-form>
+          <a-divider style="margin-top: 12px;"></a-divider>
           <a-spin :spinning="fetching">
-            <WaterfallTable
-              ref="waterfallTable"
-              :autoOpt="mediationRuleInfo.autoOpt"
-              :hour="hourBefore"
-              :data="filter ? templist:instances"
-              :sortdisable="filter"
-              style="margin-left:24px;margin-right:24px;margin-bottom:16px;"
-              @updateStatus="instanceUpdate"
-              @sortEnd="sortInstance"
-              @priorityUpdate="onCellChange"
+            <ZeroTip :width="$i18n.locale === 'zhCN' ? '650px' : '882px'" top="16px" bottom="16px" v-if="!!ruleId"/>
+            <BiddingPane ref="biddingPane" :dataSources="dataSources_bidding"/>
+            <WaterfallPane
+              ref="waterfallPane"
+              :dataSources="dataSources_waterfall"
+              :waterfallRefresh="waterfallRefresh"
+              :initAuto="!!ruleId"
+              :regionsTier="regionsTier"
+              :guideRlNum="guideRlNum"
+              @addEndableInstance="instanceAdd"
+              @preGuideNum="() => guideRlNum--"
+              @nextGuideNum="() => guideRlNum++"
+              @closeGuide="closeGuide"
             />
           </a-spin>
         </a-card>
@@ -323,18 +351,30 @@
 
 <script>
 import { segmentGet, mediationRuleInstanceList, segmentUpdateWithInstance } from '@/api/mediation'
-import AdNetwork from '@/components/Mediation/AdNetwork'
+import AdNetwork from '@/components/om/AdNetwork'
 import OmAdNetworkSelect from '@/components/om/AdNetworkSelect'
 import OmInstanceSelect from './InstanceSelect'
 import WaterfallTable from './WaterfallTable'
+import WaterfallPane from './WaterfallPane'
+import BiddingPane from './BiddingPane'
 import PageHeaderPlacement from '@/components/om/PageHeaderPlacement'
 import numerify from 'numerify'
 import OmPageAction from '@/components/OmPageAction'
 import OmFormModel from '@/components/OmFormModel'
+import { mapState } from 'vuex'
 import RegionsSelect from '@/components/om/RegionsSelect'
 import { modelSearch, brandSearch } from '@/api/publisher'
-import { generateUUID } from 'ant-design-vue/lib/vc-select/util'
+import OsVersion from '@/views/campaign/OsVersion'
 import { arrDiff } from '@/utils/util'
+import { generateUUID } from 'ant-design-vue/lib/vc-select/util'
+import DaysSelect from './DaysSelect'
+import OmFocus from '@/components/OmFocus'
+import AddInstance from './AddInstances'
+import GuideModel from './GuideModel'
+import ZeroTip from './ZeroTip'
+import { getGuideInfo, setGuideInfo } from './utils'
+
+const VERSION_RANGE_REG_EX = /^[[(]([^,]+)?,([^,]+)?[)\]]$/i
 
 export default {
   name: 'MediationEdit',
@@ -346,50 +386,58 @@ export default {
     PageHeaderPlacement,
     OmPageAction,
     OmFormModel,
-    RegionsSelect
+    RegionsSelect,
+    OsVersion,
+    WaterfallPane,
+    BiddingPane,
+    DaysSelect,
+    OmFocus,
+    AddInstance,
+    GuideModel,
+    ZeroTip
   },
   data () {
     const type = this.$route.query.type
     const columnsHB = [
       {
-        title: 'Ad Network',
+        title: this.$t('mediation.AdNetwork'),
         dataIndex: 'className',
         width: '40%',
         scopedSlots: { customRender: 'className' }
       },
       {
-        title: 'Instance',
+        title: this.$t('mediation.instances'),
         dataIndex: 'name',
         width: '40%',
         scopedSlots: { customRender: 'name' }
       },
       {
-        title: 'Operations',
+        title: this.$t('comm.operations'),
         dataIndex: 'status',
         scopedSlots: { customRender: 'status' }
       }
     ]
     const customColumn = [
       {
-        title: 'Name',
+        title: this.$t('comm.name'),
         dataIndex: 'name',
         width: 200,
         scopedSlots: { customRender: 'name' }
       },
       {
-        title: 'Data Type',
+        title: this.$t('mediation.dataType'),
         dataIndex: 'type',
         width: 150,
         scopedSlots: { customRender: 'type' }
       },
       {
-        title: 'Operator',
+        title: this.$t('mediation.operator'),
         dataIndex: 'operator',
         width: 200,
         scopedSlots: { customRender: 'operator' }
       },
       {
-        title: 'Value',
+        title: this.$t('mediation.value'),
         dataIndex: 'value',
         scopedSlots: { customRender: 'value' }
       },
@@ -448,6 +496,8 @@ export default {
       value: [],
       iap: [],
       age: [],
+      maxv: null,
+      smaxv: null,
       mediationRuleInfo: {
         name: '',
         autoOpt: 0,
@@ -467,16 +517,21 @@ export default {
         deviceModelType: [],
         hourBefore: 24,
         gender: [],
-        osvExp: undefined,
+        requireDid: undefined,
+        appTracking: false,
+        osvmax: undefined,
+        osvmin: undefined,
+        sdkmax: undefined,
+        sdkmin: undefined,
         sdkvExp: undefined,
         appvExp: undefined
       },
       rules: {
         name: [
-          { required: true, whitespace: true, message: this.$msg('mediation.name_empty'), trigger: 'change' }
+          { required: true, whitespace: true, message: this.$t('mediation.name_empty'), trigger: 'change' }
         ],
         regions: [
-          { required: true, message: this.$msg('mediation.regions_empty'), trigger: 'change' }
+          { required: true, message: this.$t('mediation.regions_empty'), trigger: 'change' }
         ],
         iap: [
           { validator: validateIap, trigger: 'change' }
@@ -502,6 +557,7 @@ export default {
       currentExpandedStatOpen: false,
       deviceData: [],
       regions: [],
+      regionsTier: [],
       count: -100,
       segmentId: null,
       gender: [],
@@ -516,7 +572,35 @@ export default {
       templist: [],
       filter: false,
       oldData: {},
-      changeInstance: false
+      changeInstance: false,
+      dataSources_bidding: [],
+      dataSources_waterfall: [],
+      waterfallRefresh: 0,
+      daysSelected: 1,
+      addModel: false,
+      resionDefaultArrs: null,
+      dataSources_waterfall_copy: [],
+      form: this.$form.createForm(this),
+      guideRlFirst: false,
+      guideRlNum: -1,
+      isSaving: false
+    }
+  },
+  computed: mapState({
+    isNgp: state => state.user.info.isNgp,
+    apps: state => state.publisher.apps,
+    searchApp: state => state.publisher.searchApp
+  }),
+  watch: {
+    addModel (f) {
+      if (f) {
+        document.documentElement.scrollTop = 0
+        document.body.style.height = '100vh'
+        document.body.style['overflow-y'] = 'hidden'
+      } else {
+        document.body.style.height = 'unset'
+        document.body.style['overflow-y'] = 'auto'
+      }
     }
   },
   mounted () {
@@ -528,14 +612,13 @@ export default {
           return
         }
         this.segmentId = res.data.segmentId
-        if (res.data.countries && res.data.countries.indexOf('00') > -1) {
-          res.data.countries.splice(res.data.countries.indexOf('00'), 1)
-          res.data.countries.push('ALL')
-          this.regions = res.data.countries
-        } else {
-          this.regions = res.data.countries
+        if (res.data.countries) {
+          if (res.data.countries && res.data.countries.indexOf('00') > -1) {
+            res.data.countries.splice(res.data.countries.indexOf('00'), 1)
+            res.data.countries.push('ALL')
+          }
+          res.data.regions = res.data.countries
         }
-        res.data.regions = res.data.countries
         if (res.data.channel) {
           res.data.channel = res.data.channel.split(',')
         } else {
@@ -575,7 +658,13 @@ export default {
         if (this.type === 'Duplicate') {
           res.data.name = ''
         }
+        const arr = VERSION_RANGE_REG_EX.exec(res.data.osvExp)
+        if (arr) {
+          this.mediationRuleInfo.osvmin = arr.length > 1 && arr[1] || undefined
+          this.mediationRuleInfo.osvmax = arr.length > 2 && arr[2] || undefined
+        }
         this.customList = this.parseCustomTags(res.data.customTags)
+        this.mediationRuleInfo.appTracking = !!res.data.requireDid
         Object.assign(this.mediationRuleInfo, res.data)
         this.oldData = JSON.parse(JSON.stringify(this.mediationRuleInfo))
         this.oldData.customList = JSON.parse(JSON.stringify(this.customList))
@@ -585,8 +674,71 @@ export default {
       })
     }
     this.search()
+    setTimeout(() => {
+      if (!getGuideInfo('rl') && !getGuideInfo('rl_l')) {
+        this.guideRlFirst = true
+        this.guideRlNum = 0
+      }
+    }, 1000)
   },
   methods: {
+    onGuideModel () {
+      this.guideRlNum++
+      if (this.guideRlNum === 4) {
+        this.closeGuide()
+      }
+    },
+    closeGuide () {
+      setGuideInfo('rl', 1)
+      this.closeGuideModel()
+    },
+    laterGuide () {
+      setGuideInfo('rl_l', 1)
+      this.closeGuideModel()
+    },
+    closeGuideModel () {
+      this.guideRlNum = -1
+      this.guideRlFirst = false
+    },
+    afterAddInstances (datas) {
+      const dataSourcesBiddingTemp = []
+      const dataSourcesWaterfallTemp = []
+      let originDatas = []
+      if (datas.length) {
+        this.form.resetFields(['adnetworkSelect'])
+        this.form.resetFields(['instanceSelect'])
+        this.adnIds = []
+        this.instanceIds = []
+        if (this.waterfallRefresh === 1) {
+          originDatas = this.getInstanceFromReamin()
+        } else {
+          originDatas = this.getInstanceFromTier()
+        }
+        this.waterfallRefresh = 0
+      }
+      setTimeout(() => {
+        datas.forEach(row => {
+          this.setRowData(row)
+          row.priority = 1
+          row.newItem = true
+          if (row.hbStatus === 1) {
+            dataSourcesBiddingTemp.push(row)
+          } else {
+            row.editPriority = false
+            dataSourcesWaterfallTemp.push(row)
+          }
+        })
+        if (dataSourcesBiddingTemp.length) {
+          this.dataSources_bidding = this.dataSources_bidding.concat(dataSourcesBiddingTemp)
+        }
+        if (dataSourcesWaterfallTemp.length) {
+          this.dataSources_waterfall = originDatas.concat(dataSourcesWaterfallTemp)
+        }
+      }, 0)
+    },
+    instanceAdd () {
+      this.addModel = true
+    },
     addCustomTag () {
       const id = generateUUID()
       this.customList.push({ id, name: '', type: 0, operator: undefined, value: '' })
@@ -621,26 +773,21 @@ export default {
       }
       return JSON.stringify(o)
     },
-    adnChange (val) {
-      this.adnIds = val
-      this.instanceIds = []
+    currentAppInfo () {
+      if (this.apps.length && this.searchApp) {
+        return this.apps.find(row => row.id === this.searchApp)
+      }
     },
     hourChange (val) {
       this.hourBefore = val
     },
     frontSort (ids, rowDataId) {
       this.fetching = true
-      const j = this.instances.filter(row => {
-        return ids.includes(row.placementRuleInstanceId)
-      })
-      const x = this.instances.filter(row => {
-        return !ids.includes(row.placementRuleInstanceId)
-      })
+      const j = this.instances.filter(row => { return ids.includes(row.placementRuleInstanceId) })
+      const x = this.instances.filter(row => { return !ids.includes(row.placementRuleInstanceId) })
       const d = []
       for (let i = 0; i < ids.length; i++) {
-        const item = j.find(o => {
-          return o.placementRuleInstanceId === ids[i]
-        })
+        const item = j.find(o => { return o.placementRuleInstanceId === ids[i] })
         item.priority = i + 1
         d.push(item)
       }
@@ -689,6 +836,156 @@ export default {
       this.frontSort(params, record.id)
     },
     search (type) {
+      const tempCountries = JSON.parse(JSON.stringify(this.regionsTier))
+      if (this.regionsTier && this.regionsTier.indexOf('ALL') > -1) {
+        tempCountries.splice(tempCountries.indexOf('ALL'), 1)
+        tempCountries.push('00')
+      }
+      const params = { ruleId: this.ruleId, pubAppId: this.appId, placementId: this.placementId }
+      const formSearch = { instanceId: this.instanceIds, adnId: this.adnIds, countries: tempCountries.join(','), lastDays: this.daysSelected }
+      this.fetching = true
+      if (formSearch.instanceId) {
+        params.instanceId = formSearch.instanceId
+      }
+      if (formSearch.adnId) {
+        params.adNetworkIds = formSearch.adnId.join(',')
+      }
+      if (formSearch.countries) {
+        params.countries = formSearch.countries
+      }
+      if (formSearch.lastDays) {
+        params.lastDays = formSearch.lastDays
+      }
+      if (!type) {
+        mediationRuleInstanceList(params).then(res => {
+          if (!res.code) {
+            res.data.forEach(row => {
+              this.setRowData(row)
+              if (row.hbStatus === 1) {
+                if (!row.priority) {
+                  row.priority = 0
+                }
+                this.dataSources_bidding.push(row)
+              } else {
+                row.editPriority = false
+                this.dataSources_waterfall.push(row)
+              }
+            })
+          }
+        }).finally(() => {
+          this.fetching = false
+          this.spinning = false
+        })
+        console.log(this.dataSources_waterfall)
+        this.dataSources_waterfall_copy = JSON.parse(JSON.stringify(this.dataSources_waterfall))
+      } else {
+        const dataSourcesBiddingTemp = []
+        const dataSourcesWaterfallTemp = []
+        if (params.instanceId > 0 || formSearch.adnId.length) {
+          this.waterfallRefresh = 1
+        } else if (this.waterfallRefresh === 1) {
+          this.waterfallRefresh = 2
+        } else {
+          this.waterfallRefresh = 0
+        }
+        mediationRuleInstanceList(params).then(res => {
+          if (!res.code) {
+            res.data.forEach(row => {
+              this.setRowData(row)
+              if (row.hbStatus === 1) {
+                if (!row.priority) {
+                  row.priority = 0
+                }
+                dataSourcesBiddingTemp.push(row)
+              } else {
+                row.editPriority = false
+                dataSourcesWaterfallTemp.push(row)
+              }
+            })
+            if (this.waterfallRefresh !== 0) {
+              this.dataSources_waterfall = dataSourcesWaterfallTemp
+            } else {
+              this.$refs['waterfallPane'].filterData(dataSourcesWaterfallTemp)
+            }
+            this.dataSources_bidding = dataSourcesBiddingTemp
+          }
+        }).finally(() => {
+          this.fetching = false
+          this.spinning = false
+        })
+      }
+    },
+    setRowData (row) {
+      // watfall
+      row.fillRate = row.instanceFilledLatest > 0 ? row.instanceFilledLatest / row.instanceRequestLatest : 0
+      row.fillRate2 = row.instanceFilledSecondLatest > 0 ? row.instanceFilledSecondLatest / row.instanceRequestSecondLatest : 0
+      row.ecpm = row.costLatest > 0 ? row.costLatest * 1000 / row.apiImprLatest : 0
+      row.ecpm2 = row.costSecondLatest > 0 ? row.costSecondLatest * 1000 / row.apiImprSecondLatest : 0
+      if (row.instanceRequestSecondLatest > 0) {
+        row.reqGrowth = numerify(row.instanceRequestLatest / (row.instanceRequestSecondLatest || 1) - 1, '0,0.00a%')
+      } else {
+        row.reqGrowth = '--'
+      }
+      if (row.fillRate2 > 0) {
+        row.fillGrowth = numerify(row.fillRate / (row.fillRate2 || 1) - 1, '0,0.00a%')
+      } else {
+        row.fillGrowth = '--'
+      }
+      if (row.ecpm2 > 0) {
+        row.ecpmGrowth = numerify(row.ecpm / (row.ecpm2 || 1) - 1, '0,0.00a%')
+      } else {
+        row.ecpmGrowth = '--'
+      }
+      if (row.mediationImprLatest) {
+        row.impressionGrowth = numerify(row.mediationImprLatest / (row.mediationImprSecondLatest || 1) - 1, '0,0.00a%')
+      } else {
+        row.impressionGrowth = '--'
+      }
+      // bidding
+      row.bidRate = row.bidRequestLatest > 0 ? row.bidResponseLatest / row.bidRequestLatest : 0
+      row.bidRate2 = row.bidRequestSecondLatest > 0 ? row.bidResponseSecondLatest / row.bidRequestSecondLatest : 0
+      row.winRate = row.bidResponseLatest > 0 ? row.bidWinLatest / row.bidResponseLatest : 0
+      row.winRate2 = row.bidResponseSecondLatest > 0 ? row.bidWinSecondLatest / row.bidResponseSecondLatest : 0
+      row.bidEcpm = row.bidImpressionLatest > 0 ? row.bidWinPriceLatest / row.bidImpressionLatest : 0
+      row.bidEcpm2 = row.bidImpressionSecondLatest > 0 ? row.bidWinPriceSecondLatest / row.bidImpressionSecondLatest : 0
+      if (row.bidRequestLatest) {
+        row.bidRequestGrowth = numerify(row.bidRequestLatest / (row.bidRequestSecondLatest || 1) - 1, '0,0.00a%')
+      } else {
+        row.bidRequestGrowth = '--'
+      }
+      if (row.bidRate2) {
+        row.bidRateGrowth = numerify(row.bidRate / (row.bidRate2 || 1) - 1, '0,0.00a%')
+      } else {
+        row.bidRateGrowth = '--'
+      }
+      if (row.bidWinLatest) {
+        row.bidWinGrowth = numerify(row.bidWinLatest / (row.bidWinSecondLatest || 1) - 1, '0,0.00a%')
+      } else {
+        row.bidWinGrowth = '--'
+      }
+      if (row.bidImpressionLatest) {
+        row.bidImpressionGrowth = numerify(row.bidImpressionLatest / (row.bidImpressionSecondLatest || 1) - 1, '0,0.00a%')
+      } else {
+        row.bidImpressionGrowth = '--'
+      }
+      if (row.bidClickLatest) {
+        row.bidClickGrowth = numerify(row.bidClickLatest / (row.bidClickSecondLatest || 1) - 1, '0,0.00a%')
+      } else {
+        row.bidClickGrowth = '--'
+      }
+      // bidWinPriceLatest bidWinPriceSecondLatest
+      if (row.winRate) {
+        row.winRateGrowth = numerify(row.winRate / (row.winRate2 || 1) - 1, '0,0.00a%')
+      } else {
+        row.winRateGrowth = '--'
+      }
+      if (row.bidEcpm) {
+        row.bidEcpmGrowth = numerify(row.bidEcpm / (row.bidEcpm2 || 1) - 1, '0,0.00a%')
+      } else {
+        row.bidEcpmGrowth = '--'
+      }
+    },
+    search2 (type) {
       const params = { ruleId: this.ruleId, pubAppId: this.appId, placementId: this.placementId }
       const formSearch = { instanceId: this.instanceIds, adnId: this.adnIds, hourBefore: this.hourBefore }
       this.fetching = true
@@ -702,6 +999,7 @@ export default {
         params.hourBefore = formSearch.hourBefore
       }
       this.filter = !!(params.instanceId > 0 || params.adNetworkIds)
+      const _this = this
       if (!type) {
         mediationRuleInstanceList(params).then(res => {
           if (!res.code) {
@@ -727,7 +1025,7 @@ export default {
               } else {
                 row.ecpmGrowth = '--'
               }
-              if (row.hbStatus) {
+              if (row.hbStatus === 1) {
                 if (!row.priority) {
                   row.priority = 0
                 }
@@ -735,27 +1033,27 @@ export default {
               } else {
                 if (row.placementRuleInstanceId > 0) {
                 } else {
-                  row.placementRuleInstanceId = this.count
-                  this.count--
+                  row.placementRuleInstanceId = _this.count
+                  _this.count--
                 }
                 ins.push(row)
               }
             })
-            this.instances = ins
-            this.templist = JSON.parse(JSON.stringify(ins))
-            this.headerbidding = hb
+            _this.instances = ins
+            _this.templist = JSON.parse(JSON.stringify(ins))
+            _this.headerbidding = hb
           }
         }).finally(() => {
-          this.fetching = false
-          this.spinning = false
+          _this.fetching = false
+          _this.spinning = false
         })
       } else {
         // 本地查询
         this.templist = JSON.parse(JSON.stringify(this.instances))
         if (params.instanceId > 0 || formSearch.adnId.length) {
-          this.templist = this.templist.filter(row => {
-            return !((params.instanceId > 0 && row.id !== params.instanceId) || (formSearch.adnId && formSearch.adnId.length > 0 && !formSearch.adnId.includes(row.adnId)))
-          })
+          this.waterfallRefresh = 1
+        } else {
+          this.waterfallRefresh = 2
         }
         const ps = { ruleId: this.ruleId, pubAppId: this.appId, placementId: this.placementId }
         ps.hourBefore = this.mediationRuleInfo.hourBefore
@@ -795,27 +1093,52 @@ export default {
               ins.push(newItem)
             })
 
-            this.instances.forEach(d => {
-              d = Object.assign(d, ins.find(item => {
-                return item.id === d.id
-              }))
+            _this.instances.forEach(d => {
+              Object.assign(d, ins.find(item => item.id === d.id))
             })
-            this.templist.forEach(d => {
-              d = Object.assign(d, ins.find(item => {
-                return item.id === d.id
-              }))
+            _this.templist.forEach(d => {
+              Object.assign(d, ins.find(item => item.id === d.id))
             })
           }
         }).finally(() => {
-          this.fetching = false
-          this.spinning = false
+          _this.fetching = false
+          _this.spinning = false
         })
       }
     },
+    getInstanceFromReamin () {
+      let result = []
+      let waterfallArrs = []
+      waterfallArrs = waterfallArrs.concat(this.$refs['waterfallPane'].getTierRemainData(1))
+      waterfallArrs = waterfallArrs.concat(this.$refs['waterfallPane'].getTierRemainData(2))
+      waterfallArrs = waterfallArrs.concat(this.$refs['waterfallPane'].getTierRemainData(3))
+      waterfallArrs = waterfallArrs.concat(this.$refs['waterfallPane'].dataSources_tier_remain_d)
+      result = result.concat(waterfallArrs)
+      return result
+    },
+    getInstanceFromTier () {
+      let result = []
+      let waterfallArrs = []
+      waterfallArrs = waterfallArrs.concat(this.$refs['waterfallPane'].getTierData(1))
+      waterfallArrs = waterfallArrs.concat(this.$refs['waterfallPane'].getTierData(2))
+      waterfallArrs = waterfallArrs.concat(this.$refs['waterfallPane'].getTierData(3))
+      waterfallArrs = waterfallArrs.concat(this.$refs['waterfallPane'].dataSources_tier_d)
+      result = result.concat(waterfallArrs)
+      return result
+    },
+    getBiddingFromTier () {
+      return this.$refs['biddingPane'].getTierData()
+    },
     segmentSave () {
+      if (this.isSaving) {
+        return
+      }
+      this.isSaving = true
+      setTimeout(() => {
+        this.isSaving = false
+      }, 5000)
       this.loading = true
-      let params = { pubAppId: this.appId, placementId: this.placementId }
-      const that = this
+      const params = { pubAppId: this.appId, placementId: this.placementId }
       let tag = true
       this.$refs.ruleForm.validate((b) => {
         if (!b) {
@@ -828,19 +1151,35 @@ export default {
       }
       const values = Object.assign({}, this.mediationRuleInfo)
       if (this.customList.length) {
-        values.customTags = this.stringifyCustomTags(this.customList)
+        let flagT = true
+        this.customList.forEach(v => {
+          if (!v.name) {
+            flagT = false
+            this.$message.error("Custom Tags Name can't empty!")
+          } else if (!v.operator) {
+            flagT = false
+            this.$message.error("Custom Tags Data Type can't empty!")
+          } else if (!v.value) {
+            this.$message.error("Custom Tags Value can't empty!")
+            flagT = false
+          }
+        })
+        if (flagT) {
+          values.customTags = this.stringifyCustomTags(this.customList)
+        } else {
+          return false
+        }
+      } else {
+        values.customTags = ''
       }
       values.pubAppId = this.appId
       values.placementId = this.placementId
-      values.id = that.placementId
       let ct = 0
-      for (const i in values.conType) {
-        ct |= (1 << values.conType[i])
-      }
+      for (const i in values.conType) { ct |= (1 << values.conType[i]) }
       if (values.channel && values.channel.length) {
         values.channel = values.channel.join(',')
         if (values.channel.length > 1000) {
-          this.$message.error(this.$msg('mediation.channel_too_long'))
+          this.$message.error(this.$t('mediation.channel_too_long'))
           return false
         }
       } else {
@@ -848,60 +1187,65 @@ export default {
       }
       values.conType = ct
       let mt = 0
-      for (const i in values.deviceModelType) {
-        mt |= (1 << values.deviceModelType[i])
-      }
+      for (const i in values.deviceModelType) { mt |= (1 << values.deviceModelType[i]) }
       values.deviceModelType = mt
       let gd = 0
-      for (const i in values.gender) {
-        gd |= (1 << values.gender[i])
-      }
+      for (const i in values.gender) { gd |= (1 << values.gender[i]) }
       values.gender = gd
       values.brandWhitelist = values.brandType === 'include' && values.brandList ? values.brandList.join('\n') : ''
       values.brandBlacklist = values.brandType === 'exclude' && values.brandList ? values.brandList.join('\n') : ''
       values.modelWhitelist = values.modelType === 'include' && values.modelList ? values.modelList.join('\n') : ''
       values.modelBlacklist = values.modelType === 'exclude' && values.modelList ? values.modelList.join('\n') : ''
-      const countries = [...values.regions]
+      // const countries = values.regions
+      const countries = values.regions
       if (countries && countries.indexOf('ALL') > -1) {
         countries.splice(countries.indexOf('ALL'), 1)
         countries.push('00')
       }
       values.countries = countries && countries.join(',')
-      params = Object.assign(params, values)
-      params.instances = this.instances
-      params.headerbidding = this.headerbidding
+      Object.assign(params, values)
+      // params.instances = this.instances
+      params.instances = this.getInstanceFromTier()
+      params.headerbidding = this.getBiddingFromTier()
+      let osv = '[' + values.osvmin + ','
+      if (values.osvmax === this.maxv) {
+        osv = osv + ')'
+      } else if (values.osvmax === undefined) {
+        osv = osv + ')'
+      } else {
+        osv = osv + values.osvmax + ']'
+      }
+      params.osvExp = osv
+      params.requireDid = values.appTracking ? 1 : 0
+
       if (this.ruleId && this.type !== 'Duplicate') {
         params.id = this.ruleId
         params.segmentId = this.segmentId
         segmentUpdateWithInstance(params).then(res => {
           if (res.code === 0) {
-            this.$message.success(this.$msg('mediation.update_success'))
+            this.$message.success(this.$t('mediation.update_success'))
             this.$router.push({
-              name: 'MediationList',
+              name: 'Mediation',
               query: {
                 type: '2'
               }
             })
           }
-        }).finally(() => {
-          this.loading = false
-        })
+        }).finally(() => { this.loading = false })
       } else {
         params.id = -100
         segmentUpdateWithInstance(params).then(res => {
           if (res.code === 0) {
             this.ruleId = res.data.id
             this.$router.push({
-              name: 'MediationList',
+              name: 'Mediation',
               query: {
                 type: '2'
               }
             })
-            this.$message.success(this.$msg('mediation.create_success'))
+            this.$message.success(this.$t('mediation.create_success'))
           }
-        }).finally(() => {
-          this.loading = false
-        })
+        }).finally(() => { this.loading = false })
       }
     },
     /**
@@ -917,8 +1261,11 @@ export default {
         return true
       }
       const temp = this.mediationRuleInfo
+      // const { channel, channelBow } = this.oldData
+      // const normalFields = ['name', 'autoOpt', 'frequency', 'iapMin', 'brandType', 'brandList', 'modelType', 'modelList', 'gender', 'ageMax', 'ageMin', 'conType', 'deviceModelType', 'regions']
       try {
         for (const f of Object.keys(temp)) {
+          if (f === 'osvmax') continue
           if (Array.isArray(temp[f])) {
             if (arrDiff(temp[f], this.oldData[f])) {
               return true
@@ -932,6 +1279,14 @@ export default {
         if (arrDiff(this.customList, this.oldData.customList)) {
           return true
         }
+        // if (this.isNgp) {
+        //   if (temp.channel !== channel) {
+        //     return true
+        //   }
+        //   if (temp.channelBow !== channelBow) {
+        //     return true
+        //   }
+        // }
       } catch (e) {
         return true
       }
@@ -941,10 +1296,8 @@ export default {
       this.changeInstance = true
       const status = record.priority > 0 ? 0 : 1
       if (status === 1) {
-        if (this.headerbidding.find(row => {
-          return row.adnId === record.adnId && row.priority > 0
-        })) {
-          this.$message.error(this.$msg('mediation.already_existed_hb'))
+        if (this.headerbidding.find(row => { return row.adnId === record.adnId && row.priority > 0 })) {
+          this.$message.error(this.$t('mediation.already_existed_hb'))
           return false
         }
       }
@@ -956,9 +1309,7 @@ export default {
     instanceUpdate (record) {
       this.changeInstance = true
       const status = record.priority > 0 ? 0 : 1
-      const target = this.instances.find(row => {
-        return row.placementRuleInstanceId === record.placementRuleInstanceId
-      })
+      const target = this.instances.find(row => { return row.placementRuleInstanceId === record.placementRuleInstanceId })
       if (!status) {
         target.priority = 0
       } else {
@@ -969,9 +1320,7 @@ export default {
       for (const o of d) {
         params.push(o.placementRuleInstanceId)
       }
-      const t = this.templist.find(row => {
-        return row.placementRuleInstanceId === record.placementRuleInstanceId
-      })
+      const t = this.templist.find(row => { return row.placementRuleInstanceId === record.placementRuleInstanceId })
       t.priority = target.priority
       this.frontSort(params, record.id)
     },
@@ -1006,13 +1355,33 @@ export default {
         }))
         this.fetching = false
       })
+    },
+    adnChange (val) {
+      this.adnIds = val
+      this.instanceIds = []
+      this.search(true)
+    },
+    insSelectChange (val) {
+      this.instanceIds = val
+      this.search(true)
+    },
+    regoinsSelectedId (val) {
+      this.regionsTier = val
+      this.search(true)
+    },
+    daysSelectedId (val) {
+      this.daysSelected = val
+      this.search(true)
     }
   }
 }
 </script>
 
-<style type="less" scoped>
-  .water-fall > > > .ant-card-head-wrapper {
-    margin-left: -8px;
-  }
+<style lang="less" scoped>
+.water-fall /deep/ .ant-card-head-wrapper {
+  margin-left: -8px;
+}
+/deep/ .ant-divider.ant-divider-horizontal {
+  margin: 0 0 10px 0;
+}
 </style>

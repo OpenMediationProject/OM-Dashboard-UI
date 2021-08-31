@@ -86,6 +86,12 @@ export default {
       if (!this.currentOrgId) return
       appSelectList({ userId: this.$store.state.user.info.id, status: 1 })
         .then(res => {
+          if (res.data && res.data.length) {
+            _this.$store.commit('UPDATEAPPS', res.data)
+            // _this.$store.commit('SET_HAS_APP', true)
+          } else {
+            // _this.$store.commit('SET_HAS_APP', false)
+          }
           _this.appList = res.data
           _this.tempOption = res.data
           if (localStorage.getItem('searchApp')) {

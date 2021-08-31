@@ -21,7 +21,8 @@ const api = {
   segmentUpdateWithInstance: '/mediation/segment/save',
   segmentCreate: '/mediation/segment/create',
   segmentRuleUpdate: '/mediation/segment/rule/update',
-  mediationRuleInstanceList: '/mediation/segment/instance/list',
+  // mediationRuleInstanceList: '/mediation/segment/instance/list',
+  mediationRuleInstanceList: '/mediation/rule/instance_list',
   mediationRuleInstanceUpdate: '/mediation/segment/instance/update',
   mediationSegmentRuleInstanceCreate: '/mediation/segment/rule/instance/create', // enable
   mediationSegmentRuleInstanceDelete: '/mediation/segment/rule/instance/delete', // disable
@@ -29,8 +30,8 @@ const api = {
   segmentResortPriority: '/mediation/segment/resort/priority',
   rulePriorityUpdate: '/mediation/rule/resort/priority',
   segmentRuleDelete: '/mediation/segment/rule/delete',
-  admobGrantToken: '/report/callback/oauth2authorize'
-
+  admobGrantToken: '/report/callback/oauth2authorize',
+  createInstances: '/create_instances'
 }
 export function getInstance (params) {
   return axios({
@@ -224,6 +225,13 @@ export function admobGrantToken (params) {
 export function segmentUpdateWithInstance (data) {
   return axios({
     url: api.segmentUpdateWithInstance,
+    method: 'post',
+    data: data
+  })
+}
+export function createInstances (data) {
+  return axios({
+    url: api.createInstances,
     method: 'post',
     data: data
   })

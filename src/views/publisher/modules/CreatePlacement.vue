@@ -135,11 +135,11 @@
                   v-if="placementInfo.adType===2"
                   :fill="false"
                   :tip="$msg('placement.callback_url_tip')">
-                  <a-input v-model="placementInfo.icUrl" style="width:418px;"/>
+                  <a-input v-model="placementInfo.icUrl" style="width:360px;"/>
                 </om-form-model>
                 <om-form-model
                   label="Frequency Cap"
-                  v-if="[0, 1].includes(placementInfo.adType)"
+                  v-if="[0, 1, 4].includes(placementInfo.adType)"
                   :fill="false"
                   :tip="$msg('placement.frequency_tip')">
                   Limit to
@@ -177,6 +177,13 @@
                 </om-form-model>
                 <om-form-model
                   :fill="false"
+                  v-if="[0, 1, 4].includes(placementInfo.adType)"
+                  style="margin-bottom: 8px;"
+                  label="Fan Out">
+                  <a-switch :checked="this.placementInfo.fanOut !== 0" @click="() => placementInfo.fanOut = placementInfo.fanOut === 0 ? 1 : 0"/>
+                </om-form-model>
+                <om-form-model
+                  :fill="false"
                   style="margin-bottom: 16px;"
                   label="Device Brand"
                   :tip="$msg('placement.brand_tip')">
@@ -186,7 +193,7 @@
                       <a-select-option value="exclude">exclude</a-select-option>
                     </a-select>
                     <a-select
-                      style="width: 300px"
+                      style="width: 280px"
                       :value="value"
                       @search="selectBrand"
                       @change="handleChange"
@@ -211,7 +218,7 @@
                       <a-select-option value="exclude">exclude</a-select-option>
                     </a-select>
                     <a-select
-                      style="width: 300px"
+                      style="width: 280px"
                       :value="value"
                       @search="selectModel"
                       @change="handleChange"
@@ -224,13 +231,62 @@
                     </a-select>
                   </a-input-group>
                 </om-form-model>
-                <om-form-model :fill="false" v-if="placementInfo.adType===5" style="margin-bottom: 8px;" label="Pool Size" >
+                <!-- v-if="placementInfo.adType===5" -->
+                <om-form-model
+                  v-if="[2, 3, 6].includes(placementInfo.adType)"
+                  :fill="false"
+                  style="margin-bottom: 8px;"
+                  label="Pool Size">
                   <a-input-number
                     style="width:400px"
                     type="number"
                     :min="2"
                     :max="20"
                     v-model="placementInfo.inventoryCount"/>
+                </om-form-model>
+                <om-form-model
+                  v-if="[2, 3, 6].includes(placementInfo.adType)"
+                  :fill="false"
+                  style="margin-bottom: 8px;"
+                  label="Inventory Interval Step"
+                  tip="Number of failures: loading interval<br>Multiple use line breaks"
+                >
+                  <a-textarea
+                    style="width:360px"
+                    :placeholder="`5:30\n8:300\n10:3600`"
+                    v-model="placementInfo.inventoryIntervalStep"
+                  />
+                </om-form-model>
+                <om-form-model
+                  v-if="placementInfo.adType===0"
+                  :fill="false"
+                  style="margin-bottom: 8px;"
+                  label="Reload Interval"
+                >
+                  <a-input-number
+                    style="width:400px"
+                    type="number"
+                    v-model="placementInfo.reloadInterval"/>
+                </om-form-model>
+                <om-form-model
+                  :fill="false"
+                  style="margin-bottom: 8px;"
+                  label="Preload Timeout"
+                >
+                  <a-input-number
+                    style="width:400px"
+                    type="number"
+                    v-model="placementInfo.preloadTimeout"/>
+                </om-form-model>
+                <om-form-model
+                  :fill="false"
+                  style="margin-bottom: 8px;"
+                  label="Batch Size"
+                >
+                  <a-input-number
+                    style="width:400px"
+                    type="number"
+                    v-model="placementInfo.batchSize"/>
                 </om-form-model>
               </a-card>
             </a-tab-pane>
@@ -280,7 +336,12 @@ export default {
         modelType: 'include',
         brandType: 'include',
         inventoryCount: 2,
-        scenes: []
+        scenes: [],
+        fanOut: 0,
+        batchSize: 0,
+        preloadTimeout: 0,
+        reloadInterval: 0,
+        inventoryIntervalStep: ''
       },
       rules: {
         name: [
