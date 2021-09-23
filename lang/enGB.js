@@ -50,7 +50,8 @@ module.exports = {
     ltv: 'Lifetime Value',
     retention: 'Retention',
     privacy: 'iOS 14 Privacy',
-    help: 'Help Center'
+    help: 'Help Center',
+    ABTestEdit: 'A/B Test'
   },
   roles: {
     CompanyMaster: 'Company Master',

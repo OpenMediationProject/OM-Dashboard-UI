@@ -6,6 +6,27 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "24174127",
+      "name": "copy",
+      "font_class": "Vector1",
+      "unicode": "e629",
+      "unicode_decimal": 58921
+    },
+    {
+      "icon_id": "24174097",
+      "name": "delete",
+      "font_class": "Vector",
+      "unicode": "e628",
+      "unicode_decimal": 58920
+    },
+    {
+      "icon_id": "23381256",
+      "name": "Undo",
+      "font_class": "Undo",
+      "unicode": "e622",
+      "unicode_decimal": 58914
+    },
+    {
       "icon_id": "22300269",
       "name": "expand_down",
       "font_class": "expand_down",

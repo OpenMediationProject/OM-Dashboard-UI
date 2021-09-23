@@ -2,7 +2,7 @@
   <a-form-model-item
     v-if="type==='inline'"
     :colon="false"
-    :label-col="labelCol"
+    :label-col="labelerCol || labeler"
     :ref="field"
     :prop="field"
     :wrapper-col="wrapperCol || wrapper"
@@ -36,7 +36,7 @@ export default {
   },
   data () {
     return {
-      labelCol: { lg: { span: 8 }, sm: { span: 8 } },
+      labeler: { lg: { span: 8 }, sm: { span: 8 } },
       wrapper: { lg: { span: 8 }, sm: { span: 8 } },
       canEdit: this.edit,
       data: this.form
@@ -47,6 +47,10 @@ export default {
     label: {
       type: String,
       default: ''
+    },
+    labelerCol: {
+      type: Object,
+      default: null
     },
     wrapperCol: {
       type: Object,

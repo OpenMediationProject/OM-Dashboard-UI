@@ -1,6 +1,6 @@
 <!-- Organization select component the props value is the default checked -->
 <template>
-  <div v-if="this.$route.name==='MediationEdit' || this.$route.name==='MediationDetails'" class="placement-info">
+  <div v-if="this.$route.name==='MediationEdit' || this.$route.name==='MediationDetails' || this.$route.name==='MediationABTest'" class="placement-info">
     <div style="display: inline-block;">
       <div style="color:#333333;font-size: 14px;margin-bottom:5px;">
         <ellipsis :length="26" tooltip>{{ searchPlacementName }}</ellipsis>

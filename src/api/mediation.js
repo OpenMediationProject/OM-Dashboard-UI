@@ -31,7 +31,9 @@ const api = {
   rulePriorityUpdate: '/mediation/rule/resort/priority',
   segmentRuleDelete: '/mediation/segment/rule/delete',
   admobGrantToken: '/report/callback/oauth2authorize',
-  createInstances: '/create_instances'
+  createInstances: '/create_instances',
+  getABTestReport: '/mediation/get_abtest_report',
+  stopABTest: '/mediation/stop_abtest'
 }
 export function getInstance (params) {
   return axios({
@@ -234,5 +236,19 @@ export function createInstances (data) {
     url: api.createInstances,
     method: 'post',
     data: data
+  })
+}
+export function getABTestReport (params) {
+  return axios({
+    url: api.getABTestReport,
+    method: 'get',
+    params: params
+  })
+}
+export function stopABTest (params) {
+  return axios({
+    url: api.stopABTest,
+    method: 'get',
+    params: params
   })
 }

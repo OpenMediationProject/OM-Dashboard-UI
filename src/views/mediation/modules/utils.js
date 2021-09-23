@@ -3,6 +3,8 @@ import { MEDIATION_INS, MEDIATION_WTF, MEDIATION_RUL, MEDIATION_INS_LATER, MEDIA
 import { getInstance } from '@/api/mediation'
 import global from '@/global'
 import i18n from '../../../../lang'
+import numerify from 'numerify'
+numerify('1', '0,0')
 class OpenExpand {
   constructor (rowKeys, record, data) {
     this.rowKeys = rowKeys
@@ -121,6 +123,33 @@ const swapArray = (arr, index1, index2) => {
   arr[index1].TierIndex = index1 + 1
   arr[index2].TierIndex = index2 + 1
 }
+const swapArray2 = (arr, index1, index2, $set) => {
+  // 之前交换逻辑不正确，直接赋值（类似于指针形式）交互Vue无法监听
+  if (index1 === index2) {
+    return arr
+  } else if (index1 > index2) {
+    const temp = JSON.parse(JSON.stringify(arr[index1]))
+    let arrow = index1
+    while (arrow !== index2) {
+      // arr[arrow] = arr[arrow - 1]
+      $set(arr, arrow, arr[arrow - 1])
+      arrow = arrow - 1
+    }
+    // arr[index2] = temp
+    $set(arr, index2, temp)
+  } else {
+    const temp = JSON.parse(JSON.stringify(arr[index1]))
+    let arrow = index1
+    while (arrow !== index2) {
+      // arr[arrow] = arr[arrow + 1]
+      $set(arr, arrow, arr[arrow + 1])
+      arrow = arrow + 1
+    }
+    // arr[index2] = temp
+    $set(arr, index2, temp)
+  }
+  return arr
+}
 // 置顶，即将当前元素移到数组的最后一位
 const zIndexTop = (arr, index, length) => {
   if (index + 1 !== length) {
@@ -218,6 +247,15 @@ const getElementToPageTop = (el) => {
   }
   return el.offsetTop
 }
+const formatData = (v, f) => {
+  if (!v) {
+    v = 0
+  }
+  if (!f) {
+    f = '0,0'
+  }
+  return numerify(v, f)
+}
 export {
   OpenExpandObj,
   initFormRuleObj,
@@ -225,11 +263,13 @@ export {
   isEmptyForm,
   checkInterfaceRepeatAction,
   swapArray,
+  swapArray2,
   zIndexTop,
   clearRepeatArr,
   getAdnNameById,
   showRegionsformat,
   getGuideInfo,
   setGuideInfo,
-  getElementToPageTop
+  getElementToPageTop,
+  formatData
 }

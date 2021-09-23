@@ -399,6 +399,19 @@ export const constantFullPageMap = {
                     next()
                   }
                 }
+              },
+              {
+                path: '/mediation/mediation/abtest',
+                name: 'MediationABTest',
+                component: () => import('@/views/mediation/abTest/ABTestEdit'),
+                meta: { title: i18n.t('route.ABTestEdit'), hidden: true, headTitle: 'Mediation', keepAlive: false, action: ['query'], parent: '/mediation/mediation/list?type=2' },
+                beforeEnter (to, from, next) {
+                  if (from.path === '/') {
+                    next('/mediation/mediation/list')
+                  } else {
+                    next()
+                  }
+                }
               }
             ]
           },

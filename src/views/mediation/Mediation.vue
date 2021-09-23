@@ -124,13 +124,24 @@
                   ref="table"
                   rowKey="id"
                   :dataSource="list"
-                  :expandedRowKeys="curExpandedRowKeys"
+                  :expandedRowKeys="expandedRowKeys"
                   :columns="columns"
                   :expandIconAsCell="false"
                   :expandIconColumnIndex="-1"
                   :pagination="false"
                   @change="tableChange"
                 >
+                  <!-- 展开行 -->
+                  <div slot="expandedRowRender" class="expandRowBox" slot-scope="record" :rowKey="record.id" style="margin: 0">
+                    <ABTestReport
+                      v-if="record.abTestHistoryReports && record.abTestHistoryReports.length"
+                      :record="record"
+                      :instanceSelected="instanceSelected"
+                      :regions="regions"
+                      :daysSelected="daysSelected"
+                      @stopedABTest="stopedABTest"/>
+                    <ABTestTip v-else :learnMore="true" />
+                  </div>
                   <!-- 状态开关 -->
                   <span slot="switchStatus" slot-scope="record">
                     <a-switch :checked="record.status === 1" @click="handelWaterfallStatusUpdate(record)">
@@ -176,7 +187,6 @@
                   </span>
                   <span slot="ruleInstanceSize" slot-scope="text, record">
                     <span :style="record.status===0 ? 'opacity: 0.3;' : null" >
-                      <!-- <a @click="handleOpen(record)">{{ text }}</a> -->
                       <a @click="handleEdit(record)">{{ text }}</a>
                     </span>
                   </span>
@@ -190,61 +200,25 @@
                   <span slot="status" slot-scope="text, record">
                     <template>
                       <div v-if="canEdit && !abt">
-                        <a @click="handleEdit(record)">{{ $t('comm.edit') }}</a>
+                        <a @click="record.abTest === 0 ? handleEdit(record) : ''" :style="`${record.abTest === 1 ? 'color: #ccc;' : ''}`">{{ $t('comm.edit') }}</a>
                         <a-divider type="vertical" />
-                        <a @click="handleCopy(record)">{{ $t('mediation.duplicate') }}</a>
-                        <a-divider type="vertical" />
-                        <!-- <a @click="segmentStatusUpdate(record)">{{ text===0?$t('comm.enable') : $t('comm.disable') }}</a>
-                        <a-divider type="vertical" /> -->
-                        <a-popconfirm okText="Yes" cancelText="No" @confirm="segmentDelete(record)">
-                          <span slot="title">{{ $t('mediation.remove_confirm') }}<br />
-                            {{ $t('mediation.remove_confirm_ext') }}
-                          </span>
-                          <a>{{ $t('comm.remove') }}</a>
-                        </a-popconfirm>
-                        <!-- <span style="float:right" v-if="!record.expandStatus" @click="handleOpen(record)" ><img src="/assets/down.svg"/></span>
-                        <span style="float:right" v-else @click="handleOpen(record)"><img src="/assets/up.svg"/></span> -->
+                        <a @click="handleABTest(record)">{{ abTestStatus[record.abTest] }}</a>
+                        <span style="float: right; margin-left: 20px; cursor: pointer;">
+                          <a-popover placement="bottomRight" trigger="click">
+                            <template slot="content">
+                              <p @click="handleCopy(record)" style="cursor: pointer;"><span class="iconfont" style="margin-right: 4px;">&#xe629;</span>{{ $t('mediation.duplicate') }}</p>
+                              <p @click="segmentDelete(record)" style="cursor: pointer; margin-bottom: 0;"><span class="iconfont" style="margin-right: 4px;">&#xe628;</span>{{ $t('comm.remove') }}</p>
+                            </template>
+                            <img src="/mediation/more.svg">
+                          </a-popover>
+                        </span>
+                        <span style="float: right; margin-left: 0px; cursor: pointer;" @click="showABTestInfo(record)"><img :src="expandedRowKeys.includes(record.id) ? '/assets/up.svg' : '/assets/down.svg'"></span>
                       </div>
                       <div v-else>
                         <a @click="viewMediation(record)">{{ $t('comm.details') }}</a>
-                        <!-- <span style="float:right" v-if="!record.expandStatus" @click="handleOpen(record)" ><img src="/assets/down.svg"/></span>
-                        <span style="float:right" v-else @click="handleOpen(record)"><img src="/assets/up.svg"/></span> -->
                       </div>
                     </template>
                   </span>
-                  <a-table
-                    :ref="index+'table'"
-                    slot="expandedRowRender"
-                    slot-scope="record, index"
-                    rowKey="instanceId"
-                    :columns="record.autoOpt===1 ? innerColumnsHidePri:innerColumns"
-                    :dataSource="record.ruleInstances"
-                    :pagination="false"
-                  >
-                    <span slot="id" slot-scope="text, srecord">
-                      <span :style="srecord.priority >=0 ? null: 'opacity: 0.3;' ">
-                        {{ text }}
-                      </span>
-                    </span>
-                    <span slot="className" slot-scope="text, srecord">
-                      <ad-network
-                        :id="srecord.mediationId"
-                        :status="srecord.priority >=0 ? 1: 0"
-                      />
-                    </span>
-                    <span slot="instanceName" slot-scope="text, srecord">
-                      <span :style="srecord.priority >=0 ? null: 'opacity: 0.3;' ">
-                        {{ text }}
-                      </span>
-                    </span>
-                    <span slot="operation" slot-scope="text, srecord">
-                      <template>
-                        <div>
-                          <a v-if="canEdit && !abt" @click="instanceStatusUpdate(srecord)">{{ srecord.priority >= 0 ? $t('comm.disable') : $t('comm.enable') }}</a>
-                        </div>
-                      </template>
-                    </span>
-                  </a-table>
                 </a-table>
               </div>
             </a-spin>
@@ -267,6 +241,8 @@ import AdNetwork from '@/components/om/AdNetwork'
 import OmForm from '@/components/OmForm'
 import EditableCell from '@/components/EditableCell'
 import OmText from '@/components/om/Text'
+import ABTestTip from './abTest/ABTestTip'
+import ABTestReport from './abTest/ABTestReport'
 
 import { mapState } from 'vuex'
 import InstanceEdit from '@/views/publisher/modules/InstanceEdit'
@@ -289,7 +265,9 @@ export default {
     OmInstanceSelect,
     DaysSelect,
     GuideModel,
-    ZeroTip
+    ZeroTip,
+    ABTestTip,
+    ABTestReport
   },
   data () {
     return {
@@ -327,7 +305,7 @@ export default {
         {
           title: this.$t('mediation.mediationRule'),
           dataIndex: 'name',
-          width: '20%',
+          width: '15%',
           scopedSlots: { customRender: 'name' }
         },
         {
@@ -357,11 +335,11 @@ export default {
           title: this.$t('mediation.instances'),
           dataIndex: 'ruleInstanceSize',
           align: 'left',
-          width: '9%',
+          width: '11%',
           scopedSlots: { customRender: 'ruleInstanceSize' }
         },
         {
-          width: '20%',
+          width: '23%',
           title: this.$t('comm.operations'),
           dataIndex: 'status',
           scopedSlots: { customRender: 'status' }
@@ -393,7 +371,12 @@ export default {
       guideBtFirst: false,
       guideWfFirst: false,
       guideBidNum: -1,
-      guideWtfNum: -1
+      guideWtfNum: -1,
+      abTestStatus: {
+        0: 'Set up A/B Test',
+        1: 'AB Testing'
+      },
+      expandedRowKeys: []
     }
   },
   computed: mapState({
@@ -409,6 +392,7 @@ export default {
       this.abt = curVal
     },
     data (val) {
+      // console.log(val)
       this.list = []
       this.$nextTick(() => {
         this.list = val
@@ -431,6 +415,16 @@ export default {
     this.checkGuide()
   },
   methods: {
+    showABTestInfo (record) {
+      if (this.expandedRowKeys && this.expandedRowKeys.length && !this.expandedRowKeys.includes(record.id)) {
+        this.expandedRowKeys.pop()
+        this.expandedRowKeys.push(record.id)
+      } else if (this.expandedRowKeys && this.expandedRowKeys.length) {
+        this.expandedRowKeys.pop()
+      } else {
+        this.expandedRowKeys.push(record.id)
+      }
+    },
     checkGuide () {
       setTimeout(() => {
         if (!getGuideInfo('bt') && !getGuideInfo('bt_l') && (this.activeKey === 1 || this.activeKey === '1')) {
@@ -569,6 +563,20 @@ export default {
         })
       }
     },
+    handleABTest (record) {
+      if (record) {
+        this.$router.push({
+          name: 'MediationABTest',
+          params: {
+            ruleId: record.id,
+            pubAppId: this.searchApp,
+            placementId: this.searchPlacement,
+            abTestStatus: record.abTest,
+            recordUpper: record
+          }
+        })
+      }
+    },
     segmentDelete (record) {
       segmentRuleDelete({ ruleId: record.id }).then(res => {
         if (res.code === 0) {
@@ -603,20 +611,6 @@ export default {
       this.daysSelected = val
       this.listSearch()
     },
-    handleOpen (record) {
-      record['expandStatus'] = !record['expandStatus']
-      this.currentExpandedStatOpen = !this.currentExpandedStatOpen
-      if (this.curExpandedRowKeys.length > 0) {
-        const index = this.curExpandedRowKeys.indexOf(record.id)
-        if (index > -1) {
-          this.curExpandedRowKeys.splice(index, 1)
-        } else {
-          this.curExpandedRowKeys.push(record.id)
-        }
-      } else {
-        this.curExpandedRowKeys.push(record.id)
-      }
-    },
     handelMediationRuleInstanceUpdate (record) {
       mediationRuleInstanceUpdate({ status: record.status === 0 ? 1 : 0, id: record.id })
         .then(res => {
@@ -633,7 +627,13 @@ export default {
         return false
       }
       const params = { pubAppId: this.searchApp, placementId: this.searchPlacement, abTestModel: 0 }
-      const countries = [ ...this.regions ]
+      let countries = [ ...this.regions ]
+      countries = countries.map(v => {
+        if (v === 'ALL') {
+          return '00'
+        }
+        return v
+      })
       if (countries && Object.keys(countries).length > 0) {
         params.countries = countries.join(',')
       }
@@ -651,7 +651,7 @@ export default {
             })
             this.data = res.data
             this.currentExpandedStatOpen = false
-            this.curExpandedRowKeys = []
+            // this.curExpandedRowKeys = []
           }
         }).finally(() => {
           this.fetching = false
@@ -726,6 +726,10 @@ export default {
           this.$message.success(this.$t('mediation.update_success'))
         }
       })
+    },
+    stopedABTest () {
+      this.listSearch()
+      this.expandedRowKeys = []
     }
   }
 }
@@ -803,5 +807,10 @@ export default {
     line-height: 14px;
     color: #ccc;
   }
+}
+.expandRowBox {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 </style>

@@ -2,6 +2,7 @@
   <a-select
     :placeholder="hint"
     :filterOption="filterOption"
+    :disabled="disabled"
     v-model="initValue"
     :dropdownMatchSelectWidth="false"
     @change="handleChange">
@@ -45,6 +46,10 @@ export default {
     type: {
       type: Number,
       default: 0
+    },
+    disabled: {
+      type: Boolean,
+      default: false
     }
   },
   components: {

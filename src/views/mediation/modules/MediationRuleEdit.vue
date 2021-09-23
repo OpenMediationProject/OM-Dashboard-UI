@@ -49,7 +49,7 @@
             </a-switch>
             {{ mediationRuleInfo.appTracking? $t('mediation.app_tracking_open'): $t('mediation.app_tracking_close') }}
           </om-form-model>
-          <!-- <om-form-model :label="$t('ab.channel')" v-if="isNgp" field="channel" :fill="false">
+          <om-form-model :label="$t('ab.channel')" field="channel" :fill="false">
             <a-input-group style="width:100%" compact>
               <a-select v-model="mediationRuleInfo.channelBow">
                 <a-select-option :value="1">{{ $t('placements.include') }}</a-select-option>
@@ -58,7 +58,7 @@
               <a-select allowClear v-model="mediationRuleInfo.channel" mode="tags" style="width: 73%">
               </a-select>
             </a-input-group>
-          </om-form-model> -->
+          </om-form-model>
           <a-row style="margin-bottom: 16px;">
             <!-- <a-col :span="8" style="text-align: right; padding-right: 8px;"><a @click="visible = !visible">Advanced Options <img src="/icon/d.svg"></a></a-col> -->
             <a-divider></a-divider>
@@ -1383,5 +1383,6 @@ export default {
 }
 /deep/ .ant-divider.ant-divider-horizontal {
   margin: 0 0 10px 0;
+  height: 1px;
 }
 </style>
