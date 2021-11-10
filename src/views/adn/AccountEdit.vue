@@ -392,6 +392,18 @@
         field="adnApiKey"
       />
     </div>
+    <div v-else-if="id===26">
+      <om-form
+        :form="form"
+        label="User Name"
+        :edit="canEdit"
+        field="userId"/>
+      <om-form
+        :form="form"
+        label="API Key"
+        :edit="canEdit"
+        field="userSignature"/>
+    </div>
     <div v-else-if="id===30">
       <!-- Fyber -->
       <om-form

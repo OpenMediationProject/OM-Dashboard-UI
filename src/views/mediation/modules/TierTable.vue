@@ -70,7 +70,7 @@
 
 <script>
 import draggable from 'vuedraggable'
-import { swapArray, zIndexTop } from './utils'
+import { swapArray2, zIndexTop } from './utils'
 
 export default {
   name: 'TierTable',
@@ -268,7 +268,7 @@ export default {
       if (index1 >= this.dataSources_inner.length) {
         zIndexTop(this.dataSources_inner, index2, this.dataSources_inner.length)
       } else if (index1 !== index2) {
-        swapArray(this.dataSources_inner, index1, index2)
+        swapArray2(this.dataSources_inner, index2, index1, this.$set)
       }
     },
     addEndableInstance () {

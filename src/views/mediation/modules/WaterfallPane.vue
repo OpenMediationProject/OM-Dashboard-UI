@@ -134,7 +134,7 @@
 <script>
 import TierTable from './TierTable'
 import numerify from 'numerify'
-import { swapArray, zIndexTop, getAdnNameById as getAdnNameByIdUtil, showRegionsformat, getElementToPageTop } from './utils'
+import { swapArray2, zIndexTop, getAdnNameById as getAdnNameByIdUtil, showRegionsformat, getElementToPageTop } from './utils'
 import WaterfallTableInner from './WaterfallTableInner'
 import GuideModel from './GuideModel'
 
@@ -531,7 +531,7 @@ export default {
         zIndexTop(datas, index2, datas.length)
       } else if (index1 !== index2) {
         // record.TierIndex = index1 + 1
-        swapArray(datas, index1, index2)
+        swapArray2(datas, index2, index1, this.$set)
       }
     },
     exchangeTierVal (index1, index2, item) {

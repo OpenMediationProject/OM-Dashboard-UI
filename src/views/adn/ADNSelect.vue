@@ -89,7 +89,7 @@ export default {
             item.className = '优量汇'
           }
         })
-        this.optionList = res.data.filter(item => { return ![3].includes(item.id) })
+        this.optionList = res.data.filter(item => { return ![3, 27].includes(item.id) })
       } catch (e) {
         console.log('get adn list error', e)
       }

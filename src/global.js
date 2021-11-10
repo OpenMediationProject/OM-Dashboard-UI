@@ -50,6 +50,8 @@ const adnIconMap = {
   21: { icon: '/logo/KsAd.svg', name: 'KsAd' },
   22: { icon: '/logo/Ogury.svg', name: 'Ogury' },
   23: { icon: '/logo/HyBid.svg', name: 'PubNative', iconBidding: '/logo/HyBid2.svg' },
+  26: { icon: '/logo/InMobi.svg', name: 'Inmobi', iconBidding: '/logo/InMobi2.svg' },
+  27: { icon: '/logo/SanAds.svg', name: 'SanAds' },
   30: { icon: '/logo/Fyber.svg', name: 'Fyber' }
 }
 const global = {

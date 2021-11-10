@@ -285,10 +285,10 @@ export default {
       const _this = this
       validateFields(async (err, values) => {
         if (!err) {
-          if ([12, 14, 17, 18].includes(record.id) && values['cb_left']) {
+          if ([12, 14, 17, 18, 26].includes(record.id) && values['cb_left']) {
             values.adnAppKey = values['cb_left'].trim() + '#' + values['cb_right'].trim()
           }
-          if (_this.accountTab === '2' && ![3].includes(record.id) && !_this.curAccountId) {
+          if (_this.accountTab === '2' && ![3, 27].includes(record.id) && !_this.curAccountId) {
             this.$notification.warning({
               message: 'Error',
               description: 'Please Select An API Key.'
@@ -298,7 +298,7 @@ export default {
           if (_this.accountTab === '2') {
             values.reportAccountId = _this.curAccountId
           }
-          if (!values.reportAccountId && ![3].includes(record.id)) {
+          if (!values.reportAccountId && ![3, 27].includes(record.id)) {
             values.adnId = record.id
             if (record.id === 2 && !values.adnAppId) {
               values.authType = 3
@@ -425,9 +425,9 @@ export default {
               if (item.adNetworkApp && item.adNetworkApp.reportAccountId === 0) {
                 item.adNetworkApp.reportAccountId = null
               }
-              if (item.adNetworkApp && item.adNetworkApp.adnAppKey && [12, 14, 17, 18].includes(item.id)) {
+              if (item.adNetworkApp && item.adNetworkApp.adnAppKey && [12, 14, 17, 18, 26].includes(item.id)) {
                 const keys = item.adNetworkApp.adnAppKey.split('#')
-                if ([12, 14, 17, 18].includes(item.id)) {
+                if ([12, 14, 17, 18, 26].includes(item.id)) {
                   if (keys.length === 2) {
                     item.adNetworkApp.cb_left = keys[0]
                     item.adNetworkApp.cb_right = keys[1]

@@ -200,6 +200,32 @@
         field="adnAppKey"
       />
     </div>
+    <div v-else-if="id===26">
+      <om-form
+        :form="form"
+        label="Account Id"
+        :edit="canEdit"
+        field="cb_left" />
+      <om-form
+        :form="form"
+        label="App ID"
+        :edit="canEdit"
+        field="cb_right" />
+    </div>
+    <div v-else-if="id===27">
+      <!-- 茄子 -->
+      <om-form
+        :form="form"
+        label="Android Bundle Id"
+        :edit="canEdit"
+        field="adnAppKey" />
+      <om-form
+        :form="form"
+        label="App Key"
+        :edit="canEdit"
+        field="refreshToken"
+        :tip="$t('adn.shareid_appKey')" />
+    </div>
     <div v-else-if="id===30">
       <!-- Fyber -->
       <om-form
@@ -210,7 +236,7 @@
         field="adnAppKey"
       />
     </div>
-    <div v-if="![ 3 ].includes(id)">
+    <div v-if="![ 3, 27 ].includes(id)">
       <a-tabs @change="changeAccountType" :default-active-key="activeKey" size="small" :tabBarGutter="8" type="card">
         <span slot="tabBarExtraContent">
           <img style="margin-right:4px;" src="/assets/Vector.svg"> Ad Network API key

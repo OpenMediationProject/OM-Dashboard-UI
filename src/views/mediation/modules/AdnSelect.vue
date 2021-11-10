@@ -55,8 +55,8 @@ export default {
     return {
       optionList: {},
       value: undefined,
-      biddingIds: [1, 3, 14, 17, 23],
-      onlyBiddingIds: [1, 17, 23],
+      biddingIds: [1, 3, 14, 17, 23, 26],
+      onlyBiddingIds: [1, 17, 23, 26],
       showBiddingIcon: false,
       onlyShowBiddingIcon: false
     }
